@@ -1,0 +1,17 @@
+/src/src/Modules/Accounts/SpotifyClone.Accounts.Domain/bin/Debug/net10.0/SpotifyClone.Accounts.Domain.deps.json
+/src/src/Modules/Accounts/SpotifyClone.Accounts.Domain/bin/Debug/net10.0/SpotifyClone.Accounts.Domain.dll
+/src/src/Modules/Accounts/SpotifyClone.Accounts.Domain/bin/Debug/net10.0/SpotifyClone.Accounts.Domain.pdb
+/src/src/Modules/Accounts/SpotifyClone.Accounts.Domain/bin/Debug/net10.0/SpotifyClone.Shared.BuildingBlocks.Domain.dll
+/src/src/Modules/Accounts/SpotifyClone.Accounts.Domain/bin/Debug/net10.0/SpotifyClone.Shared.Kernel.dll
+/src/src/Modules/Accounts/SpotifyClone.Accounts.Domain/bin/Debug/net10.0/SpotifyClone.Shared.BuildingBlocks.Domain.pdb
+/src/src/Modules/Accounts/SpotifyClone.Accounts.Domain/bin/Debug/net10.0/SpotifyClone.Shared.Kernel.pdb
+/src/src/Modules/Accounts/SpotifyClone.Accounts.Domain/obj/Debug/net10.0/SpotifyClone.Accounts.Domain.csproj.AssemblyReference.cache
+/src/src/Modules/Accounts/SpotifyClone.Accounts.Domain/obj/Debug/net10.0/SpotifyClone.Accounts.Domain.GeneratedMSBuildEditorConfig.editorconfig
+/src/src/Modules/Accounts/SpotifyClone.Accounts.Domain/obj/Debug/net10.0/SpotifyClone.Accounts.Domain.AssemblyInfoInputs.cache
+/src/src/Modules/Accounts/SpotifyClone.Accounts.Domain/obj/Debug/net10.0/SpotifyClone.Accounts.Domain.AssemblyInfo.cs
+/src/src/Modules/Accounts/SpotifyClone.Accounts.Domain/obj/Debug/net10.0/SpotifyClone.Accounts.Domain.csproj.CoreCompileInputs.cache
+/src/src/Modules/Accounts/SpotifyClone.Accounts.Domain/obj/Debug/net10.0/SpotifyC.6A404EA3.Up2Date
+/src/src/Modules/Accounts/SpotifyClone.Accounts.Domain/obj/Debug/net10.0/SpotifyClone.Accounts.Domain.dll
+/src/src/Modules/Accounts/SpotifyClone.Accounts.Domain/obj/Debug/net10.0/refint/SpotifyClone.Accounts.Domain.dll
+/src/src/Modules/Accounts/SpotifyClone.Accounts.Domain/obj/Debug/net10.0/SpotifyClone.Accounts.Domain.pdb
+/src/src/Modules/Accounts/SpotifyClone.Accounts.Domain/obj/Debug/net10.0/ref/SpotifyClone.Accounts.Domain.dll

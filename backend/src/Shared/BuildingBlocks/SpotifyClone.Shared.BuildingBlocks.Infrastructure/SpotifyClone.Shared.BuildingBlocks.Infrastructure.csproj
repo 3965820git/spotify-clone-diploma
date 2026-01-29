@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SpotifyClone.Shared.BuildingBlocks.Application\SpotifyClone.Shared.BuildingBlocks.Application.csproj" />
+    <ProjectReference Include="..\SpotifyClone.Shared.BuildingBlocks.Domain\SpotifyClone.Shared.BuildingBlocks.Domain.csproj" />
+  </ItemGroup>
+</Project>

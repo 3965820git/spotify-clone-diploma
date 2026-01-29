@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Shared\BuildingBlocks\SpotifyClone.Shared.BuildingBlocks.Application\SpotifyClone.Shared.BuildingBlocks.Application.csproj" />
+    <ProjectReference Include="..\..\..\Shared\BuildingBlocks\SpotifyClone.Shared.BuildingBlocks.Domain\SpotifyClone.Shared.BuildingBlocks.Domain.csproj" />
+    <ProjectReference Include="..\..\..\Shared\Kernel\SpotifyClone.Shared.Kernel\SpotifyClone.Shared.Kernel.csproj" />
+    <ProjectReference Include="..\SpotifyClone.Accounts.Domain\SpotifyClone.Accounts.Domain.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+  	<InternalsVisibleTo Include="SpotifyClone.Accounts.Application.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Features\Accounts\Commands\" />
+  </ItemGroup>
+</Project>

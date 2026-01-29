@@ -1,0 +1,15 @@
+/src/src/Shared/Kernel/SpotifyClone.Shared.Kernel/bin/Debug/net10.0/SpotifyClone.Shared.Kernel.deps.json
+/src/src/Shared/Kernel/SpotifyClone.Shared.Kernel/bin/Debug/net10.0/SpotifyClone.Shared.Kernel.dll
+/src/src/Shared/Kernel/SpotifyClone.Shared.Kernel/bin/Debug/net10.0/SpotifyClone.Shared.Kernel.pdb
+/src/src/Shared/Kernel/SpotifyClone.Shared.Kernel/bin/Debug/net10.0/SpotifyClone.Shared.BuildingBlocks.Domain.dll
+/src/src/Shared/Kernel/SpotifyClone.Shared.Kernel/bin/Debug/net10.0/SpotifyClone.Shared.BuildingBlocks.Domain.pdb
+/src/src/Shared/Kernel/SpotifyClone.Shared.Kernel/obj/Debug/net10.0/SpotifyClone.Shared.Kernel.csproj.AssemblyReference.cache
+/src/src/Shared/Kernel/SpotifyClone.Shared.Kernel/obj/Debug/net10.0/SpotifyClone.Shared.Kernel.GeneratedMSBuildEditorConfig.editorconfig
+/src/src/Shared/Kernel/SpotifyClone.Shared.Kernel/obj/Debug/net10.0/SpotifyClone.Shared.Kernel.AssemblyInfoInputs.cache
+/src/src/Shared/Kernel/SpotifyClone.Shared.Kernel/obj/Debug/net10.0/SpotifyClone.Shared.Kernel.AssemblyInfo.cs
+/src/src/Shared/Kernel/SpotifyClone.Shared.Kernel/obj/Debug/net10.0/SpotifyClone.Shared.Kernel.csproj.CoreCompileInputs.cache
+/src/src/Shared/Kernel/SpotifyClone.Shared.Kernel/obj/Debug/net10.0/SpotifyC.82376C88.Up2Date
+/src/src/Shared/Kernel/SpotifyClone.Shared.Kernel/obj/Debug/net10.0/SpotifyClone.Shared.Kernel.dll
+/src/src/Shared/Kernel/SpotifyClone.Shared.Kernel/obj/Debug/net10.0/refint/SpotifyClone.Shared.Kernel.dll
+/src/src/Shared/Kernel/SpotifyClone.Shared.Kernel/obj/Debug/net10.0/SpotifyClone.Shared.Kernel.pdb
+/src/src/Shared/Kernel/SpotifyClone.Shared.Kernel/obj/Debug/net10.0/ref/SpotifyClone.Shared.Kernel.dll

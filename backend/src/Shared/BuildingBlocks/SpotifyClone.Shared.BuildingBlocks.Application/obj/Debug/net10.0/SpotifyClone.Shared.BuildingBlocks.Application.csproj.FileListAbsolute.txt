@@ -1,0 +1,15 @@
+/src/src/Shared/BuildingBlocks/SpotifyClone.Shared.BuildingBlocks.Application/bin/Debug/net10.0/SpotifyClone.Shared.BuildingBlocks.Application.deps.json
+/src/src/Shared/BuildingBlocks/SpotifyClone.Shared.BuildingBlocks.Application/bin/Debug/net10.0/SpotifyClone.Shared.BuildingBlocks.Application.dll
+/src/src/Shared/BuildingBlocks/SpotifyClone.Shared.BuildingBlocks.Application/bin/Debug/net10.0/SpotifyClone.Shared.BuildingBlocks.Application.pdb
+/src/src/Shared/BuildingBlocks/SpotifyClone.Shared.BuildingBlocks.Application/bin/Debug/net10.0/SpotifyClone.Shared.BuildingBlocks.Domain.dll
+/src/src/Shared/BuildingBlocks/SpotifyClone.Shared.BuildingBlocks.Application/bin/Debug/net10.0/SpotifyClone.Shared.BuildingBlocks.Domain.pdb
+/src/src/Shared/BuildingBlocks/SpotifyClone.Shared.BuildingBlocks.Application/obj/Debug/net10.0/SpotifyClone.Shared.BuildingBlocks.Application.csproj.AssemblyReference.cache
+/src/src/Shared/BuildingBlocks/SpotifyClone.Shared.BuildingBlocks.Application/obj/Debug/net10.0/SpotifyClone.Shared.BuildingBlocks.Application.GeneratedMSBuildEditorConfig.editorconfig
+/src/src/Shared/BuildingBlocks/SpotifyClone.Shared.BuildingBlocks.Application/obj/Debug/net10.0/SpotifyClone.Shared.BuildingBlocks.Application.AssemblyInfoInputs.cache
+/src/src/Shared/BuildingBlocks/SpotifyClone.Shared.BuildingBlocks.Application/obj/Debug/net10.0/SpotifyClone.Shared.BuildingBlocks.Application.AssemblyInfo.cs
+/src/src/Shared/BuildingBlocks/SpotifyClone.Shared.BuildingBlocks.Application/obj/Debug/net10.0/SpotifyClone.Shared.BuildingBlocks.Application.csproj.CoreCompileInputs.cache
+/src/src/Shared/BuildingBlocks/SpotifyClone.Shared.BuildingBlocks.Application/obj/Debug/net10.0/SpotifyC.ADB487E5.Up2Date
+/src/src/Shared/BuildingBlocks/SpotifyClone.Shared.BuildingBlocks.Application/obj/Debug/net10.0/SpotifyClone.Shared.BuildingBlocks.Application.dll
+/src/src/Shared/BuildingBlocks/SpotifyClone.Shared.BuildingBlocks.Application/obj/Debug/net10.0/refint/SpotifyClone.Shared.BuildingBlocks.Application.dll
+/src/src/Shared/BuildingBlocks/SpotifyClone.Shared.BuildingBlocks.Application/obj/Debug/net10.0/SpotifyClone.Shared.BuildingBlocks.Application.pdb
+/src/src/Shared/BuildingBlocks/SpotifyClone.Shared.BuildingBlocks.Application/obj/Debug/net10.0/ref/SpotifyClone.Shared.BuildingBlocks.Application.dll

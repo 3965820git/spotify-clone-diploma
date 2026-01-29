@@ -1,0 +1,18 @@
+# Данные докера (базы, сертификаты)
+postgres_data/
+minio_data/
+portainer_data/
+npm-data/
+npm-letsencrypt/
+grafana_data/
+
+# Временные файлы
+.env
+**/.DS_Store
+
+# Зависимости (они скачаются при сборке)
+frontend/node_modules
+frontend/.next
+backend/bin
+backend/obj
+meili_data/

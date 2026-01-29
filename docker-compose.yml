@@ -1,0 +1,235 @@
+version: '3.8'
+
+services:
+  # ==========================================
+  # 1. УПРАВЛЕНИЕ (Management)
+  # ==========================================
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: spotify_portainer
+    restart: always
+    ports:
+      - "8000:8000"
+      - "9000:9000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    networks:
+      - public_net
+      - monitor_net
+
+  # ==========================================
+  # 2. ИНФРАСТРУКТУРА (Infrastructure)
+  # ==========================================
+   
+  # Reverse Proxy (Входная дверь)
+  spotify_nginx:
+    image: jc21/nginx-proxy-manager:2.10.4
+    container_name: spotify_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "81:81"
+      - "443:443"
+    volumes:
+      - ./npm-data:/data
+      - ./npm-letsencrypt:/etc/letsencrypt
+    networks:
+      - public_net
+      - data_net
+
+  # База данных
+  db:
+    image: postgres:16-alpine
+    container_name: spotify_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: spotify_user
+      POSTGRES_PASSWORD: spotify_password
+      POSTGRES_DB: spotify_main_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - data_net
+
+  # Кэш
+  redis:
+    image: redis:alpine
+    container_name: spotify_cache
+    restart: unless-stopped
+    networks:
+      - data_net
+
+  # --- Object Storage (MinIO S3) ---
+  minio:
+    image: minio/minio:RELEASE.2024-01-18T22-51-28Z
+    container_name: spotify_minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: SuperSecretPassword123
+    ports:
+      - "9002:9000"
+      - "9003:9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - public_net
+      - data_net
+
+  # --- Робот для создания бакетов ---
+  createbuckets:
+    image: minio/mc
+    depends_on:
+      - minio
+    networks:
+      - data_net
+    entrypoint: >
+      /bin/sh -c "
+      echo 'Ждем запуска MinIO...';
+      sleep 10;
+      /usr/bin/mc alias set myminio http://minio:9000 admin SuperSecretPassword123;
+      /usr/bin/mc mb --ignore-existing myminio/music-storage;
+      /usr/bin/mc anonymous set download myminio/music-storage;
+      echo 'Бакет music-storage готов!';
+      exit 0;
+      "
+
+  # ==========================================
+  # 3. ПРИЛОЖЕНИЕ (Application)
+  # ==========================================
+
+  # --- НОВОЕ: Фронтенд (Next.js) ---
+  frontend:
+    build:
+      context: ./frontend       # Путь к папке с фронтендом
+      dockerfile: Dockerfile    # Имя файла, который ты создал
+      args:
+        # ВАЖНО: Подменяем localhost на внешний IP сервера и порт бэкенда
+        NEXT_PUBLIC_API_BASE: "http://35.181.134.108:5001"
+    container_name: spotify_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"             # Фронтенд будет доступен по порту 3000
+    networks:
+      - public_net
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: src/Apps/SpotifyClone.Api/Dockerfile
+    container_name: spotify_backend
+    restart: unless-stopped
+    ports:
+      - "5001:8080"
+    environment:
+      # Настройки подключения к БД
+      - ConnectionStrings__MainDb=Host=db;Port=5432;Database=spotify_main_db;Username=spotify_user;Password=spotify_password
+      
+      # Режим разработки
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      
+      # Секретный ключ
+      - Jwt__SecretKey=SuperSecretKeyForDiplomaProject2026!123
+      - Jwt__Issuer=SpotifyClone
+      - Jwt__Audience=SpotifyClone
+      - Jwt__ExpiryInMinutes=120
+    depends_on:
+      - db
+      - redis
+    networks:
+      - data_net
+      - public_net
+
+  # Утилита для миграций
+  migrator:
+    image: mcr.microsoft.com/dotnet/sdk:8.0 # Поправил на 8.0 (LTS), 10.0 еще не вышел официально
+    container_name: spotify_migrator
+    working_dir: /src/src/Apps/SpotifyClone.Api
+    volumes:
+      - ./backend:/src
+    command: >
+      bash -c "dotnet tool install --global dotnet-ef &&
+      dotnet restore &&
+      dotnet build /p:TreatWarningsAsErrors=false &&
+      /root/.dotnet/tools/dotnet-ef database update --context AccountsAppDbContext --no-build --connection 'Host=db;Port=5432;Database=spotify_main_db;Username=spotify_user;Password=spotify_password' &&
+      /root/.dotnet/tools/dotnet-ef database update --context IdentityAppDbContext --no-build --connection 'Host=db;Port=5432;Database=spotify_main_db;Username=spotify_user;Password=spotify_password' &&
+      echo 'Migration done. Sleeping...' && sleep infinity"
+    depends_on:
+      - db
+    networks:
+      - data_net
+      - public_net
+
+  # ==========================================
+  # 4. МОНИТОРИНГ (Monitoring Stack)
+  # ==========================================
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: spotify_prometheus
+    restart: unless-stopped
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    ports:
+      - "9090:9090"
+    networks:
+      - monitor_net
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: spotify_grafana
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    networks:
+      - monitor_net
+
+  node_exporter:
+    image: prom/node-exporter:latest
+    container_name: spotify_node_exporter
+    restart: unless-stopped
+    networks:
+      - monitor_net
+
+  loki:
+    image: grafana/loki:2.9.3
+    container_name: spotify_loki
+    restart: unless-stopped
+    networks:
+      - monitor_net
+
+  promtail:
+    image: grafana/promtail:latest
+    container_name: spotify_promtail
+    restart: unless-stopped
+    volumes:
+      - /var/log:/var/log
+      - ./promtail-config.yml:/etc/promtail/config.yml
+    networks:
+      - monitor_net
+
+# ==========================================
+# СЕТИ И ТОМА (Networks & Volumes)
+# ==========================================
+networks:
+  public_net:
+    driver: bridge
+  data_net:
+    driver: bridge
+    internal: true
+  monitor_net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  npm-data:
+  npm-letsencrypt:
+  portainer_data:
+  minio_data:
