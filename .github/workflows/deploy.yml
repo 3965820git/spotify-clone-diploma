@@ -1,22 +1,28 @@
-script: |
-            # 1. Заходим в папку
+name: Deploy to AWS
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          script: |
+            # 1. Заходим в папку на сервере
             cd /home/ubuntu/spotify-diploma
             
-            # --- НОВАЯ ЧАСТЬ: Авто-создание .env файла ---
-            # Мы удаляем старый .env и пишем новый из секретов GitHub
-            # Это гарантирует, что на сервере всегда актуальные пароли
-            rm -f .env
-            echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env
-            echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
-            echo "MINIO_root_PASSWORD=${{ secrets.MINIO_ROOT_PASSWORD }}" >> .env
-            # (Добавь сюда остальные переменные, если они есть в Secrets)
-            # ---------------------------------------------
-
-            # 2. Скачиваем код
+            # 2. Скачиваем обновления
             git pull origin main
             
-            # 3. Запускаем
+            # 3. Перезапускаем только то, что изменилось
             docker compose up -d --build --remove-orphans
-            
-            # 4. Чистим мусор (удаляем старые ненужные образы, чтобы не забить диск)
-            docker image prune -f
