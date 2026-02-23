@@ -21,7 +21,7 @@ services:
   # ==========================================
   # 2. ИНФРАСТРУКТУРА (Infrastructure)
   # ==========================================
-    
+   
   # Reverse Proxy (Входная дверь)
   spotify_nginx:
     image: jc21/nginx-proxy-manager:latest
@@ -100,19 +100,19 @@ services:
   # 3. ПРИЛОЖЕНИЕ (Application)
   # ==========================================
 
-  # Фронтенд (Временно отключен, так как файлов нет в этой ветке)
-  # frontend:
-  #   build:
-  #     context: .
-  #     dockerfile: frontend/Dockerfile
-  #     args:
-  #       NEXT_PUBLIC_API_BASE: "http://35.181.134.108:5001"
-  #   container_name: spotify_frontend
-  #   restart: unless-stopped
-  #   ports:
-  #     - "3000:3000"
-  #   networks:
-  #     - public_net
+  # Фронтенд (Next.js интерфейс)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE: "https://spotify-diploma-2026.duckdns.org"
+    container_name: spotify_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    networks:
+      - public_net
 
   # Бэкенд (API)
   backend:
@@ -126,7 +126,7 @@ services:
     environment:
       # Подключение к БД
       - ConnectionStrings__MainDb=Host=db;Port=5432;Database=spotify_main_db;Username=spotify_user;Password=spotify_password
-      # ВАЖНО: Подключение к Redis (исправлено)
+      # Подключение к Redis
       - ConnectionStrings__Redis=redis:6379,abortConnect=false
       # Настройки среды
       - ASPNETCORE_ENVIRONMENT=Development
@@ -211,10 +211,11 @@ services:
     volumes:
       - ./loki/promtail-config.yaml:/etc/promtail/config.yml
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro # Пробрасываем сокет
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     command: -config.file=/etc/promtail/config.yml
     networks:
       - monitor_net
+
 # ==========================================
 # СЕТИ И ТОМА
 # ==========================================
