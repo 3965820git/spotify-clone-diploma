@@ -1,0 +1,6 @@
+# Ignore infrastructure data folders
+npm-letsencrypt/
+data/
+.git/
+postgres_data/
+redis_data/
