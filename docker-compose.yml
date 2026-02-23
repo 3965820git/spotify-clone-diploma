@@ -117,7 +117,7 @@ services:
   # Бэкенд (API)
   backend:
     build:
-      context: .
+      context: ./backend
       dockerfile: src/Apps/SpotifyClone.Api/Dockerfile
     container_name: spotify_backend
     restart: unless-stopped
