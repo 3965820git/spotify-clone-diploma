@@ -5,6 +5,12 @@
 
 #### Static code analysis rule customizations
 
+# CA1310: Specify StringComparison for correctness
+dotnet_diagnostic.CA1310.severity = suggestion
+
+# S3011: Reflection should not be used to increase accessibility of classes, methods, or fields
+dotnet_diagnostic.S3011.severity = suggestion
+
 # S3358: Ternary operators should not be nested
 dotnet_diagnostic.S3358.severity = suggestion
 

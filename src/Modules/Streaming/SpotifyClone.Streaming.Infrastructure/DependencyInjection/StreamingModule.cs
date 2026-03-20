@@ -17,6 +17,7 @@ using SpotifyClone.Streaming.Application.Errors;
 using SpotifyClone.Streaming.Application.Jobs;
 using SpotifyClone.Streaming.Domain.Aggregates.AudioAssets;
 using SpotifyClone.Streaming.Domain.Aggregates.ImageAssets;
+using SpotifyClone.Streaming.Domain.Aggregates.PlaybackSessions;
 using SpotifyClone.Streaming.Infrastructure.Media;
 using SpotifyClone.Streaming.Infrastructure.Persistence;
 using SpotifyClone.Streaming.Infrastructure.Persistence.Database;
@@ -59,6 +60,7 @@ public static class StreamingModule
         services.AddScoped<IStreamingUnitOfWork, StreamingEfCoreUnitOfWork>();
         services.AddScoped<IAudioAssetRepository, AudioAssetEfCoreRepository>();
         services.AddScoped<IImageAssetRepository, ImageAssetEfCoreRepository>();
+        services.AddScoped<IPlaybackSessionRepository, PlaybackSessionRedisRepository>();
         services.AddScoped<IOutboxRepository, OutboxEfCoreRepository>();
         services.AddScoped<IDomainExceptionMapper, StreamingDomainExceptionMapper>();
 

@@ -204,19 +204,19 @@ Additional (maybe will be added in the future):
     - Value: Guid
 - UserId: UserId (Value Object - [SharedKernel](#shared-kernel))
 - TrackId: TrackId (Value Object - [SharedKernel](#shared-kernel))
-- StartedAt: DateTime
-- EndedAt: DateTime?
+- DeviceId: DeviceId (Value Object):
+    - Value: Guid
+- Context: PlaybackContext (Value Object):
+    - ExternalId: Guid?
+    - Type: String
 - CurrentPositionMs: Integer
-- IsPaused: Boolean
-- ShuffleMode: Boolean (in future - Enumeration)
+- IsPlaying: Boolean
+- Shuffle: Boolean
 - RepeatMode: PlaybackRepeatMode (Enumeration):
-    - RepeatOff
-    - RepeatAll
-    - RepeatOne
-- DeviceType: PlaybackDeviceType (Enumeration):
-    - Web
-    - Desktop
-    - Mobile
+    - Off,
+    - All,
+    - Track
+- UpdatedAtUtc: DateTimeOffset
 
 ### PlaybackHistoryEntry
 
@@ -224,15 +224,11 @@ Additional (maybe will be added in the future):
     - Value: Guid
 - UserId: UserId (Value Object - [SharedKernel](#shared-kernel))
 - TrackId: TrackId (Value Object - [SharedKernel](#shared-kernel))
+- Context: PlaybackContext (Value Object):
+    - ExternalId: Guid?
+    - Type: String
 - PlayedAt: DateTime
-- PlayedSeconds: uint
-- Completed: Boolean
-
-### LikedTrack
-
-- UserId: UserId (Value Object - [SharedKernel](#shared-kernel))
-- TrackId: TrackId (Value Object - [SharedKernel](#shared-kernel))
-- LikedAt: DateTime
+- PlayedDurationMs: Integer
 
 ## Search BC
 
