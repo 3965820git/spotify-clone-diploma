@@ -27,9 +27,23 @@ public sealed class PlaybackSession
         PlaybackContext context,
         DateTimeOffset nowUtc,
         int? positionMs)
-        => new PlaybackSession(
+    {
+        ArgumentNullException.ThrowIfNull(id);
+        ArgumentNullException.ThrowIfNull(userId);
+        ArgumentNullException.ThrowIfNull(trackId);
+        ArgumentNullException.ThrowIfNull(deviceId);
+        ArgumentNullException.ThrowIfNull(context);
+
+        if (positionMs is not null && positionMs < 0)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(positionMs), "Playback position must be a positive value.");
+        }
+
+        return new PlaybackSession(
             id, userId, trackId, deviceId, context, positionMs ?? 0, true, false, PlaybackRepeatMode.Off,
             nowUtc.ToUniversalTime());
+    }
 
     public void StartNewPlayback(
         TrackId trackId,
@@ -38,6 +52,16 @@ public sealed class PlaybackSession
         DateTimeOffset nowUtc,
         int? positionMs)
     {
+        ArgumentNullException.ThrowIfNull(trackId);
+        ArgumentNullException.ThrowIfNull(deviceId);
+        ArgumentNullException.ThrowIfNull(context);
+
+        if (positionMs is not null && positionMs < 0)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(positionMs), "Playback position must be a positive value.");
+        }
+
         TrackId = trackId;
         DeviceId = deviceId;
         Context = context;
@@ -46,19 +70,10 @@ public sealed class PlaybackSession
         UpdatedAtUtc = nowUtc.ToUniversalTime();
     }
 
-    public void TransferTo(DeviceId deviceId)
+    public void Resume(DeviceId deviceId)
     {
-        if (DeviceId == deviceId)
-        {
-            return;
-        }
+        TryTransferTo(deviceId);
 
-        DeviceId = deviceId;
-        UpdatedAtUtc = DateTimeOffset.UtcNow.ToUniversalTime();
-    }
-
-    public void Resume()
-    {
         if (IsPlaying)
         {
             return;
@@ -68,14 +83,43 @@ public sealed class PlaybackSession
         UpdatedAtUtc = DateTimeOffset.UtcNow.ToUniversalTime();
     }
 
-    public void Pause()
+    public void Pause(DeviceId deviceId)
     {
+        TryTransferTo(deviceId);
+
         if (!IsPlaying)
         {
             return;
         }
 
         IsPlaying = false;
+        UpdatedAtUtc = DateTimeOffset.UtcNow.ToUniversalTime();
+    }
+
+    public void SyncPosition(int positionMs, DeviceId deviceId)
+    {
+        if (DeviceId != deviceId)
+        {
+            return;
+        }
+
+        CurrentPositionMs = positionMs;
+    }
+
+    public void SeekTo(int positionMs, DeviceId deviceId)
+    {
+        TryTransferTo(deviceId);
+        CurrentPositionMs = positionMs;
+    }
+
+    private void TryTransferTo(DeviceId deviceId)
+    {
+        if (DeviceId == deviceId)
+        {
+            return;
+        }
+
+        DeviceId = deviceId;
         UpdatedAtUtc = DateTimeOffset.UtcNow.ToUniversalTime();
     }
 

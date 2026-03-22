@@ -33,8 +33,7 @@ internal sealed class ResumePlaybackCommandHandler(
             return Result.Failure<ResumePlaybackCommandResult>(PlaybackErrors.NotFound);
         }
 
-        session.TransferTo(DeviceId.From(request.DeviceId));
-        session.Resume();
+        session.Resume(DeviceId.From(request.DeviceId));
 
         await _unit.PlaybackSessions.SaveAsync(session, cancellationToken);
 

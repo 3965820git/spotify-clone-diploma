@@ -3,12 +3,15 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SpotifyClone.Api.Contracts.v1.Streaming.Player.ManipulatePlayback;
 using SpotifyClone.Api.Contracts.v1.Streaming.Player.StartPlayback;
+using SpotifyClone.Api.Contracts.v1.Streaming.Player.UpdatePosition;
 using SpotifyClone.Api.Mappers;
 using SpotifyClone.Shared.BuildingBlocks.Application.Auth;
 using SpotifyClone.Shared.BuildingBlocks.Application.Results;
 using SpotifyClone.Streaming.Application.Features.Playback.Commands.Pause;
 using SpotifyClone.Streaming.Application.Features.Playback.Commands.Resume;
+using SpotifyClone.Streaming.Application.Features.Playback.Commands.SeekPosition;
 using SpotifyClone.Streaming.Application.Features.Playback.Commands.Start;
+using SpotifyClone.Streaming.Application.Features.Playback.Commands.SyncPosition;
 using SpotifyClone.Streaming.Application.Features.Playback.Queries;
 using SpotifyClone.Streaming.Application.Features.Playback.Queries.GetDetails;
 
@@ -51,62 +54,6 @@ public sealed class CurrentUserController(IMediator mediator)
         return Ok(new StartPlaybackResponse(result.Value.Id));
     }
 
-    [EndpointSummary("Resume Playback")]
-    [EndpointDescription("With the current User, resumes the playback and updates the Playback session.")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    [Authorize(Roles = UserRoles.Listener)]
-    [HttpPost("resume")]
-    public async Task<ActionResult> Resume(
-        [FromBody] ManipulatePlaybackRequest request,
-        CancellationToken cancellationToken = default)
-    {
-        Result<ResumePlaybackCommandResult> result = await Mediator.Send(
-            new ResumePlaybackCommand(request.DeviceId),
-            cancellationToken);
-        if (result.IsFailure)
-        {
-            ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
-                result,
-                HttpContext);
-
-            return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
-        }
-
-        return Ok();
-    }
-
-    [EndpointSummary("Pause Playback")]
-    [EndpointDescription("With the current User, pauses the playback and updates the Playback session.")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    [Authorize(Roles = UserRoles.Listener)]
-    [HttpPost("pause")]
-    public async Task<ActionResult> Pause(
-        [FromBody] ManipulatePlaybackRequest request,
-        CancellationToken cancellationToken = default)
-    {
-        Result<PausePlaybackCommandResult> result = await Mediator.Send(
-            new PausePlaybackCommand(request.DeviceId),
-            cancellationToken);
-        if (result.IsFailure)
-        {
-            ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
-                result,
-                HttpContext);
-
-            return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
-        }
-
-        return Ok();
-    }
-
     [EndpointSummary("Get Playback Session details")]
     [EndpointDescription("Get current User Playback Session's details.")]
     [ProducesResponseType(typeof(PlaybackSessionDetails), StatusCodes.Status200OK)]
@@ -132,5 +79,121 @@ public sealed class CurrentUserController(IMediator mediator)
         }
 
         return Ok(result.Value);
+    }
+
+    [EndpointSummary("Resume Playback")]
+    [EndpointDescription("With the current User, resumes the playback and updates the Playback session.")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [Authorize(Roles = UserRoles.Listener)]
+    [HttpPost("resume")]
+    public async Task<ActionResult> Resume(
+        [FromBody] ManipulatePlaybackRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        Result<ResumePlaybackCommandResult> result = await Mediator.Send(
+            new ResumePlaybackCommand(request.DeviceId),
+            cancellationToken);
+        if (result.IsFailure)
+        {
+            ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
+                result,
+                HttpContext);
+
+            return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
+        }
+
+        return NoContent();
+    }
+
+    [EndpointSummary("Pause Playback")]
+    [EndpointDescription("With the current User, pauses the playback and updates the Playback session.")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [Authorize(Roles = UserRoles.Listener)]
+    [HttpPost("pause")]
+    public async Task<ActionResult> Pause(
+        [FromBody] ManipulatePlaybackRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        Result<PausePlaybackCommandResult> result = await Mediator.Send(
+            new PausePlaybackCommand(request.DeviceId),
+            cancellationToken);
+        if (result.IsFailure)
+        {
+            ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
+                result,
+                HttpContext);
+
+            return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
+        }
+
+        return NoContent();
+    }
+
+    [EndpointSummary("Sync Playback position")]
+    [EndpointDescription("Syncronize current User Playback Session's position (in milliseconds).")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [Authorize(Roles = UserRoles.Listener)]
+    [HttpPatch("sync")]
+    public async Task<ActionResult> SyncPosition(
+        [FromBody] UpdatePlaybackPositionRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        Result<SyncPlaybackPositionCommandResult> result = await Mediator.Send(
+            new SyncPlaybackPositionCommand(
+                request.DeviceId,
+                request.PositionMs),
+            cancellationToken);
+        if (result.IsFailure)
+        {
+            ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
+                result,
+                HttpContext);
+
+            return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
+        }
+
+        return NoContent();
+    }
+
+    [EndpointSummary("Seek Playback position")]
+    [EndpointDescription("Seek current User Playback Session's position (in milliseconds).")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [Authorize(Roles = UserRoles.Listener)]
+    [HttpPatch("seek")]
+    public async Task<ActionResult> SeekPosition(
+        [FromBody] UpdatePlaybackPositionRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        Result<SeekPlaybackPositionCommandResult> result = await Mediator.Send(
+            new SeekPlaybackPositionCommand(
+                request.DeviceId,
+                request.PositionMs),
+            cancellationToken);
+        if (result.IsFailure)
+        {
+            ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
+                result,
+                HttpContext);
+
+            return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
+        }
+
+        return NoContent();
     }
 }
