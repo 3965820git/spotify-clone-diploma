@@ -11,4 +11,5 @@ public sealed record PlaybackSessionSnapshot(
     bool IsPlaying,
     bool Shuffle,
     int RepeatMode,
-    DateTimeOffset UpdatedAtUtc);
+    DateTimeOffset UpdatedAtUtc,
+    IEnumerable<Guid> Queue);

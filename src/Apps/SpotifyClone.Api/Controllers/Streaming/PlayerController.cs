@@ -10,6 +10,7 @@ using SpotifyClone.Shared.BuildingBlocks.Application.Results;
 using SpotifyClone.Streaming.Application.Features.Playback.Commands.Pause;
 using SpotifyClone.Streaming.Application.Features.Playback.Commands.Resume;
 using SpotifyClone.Streaming.Application.Features.Playback.Commands.SeekPosition;
+using SpotifyClone.Streaming.Application.Features.Playback.Commands.SkipToNext;
 using SpotifyClone.Streaming.Application.Features.Playback.Commands.Start;
 using SpotifyClone.Streaming.Application.Features.Playback.Commands.SyncPosition;
 using SpotifyClone.Streaming.Application.Features.Playback.Queries;
@@ -184,6 +185,34 @@ public sealed class CurrentUserController(IMediator mediator)
             new SeekPlaybackPositionCommand(
                 request.DeviceId,
                 request.PositionMs),
+            cancellationToken);
+        if (result.IsFailure)
+        {
+            ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
+                result,
+                HttpContext);
+
+            return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
+        }
+
+        return NoContent();
+    }
+
+    [EndpointSummary("Skip to next Track")]
+    [EndpointDescription("Skips the Playback to the next Track in the Queue.")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [Authorize(Roles = UserRoles.Listener)]
+    [HttpPost("next")]
+    public async Task<ActionResult> SkipToNext(
+        [FromBody] ManipulatePlaybackRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        Result<SkipToNextTrackCommandResult> result = await Mediator.Send(
+            new SkipToNextTrackCommand(request.DeviceId),
             cancellationToken);
         if (result.IsFailure)
         {

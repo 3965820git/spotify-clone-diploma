@@ -1,5 +1,6 @@
 ﻿using SpotifyClone.Shared.BuildingBlocks.Domain.Primitives;
 using SpotifyClone.Shared.Kernel.IDs;
+using SpotifyClone.Streaming.Domain.Aggregates.PlaybackSessions.Entities;
 using SpotifyClone.Streaming.Domain.Aggregates.PlaybackSessions.Enums;
 using SpotifyClone.Streaming.Domain.Aggregates.PlaybackSessions.ValueObjects;
 using SpotifyClone.Streaming.Domain.ValueObjects;
@@ -18,6 +19,7 @@ public sealed class PlaybackSession
     public bool Shuffle { get; private set; }
     public PlaybackRepeatMode RepeatMode { get; private set; }
     public DateTimeOffset UpdatedAtUtc { get; private set; }
+    public PlaybackQueue Queue { get; private set; } = null!;
 
     public static PlaybackSession Create(
         PlaybackSessionId id,
@@ -42,7 +44,7 @@ public sealed class PlaybackSession
 
         return new PlaybackSession(
             id, userId, trackId, deviceId, context, positionMs ?? 0, true, false, PlaybackRepeatMode.Off,
-            nowUtc.ToUniversalTime());
+            nowUtc.ToUniversalTime(), new(PlaybackQueueId.New(), []));
     }
 
     public void StartNewPlayback(
@@ -112,6 +114,42 @@ public sealed class PlaybackSession
         CurrentPositionMs = positionMs;
     }
 
+    public void SkipToNext(DeviceId deviceId)
+    {
+        if (DeviceId != deviceId)
+        {
+            return;
+        }
+
+        TrackId? nextTrack = Queue.PopNext();
+
+        if (nextTrack != null)
+        {
+            SkipTo(nextTrack, deviceId);
+        }
+        else
+        {
+            // Черга порожня. 
+            // Тут ти або зупиняєш відтворення, або (в ідеалі) 
+            // звертаєшся до Context (альбому), щоб взяти наступний трек звідти.
+            IsPlaying = false;
+            CurrentPositionMs = 0;
+            UpdatedAtUtc = DateTimeOffset.UtcNow;
+        }
+    }
+
+    internal void SkipTo(TrackId trackId, DeviceId deviceId)
+    {
+        if (DeviceId != deviceId)
+        {
+            return;
+        }
+
+        TrackId = trackId;
+        CurrentPositionMs = 0;
+        UpdatedAtUtc = DateTimeOffset.UtcNow;
+    }
+
     private void TryTransferTo(DeviceId deviceId)
     {
         if (DeviceId == deviceId)
@@ -134,7 +172,8 @@ public sealed class PlaybackSession
         IsPlaying,
         Shuffle,
         (int)RepeatMode,
-        UpdatedAtUtc
+        UpdatedAtUtc,
+        Queue.Tracks.Select(t => t.Value)
     );
 
     public static PlaybackSession FromSnapshot(PlaybackSessionSnapshot snapshot)
@@ -148,12 +187,13 @@ public sealed class PlaybackSession
             snapshot.IsPlaying,
             snapshot.Shuffle,
             (PlaybackRepeatMode)snapshot.RepeatMode,
-            snapshot.UpdatedAtUtc);
+            snapshot.UpdatedAtUtc,
+            new PlaybackQueue(PlaybackQueueId.New(), snapshot.Queue.Select(t => TrackId.From(t))));
 
     private PlaybackSession(
         PlaybackSessionId id, UserId userId, TrackId trackId, DeviceId deviceId, PlaybackContext context,
         int currentPositionMs, bool isPlaying, bool shuffle, PlaybackRepeatMode repeatMode,
-        DateTimeOffset updatedAtUtc)
+        DateTimeOffset updatedAtUtc, PlaybackQueue queue)
         : base(id)
     {
         UserId = userId;
@@ -165,6 +205,7 @@ public sealed class PlaybackSession
         Shuffle = shuffle;
         RepeatMode = repeatMode;
         UpdatedAtUtc = updatedAtUtc;
+        Queue = queue;
     }
 
     private PlaybackSession()
