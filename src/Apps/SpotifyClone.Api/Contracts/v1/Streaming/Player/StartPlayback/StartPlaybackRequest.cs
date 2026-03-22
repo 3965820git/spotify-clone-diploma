@@ -1,4 +1,4 @@
-﻿namespace SpotifyClone.Api.Contracts.v1.CurrentUser.StartPlayback;
+﻿namespace SpotifyClone.Api.Contracts.v1.Streaming.Player.StartPlayback;
 
 public sealed record StartPlaybackRequest
 {

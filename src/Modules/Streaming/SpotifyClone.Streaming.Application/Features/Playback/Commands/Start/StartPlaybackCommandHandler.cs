@@ -4,27 +4,28 @@ using SpotifyClone.Shared.BuildingBlocks.Application.Results;
 using SpotifyClone.Shared.Kernel.IDs;
 using SpotifyClone.Streaming.Application.Abstractions;
 using SpotifyClone.Streaming.Application.Errors;
+using SpotifyClone.Streaming.Application.Features.Playback.Queries;
 using SpotifyClone.Streaming.Domain.Aggregates.PlaybackSessions;
 using SpotifyClone.Streaming.Domain.Aggregates.PlaybackSessions.ValueObjects;
 using SpotifyClone.Streaming.Domain.ValueObjects;
 
-namespace SpotifyClone.Streaming.Application.Features.Playback.Commands.StartPlayback;
+namespace SpotifyClone.Streaming.Application.Features.Playback.Commands.Start;
 
 internal sealed class StartPlaybackCommandHandler(
     IStreamingUnitOfWork unit,
     ICurrentUser currentUser)
-    : ICommandHandler<StartPlaybackCommand, StartPlaybackCommandResult>
+    : ICommandHandler<StartPlaybackCommand, PlaybackSessionDetails>
 {
     private readonly IStreamingUnitOfWork _unit = unit;
     private readonly ICurrentUser _currentUser = currentUser;
 
-    public async Task<Result<StartPlaybackCommandResult>> Handle(
+    public async Task<Result<PlaybackSessionDetails>> Handle(
         StartPlaybackCommand request,
         CancellationToken cancellationToken)
     {
         if (!_currentUser.IsAuthenticated)
         {
-            return Result.Failure<StartPlaybackCommandResult>(PlaybackErrors.NotLoggedIn);
+            return Result.Failure<PlaybackSessionDetails>(PlaybackErrors.NotLoggedIn);
         }
 
         var userId = UserId.From(_currentUser.Id);
@@ -46,6 +47,17 @@ internal sealed class StartPlaybackCommandHandler(
 
         await _unit.PlaybackSessions.SaveAsync(session, cancellationToken);
 
-        return new StartPlaybackCommandResult(session.Id.Value);
+        return new PlaybackSessionDetails(
+            session.Id.Value,
+            session.UserId.Value,
+            session.TrackId.Value,
+            session.DeviceId.Value,
+            session.Context.Type,
+            session.Context.ExternalId,
+            session.CurrentPositionMs,
+            session.IsPlaying,
+            session.Shuffle,
+            session.RepeatMode.ToString(),
+            session.UpdatedAtUtc);
     }
 }

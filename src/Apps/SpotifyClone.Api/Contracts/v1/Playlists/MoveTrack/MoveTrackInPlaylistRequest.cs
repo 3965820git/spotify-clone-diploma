@@ -1,4 +1,4 @@
-﻿namespace SpotifyClone.Api.Contracts.v1.Playlists.Playlists.MoveTrack;
+﻿namespace SpotifyClone.Api.Contracts.v1.Playlists.MoveTrack;
 
 public sealed record MoveTrackInPlaylistRequest
 {

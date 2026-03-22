@@ -1,4 +1,4 @@
-﻿namespace SpotifyClone.Api.Contracts.v1.Playlists.Playlists.AddCollaborator;
+﻿namespace SpotifyClone.Api.Contracts.v1.Playlists.AddCollaborator;
 
 public sealed record AddCollaboratorToPlaylistRequest
 {

@@ -1,4 +1,4 @@
-﻿namespace SpotifyClone.Api.Contracts.v1.Playlists.Playlists.AddTrack;
+﻿namespace SpotifyClone.Api.Contracts.v1.Playlists.AddTrack;
 
 public sealed record AddTrackToPlaylistRequest
 {

@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 
-namespace SpotifyClone.Streaming.Application.Features.Playback.Commands.StartPlayback;
+namespace SpotifyClone.Streaming.Application.Features.Playback.Commands.Start;
 
 public sealed class StartPlaybackCommandValidator
     : AbstractValidator<StartPlaybackCommand>

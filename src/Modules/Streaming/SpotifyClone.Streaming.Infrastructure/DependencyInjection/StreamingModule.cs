@@ -10,6 +10,7 @@ using SpotifyClone.Shared.BuildingBlocks.Application.Abstractions;
 using SpotifyClone.Shared.BuildingBlocks.Application.Abstractions.Mappers;
 using SpotifyClone.Streaming.Application;
 using SpotifyClone.Streaming.Application.Abstractions;
+using SpotifyClone.Streaming.Application.Abstractions.Data;
 using SpotifyClone.Streaming.Application.Abstractions.Repositories;
 using SpotifyClone.Streaming.Application.Abstractions.Services;
 using SpotifyClone.Streaming.Application.Behaviors;
@@ -21,6 +22,7 @@ using SpotifyClone.Streaming.Domain.Aggregates.PlaybackSessions;
 using SpotifyClone.Streaming.Infrastructure.Media;
 using SpotifyClone.Streaming.Infrastructure.Persistence;
 using SpotifyClone.Streaming.Infrastructure.Persistence.Database;
+using SpotifyClone.Streaming.Infrastructure.Persistence.Queries;
 using SpotifyClone.Streaming.Infrastructure.Persistence.Repositories;
 using SpotifyClone.Streaming.Infrastructure.Storage;
 
@@ -62,6 +64,7 @@ public static class StreamingModule
         services.AddScoped<IImageAssetRepository, ImageAssetEfCoreRepository>();
         services.AddScoped<IPlaybackSessionRepository, PlaybackSessionRedisRepository>();
         services.AddScoped<IOutboxRepository, OutboxEfCoreRepository>();
+        services.AddScoped<IPlaybackSessionReadService, PlaybackSessionJsonReadService>();
         services.AddScoped<IDomainExceptionMapper, StreamingDomainExceptionMapper>();
 
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(StreamingTransactionalPipelineBehavior<,>));

@@ -1,6 +1,6 @@
-﻿namespace SpotifyClone.Streaming.Domain.Aggregates.PlaybackSessions.ValueObjects;
+﻿namespace SpotifyClone.Streaming.Application.Features.Playback.Queries;
 
-public sealed record PlaybackSessionSnapshot(
+public sealed record PlaybackSessionDetails(
     Guid Id,
     Guid UserId,
     Guid TrackId,
@@ -10,5 +10,5 @@ public sealed record PlaybackSessionSnapshot(
     int CurrentPositionMs,
     bool IsPlaying,
     bool Shuffle,
-    int RepeatMode,
+    string RepeatMode,
     DateTimeOffset UpdatedAtUtc);

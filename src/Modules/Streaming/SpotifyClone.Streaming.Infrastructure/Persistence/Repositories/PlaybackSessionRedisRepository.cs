@@ -1,12 +1,8 @@
-﻿using System.Reflection;
-using System.Text.Json;
-using System.Text.Json.Serialization.Metadata;
+﻿using System.Text.Json;
 using Microsoft.Extensions.Caching.Distributed;
 using SpotifyClone.Shared.Kernel.IDs;
 using SpotifyClone.Streaming.Domain.Aggregates.PlaybackSessions;
 using SpotifyClone.Streaming.Domain.Aggregates.PlaybackSessions.ValueObjects;
-using SpotifyClone.Streaming.Domain.ValueObjects;
-using SpotifyClone.Streaming.Infrastructure.Persistence.Configurations.Converters;
 
 namespace SpotifyClone.Streaming.Infrastructure.Persistence.Repositories;
 

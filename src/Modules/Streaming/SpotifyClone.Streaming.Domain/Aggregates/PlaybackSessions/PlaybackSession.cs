@@ -46,6 +46,39 @@ public sealed class PlaybackSession
         UpdatedAtUtc = nowUtc.ToUniversalTime();
     }
 
+    public void TransferTo(DeviceId deviceId)
+    {
+        if (DeviceId == deviceId)
+        {
+            return;
+        }
+
+        DeviceId = deviceId;
+        UpdatedAtUtc = DateTimeOffset.UtcNow.ToUniversalTime();
+    }
+
+    public void Resume()
+    {
+        if (IsPlaying)
+        {
+            return;
+        }
+
+        IsPlaying = true;
+        UpdatedAtUtc = DateTimeOffset.UtcNow.ToUniversalTime();
+    }
+
+    public void Pause()
+    {
+        if (!IsPlaying)
+        {
+            return;
+        }
+
+        IsPlaying = false;
+        UpdatedAtUtc = DateTimeOffset.UtcNow.ToUniversalTime();
+    }
+
     public PlaybackSessionSnapshot ToSnapshot() => new(
         Id.Value,
         UserId.Value,

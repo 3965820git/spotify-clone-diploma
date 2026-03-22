@@ -1,4 +1,4 @@
-﻿namespace SpotifyClone.Api.Contracts.v1.Playlists.Playlists.EditDetails;
+﻿namespace SpotifyClone.Api.Contracts.v1.Playlists.EditDetails;
 
 public sealed record EditPlaylistDetailsRequest
 {

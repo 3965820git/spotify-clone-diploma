@@ -1,4 +1,4 @@
-﻿namespace SpotifyClone.Api.Contracts.v1.Playlists.Playlists.LinkNewCover;
+﻿namespace SpotifyClone.Api.Contracts.v1.Playlists.LinkNewCover;
 
 public sealed record LinkNewCoverToPlaylistRequest
 {
