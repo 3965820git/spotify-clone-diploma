@@ -15,6 +15,14 @@ public interface ITrackReadService
         TrackId id,
         CancellationToken cancellationToken = default);
 
+    Task<TrackSummary?> GetSummaryAsync(
+        TrackId id,
+        CancellationToken cancellationToken = default);
+
+    Task<IEnumerable<TrackSummary>> GetAllByIdsAsync(
+        IEnumerable<TrackId> ids,
+        CancellationToken cancellationToken = default);
+
     Task<IEnumerable<TrackSummary>> GetAllByGenreIdAsync(
         GenreId genreId,
         CancellationToken cancellationToken = default);

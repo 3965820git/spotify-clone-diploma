@@ -11,6 +11,14 @@ public interface IAlbumReadService
         AlbumId id,
         CancellationToken cancellationToken = default);
 
+    Task<AlbumSummary?> GetSummary(
+        AlbumId id,
+        CancellationToken cancellationToken = default);
+
+    Task<AlbumSummary?> GetSummaryByTrackId(
+        TrackId trackId,
+        CancellationToken cancellationToken = default);
+
     Task<AlbumDetails?> GetDetailsByTrackIdAsync(
         TrackId trackId,
         CancellationToken cancellationToken = default);

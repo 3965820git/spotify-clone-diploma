@@ -8,42 +8,45 @@ using SpotifyClone.Shared.BuildingBlocks.Application.Auth;
 using SpotifyClone.Shared.BuildingBlocks.Application.Results;
 using SpotifyClone.Shared.Kernel.IDs;
 
-namespace SpotifyClone.Catalog.Application.Features.Tracks.Queries.GetDetails;
+namespace SpotifyClone.Catalog.Application.Features.Tracks.Queries.GetAllByIds;
 
-internal sealed class GetTrackDetailsQueryHandler(
+internal sealed class GetAllTracksByIdsQueryHandler(
     ITrackReadService trackReadService,
     IArtistReadService artistReadService,
     ICurrentUser currentUser)
-    : IQueryHandler<GetTrackDetailsQuery, TrackDetails>
+    : IQueryHandler<GetAllTracksByIdsQuery, TrackList>
 {
     private readonly ITrackReadService _trackReadService = trackReadService;
     private readonly IArtistReadService _artistReadService = artistReadService;
     private readonly ICurrentUser _currentUser = currentUser;
 
-    public async Task<Result<TrackDetails>> Handle(
-        GetTrackDetailsQuery request,
+    public async Task<Result<TrackList>> Handle(
+        GetAllTracksByIdsQuery request,
         CancellationToken cancellationToken)
     {
-        TrackDetails? track = await _trackReadService.GetDetailsAsync(
-            TrackId.From(request.TrackId),
-            cancellationToken);
-        if (track is null)
+        IEnumerable<TrackSummary> tracks = await _trackReadService.GetAllByIdsAsync(
+            request.TrackIds.Select(id => TrackId.From(id)), cancellationToken);
+        if (tracks is null)
         {
-            return Result.Failure<TrackDetails>(TrackErrors.NotFound);
+            return Result.Failure<TrackList>(TrackErrors.NotFound);
         }
 
+        var artistIds = tracks
+            .SelectMany(t => t.MainArtists.Concat(t.FeaturedArtists))
+            .Distinct()
+            .Select(id => ArtistId.From(id))
+            .ToList();
+
         IEnumerable<ArtistSummary> artists = await _artistReadService.GetAllAsync(
-            [ ..track.MainArtists.Select(a => ArtistId.From(a.Id)),
-              ..track.FeaturedArtists.Select(a => ArtistId.From(a.Id)) ],
-            cancellationToken);
+            artistIds, cancellationToken);
 
         if (!_currentUser.IsAuthenticated &&
             !artists.Any(a => a.OwnerId == _currentUser.Id) &&
             _currentUser.IsInRole(UserRoles.Admin))
         {
-            return Result.Failure<TrackDetails>(TrackErrors.NotOwned);
+            return Result.Failure<TrackList>(TrackErrors.NotOwned);
         }
 
-        return track;
+        return new TrackList(tracks);
     }
 }

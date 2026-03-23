@@ -1,12 +1,16 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SpotifyClone.Api.Contracts.v1.Streaming.Player.ManipulatePlayback;
-using SpotifyClone.Api.Contracts.v1.Streaming.Player.StartPlayback;
-using SpotifyClone.Api.Contracts.v1.Streaming.Player.UpdatePosition;
+using SpotifyClone.Api.Contracts.v1.Streaming.Playback.GetQueue;
+using SpotifyClone.Api.Contracts.v1.Streaming.Playback.ManipulatePlayback;
+using SpotifyClone.Api.Contracts.v1.Streaming.Playback.StartPlayback;
+using SpotifyClone.Api.Contracts.v1.Streaming.Playback.UpdatePosition;
 using SpotifyClone.Api.Mappers;
 using SpotifyClone.Catalog.Application.Features.Albums.Queries;
 using SpotifyClone.Catalog.Application.Features.Albums.Queries.GetDetails;
+using SpotifyClone.Catalog.Application.Features.Tracks.Queries;
+using SpotifyClone.Catalog.Application.Features.Tracks.Queries.GetAllByIds;
+using SpotifyClone.Catalog.Application.Features.Tracks.Queries.GetSummary;
 using SpotifyClone.Playlists.Application.Features.Playlists.Queries;
 using SpotifyClone.Playlists.Application.Features.Playlists.Queries.GetDetails;
 using SpotifyClone.Shared.BuildingBlocks.Application.Auth;
@@ -21,12 +25,13 @@ using SpotifyClone.Streaming.Application.Features.Playback.Commands.Start;
 using SpotifyClone.Streaming.Application.Features.Playback.Commands.SyncPosition;
 using SpotifyClone.Streaming.Application.Features.Playback.Queries;
 using SpotifyClone.Streaming.Application.Features.Playback.Queries.GetDetails;
+using SpotifyClone.Streaming.Application.Features.Playback.Queries.GetQueue;
 using SpotifyClone.Streaming.Domain.ValueObjects;
 
 namespace SpotifyClone.Api.Controllers.Streaming;
 
-[Route("api/v1/me/player")]
-public sealed class CurrentUserController(IMediator mediator)
+[Route("api/v1/me/playback")]
+public sealed class PlaybackController(IMediator mediator)
     : ApiController(mediator)
 {
     [EndpointSummary("Start Playback")]
@@ -51,9 +56,7 @@ public sealed class CurrentUserController(IMediator mediator)
         }
 
         Result<IEnumerable<Guid>> tracksResult = await GetTracksByContextTypeAsync(
-            request.ContextType,
-            request.ContextExternalId!.Value,
-            cancellationToken);
+            request.ContextType, request.ContextExternalId!.Value, cancellationToken);
         if (tracksResult.IsFailure)
         {
             ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
@@ -82,7 +85,7 @@ public sealed class CurrentUserController(IMediator mediator)
     }
 
     [EndpointSummary("Get Playback Session details")]
-    [EndpointDescription("Get current User Playback Session's details.")]
+    [EndpointDescription("Get current User' Playback Session details.")]
     [ProducesResponseType(typeof(PlaybackSessionDetails), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -106,6 +109,56 @@ public sealed class CurrentUserController(IMediator mediator)
         }
 
         return Ok(result.Value);
+    }
+
+    [EndpointSummary("Get Playback Queue")]
+    [EndpointDescription("Get current User's Playback Queue.")]
+    [ProducesResponseType(typeof(GetPlaybackQueueResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [Authorize(Roles = UserRoles.Listener)]
+    [HttpGet("queue")]
+    public async Task<ActionResult<GetPlaybackQueueResponse>> GetQueue(
+        CancellationToken cancellationToken = default)
+    {
+        Result<PlaybackQueueDetails> queueResult = await Mediator.Send(
+            new GetPlaybackQueueQuery(),
+            cancellationToken);
+        if (queueResult.IsFailure)
+        {
+            ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
+                queueResult,
+                HttpContext);
+            return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
+        }
+
+        Result<TrackSummary> currentTrackResult = await Mediator.Send(
+            new GetTrackSummaryQuery(queueResult.Value.CurrentTrackId),
+            cancellationToken);
+        if (queueResult.IsFailure)
+        {
+            ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
+                currentTrackResult,
+                HttpContext);
+            return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
+        }
+
+        Result<TrackList> tracksInQueueResult = await Mediator.Send(
+            new GetAllTracksByIdsQuery(queueResult.Value.TracksInQueue),
+            cancellationToken);
+        if (tracksInQueueResult.IsFailure)
+        {
+            ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
+                tracksInQueueResult,
+                HttpContext);
+            return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
+        }
+
+        return Ok(new GetPlaybackQueueResponse(
+            currentTrackResult.Value,
+            tracksInQueueResult.Value.Tracks));
     }
 
     [EndpointSummary("Resume Playback")]

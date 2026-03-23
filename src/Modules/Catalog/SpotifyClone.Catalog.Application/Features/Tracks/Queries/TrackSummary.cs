@@ -8,4 +8,6 @@ public sealed record TrackSummary(
     bool ContainsExplicitContent,
     string Status,
     Guid? AudioFileId,
-    Guid? AlbumId);
+    Guid? AlbumId,
+    IEnumerable<Guid> MainArtists,
+    IEnumerable<Guid> FeaturedArtists);

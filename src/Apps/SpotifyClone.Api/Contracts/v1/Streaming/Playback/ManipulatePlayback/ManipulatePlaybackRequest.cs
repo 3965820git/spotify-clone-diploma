@@ -1,4 +1,4 @@
-﻿namespace SpotifyClone.Api.Contracts.v1.Streaming.Player.ManipulatePlayback;
+﻿namespace SpotifyClone.Api.Contracts.v1.Streaming.Playback.ManipulatePlayback;
 
 public sealed record ManipulatePlaybackRequest
 {

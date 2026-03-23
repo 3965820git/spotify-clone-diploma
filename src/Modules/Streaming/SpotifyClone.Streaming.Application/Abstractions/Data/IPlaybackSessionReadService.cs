@@ -8,4 +8,8 @@ public interface IPlaybackSessionReadService
     Task<PlaybackSessionDetails?> GetDetails(
         UserId userId,
         CancellationToken cancellationToken = default);
+
+    Task<IEnumerable<Guid>> GetQueue(
+        UserId userId,
+        CancellationToken cancellationToken = default);
 }

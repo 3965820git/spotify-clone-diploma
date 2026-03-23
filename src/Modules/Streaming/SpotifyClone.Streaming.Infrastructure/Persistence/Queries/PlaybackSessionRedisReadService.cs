@@ -8,15 +8,16 @@ using SpotifyClone.Streaming.Domain.Aggregates.PlaybackSessions.ValueObjects;
 
 namespace SpotifyClone.Streaming.Infrastructure.Persistence.Queries;
 
-internal sealed class PlaybackSessionJsonReadService
+internal sealed class PlaybackSessionRedisReadService
     : IPlaybackSessionReadService
 {
-    private const string KeyPrefix = "playback_session:";
+    private const string SessionKeyPrefix = "playback_session:";
+    private const string QueueKeyPrefix = "playback_queue:";
 
     private readonly JsonSerializerOptions _jsonOptions;
     private readonly IDistributedCache _cache;
 
-    public PlaybackSessionJsonReadService(IDistributedCache cache)
+    public PlaybackSessionRedisReadService(IDistributedCache cache)
     {
         _cache = cache;
 
@@ -31,9 +32,8 @@ internal sealed class PlaybackSessionJsonReadService
         UserId userId,
         CancellationToken cancellationToken = default)
     {
-        string key = GetKey(userId.Value);
+        string key = GetSessionKey(userId.Value);
         string? json = await _cache.GetStringAsync(key, cancellationToken);
-
         if (string.IsNullOrEmpty(json))
         {
             return null;
@@ -59,5 +59,20 @@ internal sealed class PlaybackSessionJsonReadService
             snapshot.UpdatedAtUtc);
     }
 
-    private static string GetKey(Guid userId) => $"{KeyPrefix}{userId}";
+    public async Task<IEnumerable<Guid>> GetQueue(
+        UserId userId,
+        CancellationToken cancellationToken = default)
+    {
+        string key = GetQueueKey(userId.Value);
+        string? json = await _cache.GetStringAsync(key, cancellationToken);
+        if (string.IsNullOrEmpty(json))
+        {
+            return [];
+        }
+
+        return JsonSerializer.Deserialize<IEnumerable<Guid>>(json, _jsonOptions) ?? [];
+    }
+
+    private static string GetSessionKey(Guid userId) => $"{SessionKeyPrefix}{userId}";
+    private static string GetQueueKey(Guid userId) => $"{QueueKeyPrefix}{userId}";
 }

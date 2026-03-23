@@ -64,7 +64,7 @@ public static class StreamingModule
         services.AddScoped<IImageAssetRepository, ImageAssetEfCoreRepository>();
         services.AddScoped<IPlaybackSessionRepository, PlaybackSessionRedisRepository>();
         services.AddScoped<IOutboxRepository, OutboxEfCoreRepository>();
-        services.AddScoped<IPlaybackSessionReadService, PlaybackSessionJsonReadService>();
+        services.AddScoped<IPlaybackSessionReadService, PlaybackSessionRedisReadService>();
         services.AddScoped<IDomainExceptionMapper, StreamingDomainExceptionMapper>();
 
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(StreamingTransactionalPipelineBehavior<,>));

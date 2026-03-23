@@ -2,7 +2,6 @@
 using SpotifyClone.Catalog.Application.Abstractions.Data;
 using SpotifyClone.Catalog.Application.Features.Artists.Queries;
 using SpotifyClone.Catalog.Application.Models;
-using SpotifyClone.Catalog.Domain.Aggregates.Artists.Enums;
 using SpotifyClone.Catalog.Domain.Aggregates.Artists.ValueObjects;
 using SpotifyClone.Catalog.Infrastructure.Persistence.Database;
 
@@ -18,13 +17,13 @@ internal sealed class ArtistEfCoreReadService(
         ArtistId id,
         CancellationToken cancellationToken = default)
         => await _context.Artists
-        .AnyAsync(a => a.Status != ArtistStatus.Banned && a.Id == id, cancellationToken);
+        .AnyAsync(a => a.Id == id, cancellationToken);
 
     public async Task<ArtistDetails?> GetDetailsAsync(
         ArtistId id,
         CancellationToken cancellationToken = default)
         => await _context.Artists
-        .Where(a => a.Status != ArtistStatus.Banned && a.Id == id)
+        .Where(a => a.Id == id)
         .Select(a => new ArtistDetails(
             a.Id.Value,
             a.Name,
@@ -52,13 +51,29 @@ internal sealed class ArtistEfCoreReadService(
             )).ToList()))
         .SingleOrDefaultAsync(cancellationToken);
 
+    public async Task<ArtistSummary?> GetSummaryAsync(
+        ArtistId id,
+        CancellationToken cancellationToken = default)
+        => await _context.Artists
+        .Where(a => a.Id == id)
+        .Select(a => new ArtistSummary(
+            a.Id.Value,
+            a.Name,
+            a.Status.Value,
+            a.OwnerId == null ? null : a.OwnerId.Value,
+            a.Avatar == null ? null : new ImageMetadataDetails(
+                a.Avatar.ImageId.Value,
+                a.Avatar.Metadata.Width,
+                a.Avatar.Metadata.Height,
+                a.Avatar.Metadata.FileType.Value,
+                a.Avatar.Metadata.SizeInBytes)))
+        .SingleOrDefaultAsync(cancellationToken);
+
     public async Task<IEnumerable<ArtistSummary>> GetAllAsync(
         IEnumerable<ArtistId> artistIds,
         CancellationToken cancellationToken = default)
         => await _context.Artists
-        .Where(a =>
-            a.Status != ArtistStatus.Banned &&
-            artistIds.Any(id => id == a.Id))
+        .Where(a => artistIds.Any(id => id == a.Id))
         .Select(a => new ArtistSummary(
             a.Id.Value,
             a.Name,

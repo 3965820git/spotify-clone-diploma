@@ -1,4 +1,4 @@
-﻿namespace SpotifyClone.Api.Contracts.v1.Streaming.Player.UpdatePosition;
+﻿namespace SpotifyClone.Api.Contracts.v1.Streaming.Playback.UpdatePosition;
 
 public sealed record UpdatePlaybackPositionRequest
 {

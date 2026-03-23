@@ -12,7 +12,11 @@ public interface IPlaybackSessionRepository
         PlaybackSession session,
         CancellationToken cancellationToken = default);
 
-    Task DeleteAsync(
+    Task DeleteSessionAsync(
+        UserId userId,
+        CancellationToken cancellationToken = default);
+
+    Task DeleteQueueAsync(
         UserId userId,
         CancellationToken cancellationToken = default);
 }

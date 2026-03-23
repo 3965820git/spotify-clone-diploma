@@ -52,7 +52,7 @@ public sealed class PlaybackSession
 
         return new PlaybackSession(
             id, userId, trackList[0], deviceId, context, positionMs ?? 0, true, false, PlaybackRepeatMode.Off,
-            nowUtc.ToUniversalTime(), new(PlaybackQueueId.New(), trackList));
+            nowUtc.ToUniversalTime(), new(PlaybackQueueId.New(), trackList.Skip(1)));
     }
 
     public void StartNewPlayback(
@@ -79,7 +79,7 @@ public sealed class PlaybackSession
                 "Playback Queue must have at least one track.");
         }
 
-        Queue.Replace(trackList);
+        Queue.Replace(trackList.Skip(1).ToList());
         if (Shuffle)
         {
             Queue.Shuffle();
