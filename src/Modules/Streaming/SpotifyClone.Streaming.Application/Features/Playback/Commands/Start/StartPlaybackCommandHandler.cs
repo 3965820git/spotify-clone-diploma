@@ -29,20 +29,20 @@ internal sealed class StartPlaybackCommandHandler(
         }
 
         var userId = UserId.From(_currentUser.Id);
-        var trackId = TrackId.From(request.TrackId);
         var deviceId = DeviceId.From(request.DeviceId);
         var context = PlaybackContext.From(request.ContextType, request.ContextExternalId);
         DateTimeOffset nowUtc = DateTimeOffset.UtcNow;
+        IEnumerable<TrackId> tracks = request.TrackIds.Select(t => TrackId.From(t));
 
         PlaybackSession? session = await _unit.PlaybackSessions.GetByUserIdAsync(userId, cancellationToken);
         if (session is null)
         {
             session = PlaybackSession.Create(
-                PlaybackSessionId.New(), userId, trackId, deviceId, context, nowUtc, request.PositionMs);
+                PlaybackSessionId.New(), userId, deviceId, context, nowUtc, request.PositionMs, tracks.ToList());
         }
         else
         {
-            session.StartNewPlayback(trackId, deviceId, context, nowUtc, request.PositionMs);
+            session.StartNewPlayback(deviceId, context, nowUtc, request.PositionMs, tracks);
         }
 
         await _unit.PlaybackSessions.SaveAsync(session, cancellationToken);

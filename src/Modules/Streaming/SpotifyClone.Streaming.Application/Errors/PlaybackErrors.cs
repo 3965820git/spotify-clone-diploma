@@ -8,6 +8,10 @@ public static class PlaybackErrors
         "Playlist.InvalidPlaybackContext",
         "The provided Playback Context is invalid.");
 
+    public static readonly Error EmptyQueue = new(
+        "Playlist.EmptyQueue",
+        "Playback Queue must have at least one track.");
+
     public static readonly Error NotLoggedIn = new(
         "Playlist.NotLoggedIn",
         "User is not authenticated.");

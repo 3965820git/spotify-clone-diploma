@@ -2,6 +2,7 @@
 using SpotifyClone.Shared.Kernel.IDs;
 using SpotifyClone.Streaming.Domain.Aggregates.PlaybackSessions.Entities;
 using SpotifyClone.Streaming.Domain.Aggregates.PlaybackSessions.Enums;
+using SpotifyClone.Streaming.Domain.Aggregates.PlaybackSessions.Exceptions;
 using SpotifyClone.Streaming.Domain.Aggregates.PlaybackSessions.ValueObjects;
 using SpotifyClone.Streaming.Domain.ValueObjects;
 
@@ -24,39 +25,46 @@ public sealed class PlaybackSession
     public static PlaybackSession Create(
         PlaybackSessionId id,
         UserId userId,
-        TrackId trackId,
         DeviceId deviceId,
         PlaybackContext context,
         DateTimeOffset nowUtc,
-        int? positionMs)
+        int? positionMs,
+        IEnumerable<TrackId> tracks)
     {
         ArgumentNullException.ThrowIfNull(id);
         ArgumentNullException.ThrowIfNull(userId);
-        ArgumentNullException.ThrowIfNull(trackId);
         ArgumentNullException.ThrowIfNull(deviceId);
         ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(tracks);
 
         if (positionMs is not null && positionMs < 0)
         {
             throw new ArgumentOutOfRangeException(
                 nameof(positionMs), "Playback position must be a positive value.");
+        }
+
+        var trackList = tracks.ToList();
+        if (trackList.Count <= 0)
+        {
+            throw new EmptyPlaybackQueueDomainException(
+                "Playback Queue must have at least one track.");
         }
 
         return new PlaybackSession(
-            id, userId, trackId, deviceId, context, positionMs ?? 0, true, false, PlaybackRepeatMode.Off,
-            nowUtc.ToUniversalTime(), new(PlaybackQueueId.New(), []));
+            id, userId, trackList[0], deviceId, context, positionMs ?? 0, true, false, PlaybackRepeatMode.Off,
+            nowUtc.ToUniversalTime(), new(PlaybackQueueId.New(), trackList));
     }
 
     public void StartNewPlayback(
-        TrackId trackId,
         DeviceId deviceId,
         PlaybackContext context,
         DateTimeOffset nowUtc,
-        int? positionMs)
+        int? positionMs,
+        IEnumerable<TrackId> tracks)
     {
-        ArgumentNullException.ThrowIfNull(trackId);
         ArgumentNullException.ThrowIfNull(deviceId);
         ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(tracks);
 
         if (positionMs is not null && positionMs < 0)
         {
@@ -64,7 +72,20 @@ public sealed class PlaybackSession
                 nameof(positionMs), "Playback position must be a positive value.");
         }
 
-        TrackId = trackId;
+        var trackList = tracks.ToList();
+        if (trackList.Count <= 0)
+        {
+            throw new EmptyPlaybackQueueDomainException(
+                "Playback Queue must have at least one track.");
+        }
+
+        Queue.Replace(trackList);
+        if (Shuffle)
+        {
+            Queue.Shuffle();
+        }
+
+        TrackId = trackList[0];
         DeviceId = deviceId;
         Context = context;
         CurrentPositionMs = positionMs ?? 0;
@@ -129,9 +150,6 @@ public sealed class PlaybackSession
         }
         else
         {
-            // Черга порожня. 
-            // Тут ти або зупиняєш відтворення, або (в ідеалі) 
-            // звертаєшся до Context (альбому), щоб взяти наступний трек звідти.
             IsPlaying = false;
             CurrentPositionMs = 0;
             UpdatedAtUtc = DateTimeOffset.UtcNow;
@@ -161,20 +179,20 @@ public sealed class PlaybackSession
         UpdatedAtUtc = DateTimeOffset.UtcNow.ToUniversalTime();
     }
 
-    public PlaybackSessionSnapshot ToSnapshot() => new(
-        Id.Value,
-        UserId.Value,
-        TrackId.Value,
-        DeviceId.Value,
-        Context.Type,
-        Context.ExternalId,
-        CurrentPositionMs,
-        IsPlaying,
-        Shuffle,
-        (int)RepeatMode,
-        UpdatedAtUtc,
-        Queue.Tracks.Select(t => t.Value)
-    );
+    public PlaybackSessionSnapshot ToSnapshot()
+        => new(
+            Id.Value,
+            UserId.Value,
+            TrackId.Value,
+            DeviceId.Value,
+            Context.Type,
+            Context.ExternalId,
+            CurrentPositionMs,
+            IsPlaying,
+            Shuffle,
+            (int)RepeatMode,
+            UpdatedAtUtc,
+            Queue.Tracks.Select(t => t.Value));
 
     public static PlaybackSession FromSnapshot(PlaybackSessionSnapshot snapshot)
         => new PlaybackSession(

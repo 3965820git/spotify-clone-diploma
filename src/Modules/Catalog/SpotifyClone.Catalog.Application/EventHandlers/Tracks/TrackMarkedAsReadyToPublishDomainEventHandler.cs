@@ -35,10 +35,17 @@ internal sealed class TrackMarkedAsReadyToPublishDomainEventHandler(
         _albumTrackDomainService.TryMarkAlbumAsReadyToPublish(album);
         _albumTrackDomainService.ReevaluateAlbumType(album);
 
-        var integrationEvent = new TrackUnpublishedIntegrationEvent(
+        var trackUnpublishedIntegrationEvent = new TrackUnpublishedIntegrationEvent(
                 notification.TrackId.Value);
-        var message = OutboxMessage.FromIntegrationEvent(integrationEvent);
-        await _unit.OutboxMessages.AddAsync(message, cancellationToken);
+        await _unit.OutboxMessages.AddAsync(
+            OutboxMessage.FromIntegrationEvent(trackUnpublishedIntegrationEvent),
+            cancellationToken);
+
+        var trackMarkedAsReadyIntegrationEvent = new TrackMarkedAsReadyIntegrationEvent(
+                notification.TrackId.Value);
+        await _unit.OutboxMessages.AddAsync(
+            OutboxMessage.FromIntegrationEvent(trackMarkedAsReadyIntegrationEvent),
+            cancellationToken);
 
         await _unit.CommitAsync(cancellationToken);
     }

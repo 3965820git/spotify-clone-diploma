@@ -13,7 +13,7 @@ public interface IArtistReadService
         ArtistId id,
         CancellationToken cancellationToken = default);
 
-    Task<IEnumerable<ArtistDetails>> GetAllDetailsByIdsAsync(
+    Task<IEnumerable<ArtistSummary>> GetAllAsync(
         IEnumerable<ArtistId> artistIds,
         CancellationToken cancellationToken = default);
 }

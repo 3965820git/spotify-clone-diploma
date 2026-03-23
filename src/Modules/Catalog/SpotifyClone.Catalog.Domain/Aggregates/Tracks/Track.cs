@@ -75,7 +75,6 @@ public sealed class Track : AggregateRoot<TrackId, Guid>
             mainArtists, featuredArtists, genres, moods);
 
         track.MoveToAlbum(albumId, isAlbumPublished);
-        track.RaiseDomainEvent(new TrackCreatedDomainEvent(track.Id));
 
         return track;
     }

@@ -5,6 +5,8 @@ using SpotifyClone.Catalog.Application.Features.Genres.Queries;
 using SpotifyClone.Catalog.Application.Features.Moods.Queries;
 using SpotifyClone.Catalog.Application.Features.Tracks.Queries;
 using SpotifyClone.Catalog.Application.Models;
+using SpotifyClone.Catalog.Domain.Aggregates.Artists;
+using SpotifyClone.Catalog.Domain.Aggregates.Artists.ValueObjects;
 using SpotifyClone.Catalog.Domain.Aggregates.Genres.ValueObjects;
 using SpotifyClone.Catalog.Domain.Aggregates.Moods.ValueObjects;
 using SpotifyClone.Catalog.Infrastructure.Persistence.Database;
@@ -17,6 +19,11 @@ internal sealed class TrackEfCoreReadService(
     : ITrackReadService
 {
     private readonly CatalogAppDbContext _context = context;
+
+    public async Task<bool> ExistsAsync(
+        TrackId id,
+        CancellationToken cancellationToken = default)
+        => await _context.Tracks.AnyAsync(t => t.Id == id, cancellationToken);
 
     public async Task<TrackDetails?> GetDetailsAsync(
         TrackId id,
@@ -50,7 +57,9 @@ internal sealed class TrackEfCoreReadService(
             .AsNoTracking()
             .Where(a => trackInfo.MainArtistIds.Contains(a.Id))
             .Select(a => new ArtistSummary(
-                a.Id.Value, a.Name, a.Status.Value,
+                a.Id.Value, a.Name,
+                a.Status.Value,
+                a.OwnerId == null ? null : a.OwnerId.Value,
                 a.Avatar == null ? null : new ImageMetadataDetails(
                     a.Avatar.ImageId.Value,
                     a.Avatar.Metadata.Width,
@@ -63,7 +72,9 @@ internal sealed class TrackEfCoreReadService(
             .AsNoTracking()
             .Where(a => trackInfo.FeaturedArtistIds.Contains(a.Id))
             .Select(a => new ArtistSummary(
-                a.Id.Value, a.Name, a.Status.Value,
+                a.Id.Value, a.Name,
+                a.Status.Value,
+                a.OwnerId == null ? null : a.OwnerId.Value,
                 a.Avatar == null ? null : new ImageMetadataDetails(
                     a.Avatar.ImageId.Value,
                     a.Avatar.Metadata.Width,

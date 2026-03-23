@@ -7,7 +7,7 @@ namespace SpotifyClone.Streaming.Domain.Aggregates.PlaybackSessions.Entities;
 
 public sealed class PlaybackQueue : Entity<PlaybackQueueId, Guid>
 {
-    private readonly List<TrackId> _tracks = new();
+    private List<TrackId> _tracks = new();
 
     public IReadOnlyList<TrackId> Tracks => _tracks.AsReadOnly();
     public bool IsEmpty => _tracks.Count == 0;
@@ -18,6 +18,9 @@ public sealed class PlaybackQueue : Entity<PlaybackQueueId, Guid>
 
         _tracks.AddRange(tracks);
     }
+
+    public void Replace(IList<TrackId> tracks)
+        => _tracks = [..tracks.ToList()];
 
     public void Enqueue(TrackId trackId)
         => _tracks.Add(trackId);

@@ -5,16 +5,16 @@ using SpotifyClone.Shared.IntegrationEvents.Catalog.Tracks;
 
 namespace SpotifyClone.Playlists.Application.EventHandlers.Tracks;
 
-internal sealed class TrackCreatedIntegrationEventHandler(
+internal sealed class TrackMarkedAsReadyIntegrationEventHandler(
     IPlaylistsUnitOfWork unit,
-    ILogger<TrackCreatedIntegrationEventHandler> logger)
-    : INotificationHandler<TrackCreatedIntegrationEvent>
+    ILogger<TrackMarkedAsReadyIntegrationEventHandler> logger)
+    : INotificationHandler<TrackMarkedAsReadyIntegrationEvent>
 {
     private readonly IPlaylistsUnitOfWork _unit = unit;
-    private readonly ILogger<TrackCreatedIntegrationEventHandler> _logger = logger;
+    private readonly ILogger<TrackMarkedAsReadyIntegrationEventHandler> _logger = logger;
 
     public async Task Handle(
-        TrackCreatedIntegrationEvent notification,
+        TrackMarkedAsReadyIntegrationEvent notification,
         CancellationToken cancellationToken)
     {
         if (await _unit.TrackReferences.ExistsAsync(notification.TrackId, cancellationToken))

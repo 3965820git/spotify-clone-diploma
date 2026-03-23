@@ -5,8 +5,14 @@ using SpotifyClone.Api.Contracts.v1.Streaming.Player.ManipulatePlayback;
 using SpotifyClone.Api.Contracts.v1.Streaming.Player.StartPlayback;
 using SpotifyClone.Api.Contracts.v1.Streaming.Player.UpdatePosition;
 using SpotifyClone.Api.Mappers;
+using SpotifyClone.Catalog.Application.Features.Albums.Queries;
+using SpotifyClone.Catalog.Application.Features.Albums.Queries.GetDetails;
+using SpotifyClone.Playlists.Application.Features.Playlists.Queries;
+using SpotifyClone.Playlists.Application.Features.Playlists.Queries.GetDetails;
 using SpotifyClone.Shared.BuildingBlocks.Application.Auth;
 using SpotifyClone.Shared.BuildingBlocks.Application.Results;
+using SpotifyClone.Shared.Kernel.IDs;
+using SpotifyClone.Streaming.Application.Errors;
 using SpotifyClone.Streaming.Application.Features.Playback.Commands.Pause;
 using SpotifyClone.Streaming.Application.Features.Playback.Commands.Resume;
 using SpotifyClone.Streaming.Application.Features.Playback.Commands.SeekPosition;
@@ -15,6 +21,7 @@ using SpotifyClone.Streaming.Application.Features.Playback.Commands.Start;
 using SpotifyClone.Streaming.Application.Features.Playback.Commands.SyncPosition;
 using SpotifyClone.Streaming.Application.Features.Playback.Queries;
 using SpotifyClone.Streaming.Application.Features.Playback.Queries.GetDetails;
+using SpotifyClone.Streaming.Domain.ValueObjects;
 
 namespace SpotifyClone.Api.Controllers.Streaming;
 
@@ -35,24 +42,43 @@ public sealed class CurrentUserController(IMediator mediator)
         [FromBody] StartPlaybackRequest request,
         CancellationToken cancellationToken = default)
     {
-        Result<PlaybackSessionDetails> result = await Mediator.Send(
+        if (!PlaybackContext.IsValid(request.ContextType, request.ContextExternalId))
+        {
+            ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
+                Result.Failure<StartPlaybackResponse>(PlaybackErrors.InvalidPlaybackContext),
+                HttpContext);
+            return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
+        }
+
+        Result<IEnumerable<Guid>> tracksResult = await GetTracksByContextTypeAsync(
+            request.ContextType,
+            request.ContextExternalId!.Value,
+            cancellationToken);
+        if (tracksResult.IsFailure)
+        {
+            ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
+                tracksResult, HttpContext);
+            return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
+        }
+
+        Result<PlaybackSessionDetails> playbackResult = await Mediator.Send(
             new StartPlaybackCommand(
-                request.TrackId,
                 request.DeviceId,
                 request.ContextType,
                 request.ContextExternalId,
-                request.PositionMs),
+                request.PositionMs,
+                tracksResult.Value),
             cancellationToken);
-        if (result.IsFailure)
+        if (playbackResult.IsFailure)
         {
             ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
-                result,
+                playbackResult,
                 HttpContext);
 
             return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
         }
 
-        return Ok(new StartPlaybackResponse(result.Value.Id));
+        return Ok(new StartPlaybackResponse(playbackResult.Value.Id));
     }
 
     [EndpointSummary("Get Playback Session details")]
@@ -224,5 +250,77 @@ public sealed class CurrentUserController(IMediator mediator)
         }
 
         return NoContent();
+    }
+
+    private async Task<Result<IEnumerable<Guid>>> GetTracksByContextTypeAsync(
+        string contextType,
+        Guid contextExternalId,
+        CancellationToken cancellationToken = default)
+    {
+        if (contextType == PlaybackContext.AlbumType)
+        {
+            return await GetTracksByAlbumContextTypeAsync(contextExternalId, cancellationToken);
+        }
+        else if (contextType == PlaybackContext.PlaylistType ||
+                 contextType == PlaybackContext.CollectionType)
+        {
+            return await GetTracksByPlaylistContextTypeAsync(contextExternalId, cancellationToken);
+        }
+        else if (contextType == PlaybackContext.SearchType)
+        {
+            return await GetTracksBySearchContextTypeAsync(contextExternalId, cancellationToken);
+        }
+
+        return new List<Guid>();
+    }
+
+    private async Task<Result<IEnumerable<Guid>>> GetTracksByAlbumContextTypeAsync(
+        Guid contextExternalId,
+        CancellationToken cancellationToken = default)
+    {
+        Result<AlbumDetails> albumResult = await Mediator.Send(
+            new GetAlbumDetailsQuery(contextExternalId),
+            cancellationToken);
+        if (albumResult.IsFailure)
+        {
+            return Result.Failure<IEnumerable<Guid>>(albumResult.Errors);
+        }
+
+        return albumResult.Value.Tracks.Select(t => t.Id).ToList();
+    }
+
+    private async Task<Result<IEnumerable<Guid>>> GetTracksByPlaylistContextTypeAsync(
+        Guid contextExternalId,
+        CancellationToken cancellationToken = default)
+    {
+        Result<PlaylistDetails> playlistResult = await Mediator.Send(
+            new GetPlaylistDetailsQuery(contextExternalId),
+            cancellationToken);
+        if (playlistResult.IsFailure)
+        {
+            return Result.Failure<IEnumerable<Guid>>(playlistResult.Errors);
+        }
+
+        return playlistResult.Value.Tracks.Select(t => t.Id).ToList();
+    }
+
+    private async Task<Result<IEnumerable<Guid>>> GetTracksBySearchContextTypeAsync(
+        Guid contextExternalId,
+        CancellationToken cancellationToken = default)
+    {
+        var trackId = TrackId.From(contextExternalId);
+
+        Result<AlbumDetails> albumResult = await Mediator.Send(
+            new GetAlbumDetailsQuery(contextExternalId),
+            cancellationToken);
+        if (albumResult.IsFailure)
+        {
+            return Result.Failure<IEnumerable<Guid>>(albumResult.Errors);
+        }
+
+        var tracks = albumResult.Value.Tracks.Select(t => t.Id).ToList();
+        tracks.Remove(trackId.Value);
+        tracks.Insert(0, trackId.Value);
+        return tracks;
     }
 }
