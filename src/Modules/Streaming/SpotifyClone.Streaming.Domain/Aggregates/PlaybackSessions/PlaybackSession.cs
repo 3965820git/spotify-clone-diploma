@@ -28,7 +28,6 @@ public sealed class PlaybackSession
         DeviceId deviceId,
         PlaybackContext context,
         DateTimeOffset nowUtc,
-        int? positionMs,
         IEnumerable<TrackId> tracks)
     {
         ArgumentNullException.ThrowIfNull(id);
@@ -36,12 +35,6 @@ public sealed class PlaybackSession
         ArgumentNullException.ThrowIfNull(deviceId);
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(tracks);
-
-        if (positionMs is not null && positionMs < 0)
-        {
-            throw new ArgumentOutOfRangeException(
-                nameof(positionMs), "Playback position must be a positive value.");
-        }
 
         var trackList = tracks.ToList();
         if (trackList.Count <= 0)
@@ -51,7 +44,7 @@ public sealed class PlaybackSession
         }
 
         return new PlaybackSession(
-            id, userId, trackList[0], deviceId, context, positionMs ?? 0, true, false, PlaybackRepeatMode.Off,
+            id, userId, trackList[0], deviceId, context, 0, true, false, PlaybackRepeatMode.Off,
             nowUtc.ToUniversalTime(), new(PlaybackQueueId.New(), trackList.Skip(1)));
     }
 

@@ -64,6 +64,7 @@ public static class StreamingModule
         services.AddScoped<IImageAssetRepository, ImageAssetEfCoreRepository>();
         services.AddScoped<IPlaybackSessionRepository, PlaybackSessionRedisRepository>();
         services.AddScoped<IOutboxRepository, OutboxEfCoreRepository>();
+        services.AddScoped<IAudioAssetReadService, AudioAssetEfCoreReadService>();
         services.AddScoped<IPlaybackSessionReadService, PlaybackSessionRedisReadService>();
         services.AddScoped<IDomainExceptionMapper, StreamingDomainExceptionMapper>();
 

@@ -64,12 +64,11 @@ public sealed class PlaybackController(IMediator mediator)
             return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
         }
 
-        Result<PlaybackSessionDetails> playbackResult = await Mediator.Send(
+        Result<StartPlaybackCommandResult> playbackResult = await Mediator.Send(
             new StartPlaybackCommand(
                 request.DeviceId,
                 request.ContextType,
                 request.ContextExternalId,
-                request.PositionMs,
                 tracksResult.Value),
             cancellationToken);
         if (playbackResult.IsFailure)
@@ -81,7 +80,11 @@ public sealed class PlaybackController(IMediator mediator)
             return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
         }
 
-        return Ok(new StartPlaybackResponse(playbackResult.Value.Id));
+        return Ok(new StartPlaybackResponse(
+            playbackResult.Value.HlsUrl,
+            playbackResult.Value.DashUrl,
+            playbackResult.Value.StartPositionMs,
+            playbackResult.Value.TrackId));
     }
 
     [EndpointSummary("Get Playback Session details")]

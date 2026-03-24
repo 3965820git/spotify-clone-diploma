@@ -9,6 +9,7 @@ using SpotifyClone.Api.Mappers;
 using SpotifyClone.Shared.BuildingBlocks.Application.Results;
 using SpotifyClone.Streaming.Application.Features.Media.Commands.UploadAudioAsset;
 using SpotifyClone.Streaming.Application.Features.Media.Commands.UploadImageAsset;
+using SpotifyClone.Streaming.Application.Features.Media.Queries;
 using SpotifyClone.Streaming.Application.Features.Media.Queries.GetAudioAsset;
 using SpotifyClone.Streaming.Application.Features.Media.Queries.GetImageAsset;
 
@@ -64,7 +65,7 @@ public sealed class MediaController(IMediator mediator)
         [FromQuery] GetAudioAssetRequest request,
         CancellationToken cancellationToken = default)
     {
-        Result<GetAudioAssetQueryResult> result = await Mediator.Send(
+        Result<AudioAssetDetails> result = await Mediator.Send(
             new GetAudioAssetQuery(
                 request.AudioId),
             cancellationToken);
@@ -76,7 +77,7 @@ public sealed class MediaController(IMediator mediator)
             return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
         }
 
-        GetAudioAssetQueryResult resultData = result.Value;
+        AudioAssetDetails resultData = result.Value;
 
         return Ok(new GetAudioAssetResponse(
             resultData.AudioId,
