@@ -18,7 +18,7 @@ public sealed class PlaybackSession
     public PlaybackContext Context { get; private set; } = null!;
     public int CurrentPositionMs { get; private set; }
     public bool IsPlaying { get; private set; }
-    public bool Shuffle { get; private set; }
+    public bool IsShuffled { get; private set; }
     public PlaybackRepeatMode RepeatMode { get; private set; }
     public DateTimeOffset UpdatedAtUtc { get; private set; }
     public PlaybackQueue Queue { get; private set; } = null!;
@@ -26,6 +26,7 @@ public sealed class PlaybackSession
     public static PlaybackSession Create(
         PlaybackSessionId id,
         UserId userId,
+        TrackId? startTrackId,
         DeviceId deviceId,
         PlaybackContext context,
         DateTimeOffset nowUtc,
@@ -44,12 +45,16 @@ public sealed class PlaybackSession
                 "Playback Queue must have at least one track.");
         }
 
+        bool isShuffled = false;
+
         return new PlaybackSession(
-            id, userId, trackList[0], deviceId, context, 0, true, false, PlaybackRepeatMode.Off,
-            nowUtc.ToUniversalTime(), new(PlaybackQueueId.New(), trackList.Skip(1)));
+            id, userId, startTrackId ?? trackList[0], deviceId, context, 0, true, isShuffled, PlaybackRepeatMode.Off,
+            nowUtc.ToUniversalTime(), new PlaybackQueue(
+                PlaybackQueueId.New(), trackList, startTrackId, isShuffled));
     }
 
     public void StartNewPlayback(
+        TrackId? startTrackId,
         DeviceId deviceId,
         PlaybackContext context,
         DateTimeOffset nowUtc,
@@ -73,13 +78,9 @@ public sealed class PlaybackSession
                 "Playback Queue must have at least one track.");
         }
 
-        Queue.Replace(trackList.Skip(1).ToList());
-        if (Shuffle)
-        {
-            Queue.Shuffle();
-        }
+        Queue.Replace(trackList, startTrackId, IsShuffled);
 
-        TrackId = trackList[0];
+        TrackId = startTrackId ?? trackList[0];
         DeviceId = deviceId;
         Context = context;
         CurrentPositionMs = positionMs ?? 0;
@@ -161,11 +162,16 @@ public sealed class PlaybackSession
             throw new InvalidDeviceDomainException("You can't toggle Shuffle on this device now.");
         }
 
-        Shuffle = !Shuffle;
-        if (Shuffle)
+        if (IsShuffled)
+        {
+            Queue.ShuffleOff();
+        }
+        else
         {
             Queue.Shuffle();
         }
+
+        IsShuffled = !IsShuffled;
     }
 
     public void ToggleRepeatMode(DeviceId deviceId)
@@ -179,7 +185,7 @@ public sealed class PlaybackSession
     }
 
     public void AddTrackToQueue(TrackId trackId)
-        => Queue.Add(trackId);
+        => Queue.PlayNext(trackId);
 
     public void RemoveTrackFromQueue(TrackId trackId)
         => Queue.Delete(trackId);
@@ -212,7 +218,7 @@ public sealed class PlaybackSession
             Context.ExternalId,
             CurrentPositionMs,
             IsPlaying,
-            Shuffle,
+            IsShuffled,
             (int)RepeatMode,
             UpdatedAtUtc,
             Queue.Tracks.Select(t => t.Value));
@@ -226,14 +232,16 @@ public sealed class PlaybackSession
             PlaybackContext.From(snapshot.ContextType, snapshot.ContextExternalId),
             snapshot.CurrentPositionMs,
             snapshot.IsPlaying,
-            snapshot.Shuffle,
+            snapshot.IsShuffled,
             (PlaybackRepeatMode)snapshot.RepeatMode,
             snapshot.UpdatedAtUtc,
-            new PlaybackQueue(PlaybackQueueId.New(), snapshot.Queue.Select(t => TrackId.From(t))));
+            new PlaybackQueue(
+                PlaybackQueueId.New(),
+                snapshot.Queue.Select(t => TrackId.From(t)).ToList()));
 
     private PlaybackSession(
         PlaybackSessionId id, UserId userId, TrackId trackId, DeviceId deviceId, PlaybackContext context,
-        int currentPositionMs, bool isPlaying, bool shuffle, PlaybackRepeatMode repeatMode,
+        int currentPositionMs, bool isPlaying, bool isShuffled, PlaybackRepeatMode repeatMode,
         DateTimeOffset updatedAtUtc, PlaybackQueue queue)
         : base(id)
     {
@@ -243,7 +251,7 @@ public sealed class PlaybackSession
         Context = context;
         CurrentPositionMs = currentPositionMs;
         IsPlaying = isPlaying;
-        Shuffle = shuffle;
+        IsShuffled = isShuffled;
         RepeatMode = repeatMode;
         UpdatedAtUtc = updatedAtUtc;
         Queue = queue;

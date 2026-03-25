@@ -9,7 +9,7 @@ public sealed record PlaybackSessionSnapshot(
     Guid? ContextExternalId,
     int CurrentPositionMs,
     bool IsPlaying,
-    bool Shuffle,
+    bool IsShuffled,
     int RepeatMode,
     DateTimeOffset UpdatedAtUtc,
     IEnumerable<Guid> Queue);

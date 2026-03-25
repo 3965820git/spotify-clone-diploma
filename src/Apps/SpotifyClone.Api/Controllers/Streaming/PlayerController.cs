@@ -65,6 +65,18 @@ public sealed class PlaybackController(IMediator mediator)
             return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
         }
 
+        if (request.StartTrackId is not null)
+        {
+            Result<TrackSummary> startTrackResult = await Mediator.Send(
+                new GetTrackSummaryQuery(request.StartTrackId.Value), cancellationToken);
+            if (startTrackResult.IsFailure)
+            {
+                ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
+                    startTrackResult, HttpContext);
+                return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
+            }
+        }
+
         Result<IEnumerable<Guid>> tracksResult = await GetTracksByContextTypeAsync(
             request.ContextType, request.ContextExternalId!.Value, cancellationToken);
         if (tracksResult.IsFailure)
@@ -79,6 +91,7 @@ public sealed class PlaybackController(IMediator mediator)
                 request.DeviceId,
                 request.ContextType,
                 request.ContextExternalId,
+                request.StartTrackId,
                 tracksResult.Value),
             cancellationToken);
         if (playbackResult.IsFailure)
@@ -429,7 +442,7 @@ public sealed class PlaybackController(IMediator mediator)
         }
 
         return Ok(new TogglePlaybackShuffleResponse(
-            result.Value.Shuffle));
+            result.Value.IsShuffled));
     }
 
     [EndpointSummary("Toggle Playback Repeat mode")]

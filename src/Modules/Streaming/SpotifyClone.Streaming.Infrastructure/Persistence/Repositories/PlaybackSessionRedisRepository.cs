@@ -83,7 +83,7 @@ public sealed class PlaybackSessionRedisRepository
             sessionSnapshot.ContextExternalId,
             sessionSnapshot.CurrentPositionMs,
             sessionSnapshot.IsPlaying,
-            sessionSnapshot.Shuffle,
+            sessionSnapshot.IsShuffled,
             sessionSnapshot.RepeatMode,
             sessionSnapshot.UpdatedAtUtc
         };

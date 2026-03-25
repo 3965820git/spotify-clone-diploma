@@ -54,7 +54,7 @@ internal sealed class PlaybackSessionRedisReadService
             snapshot.ContextExternalId,
             snapshot.CurrentPositionMs,
             snapshot.IsPlaying,
-            snapshot.Shuffle,
+            snapshot.IsShuffled,
             ((PlaybackRepeatMode)snapshot.RepeatMode).ToString(),
             snapshot.UpdatedAtUtc);
     }

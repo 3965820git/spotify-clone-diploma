@@ -7,60 +7,114 @@ namespace SpotifyClone.Streaming.Domain.Aggregates.PlaybackSessions.Entities;
 
 public sealed class PlaybackQueue : Entity<PlaybackQueueId, Guid>
 {
-    private List<TrackId> _tracks = new();
+    private readonly List<TrackId> _originalTracks = [];
 
-    public IReadOnlyList<TrackId> Tracks => _tracks.AsReadOnly();
-    public bool IsEmpty => _tracks.Count == 0;
+    private readonly List<TrackId> _currentTracks = [];
 
-    internal PlaybackQueue(PlaybackQueueId id, IEnumerable<TrackId> tracks)
+    public IReadOnlyList<TrackId> Tracks => _currentTracks.AsReadOnly();
+    public bool IsEmpty => _currentTracks.Count == 0;
+
+    internal PlaybackQueue(PlaybackQueueId id, List<TrackId> tracks, TrackId? startTrackId, bool isShuffled)
     {
         ArgumentNullException.ThrowIfNull(id);
-
-        _tracks.AddRange(tracks);
+        Replace(tracks.ToList(), startTrackId, isShuffled);
     }
 
-    public void Replace(IList<TrackId> tracks)
-        => _tracks = [..tracks.ToList()];
-
-    public void Add(TrackId trackId)
+    internal void Replace(List<TrackId> tracks, TrackId? startTrackId, bool isShuffled)
     {
-        if (!_tracks.Contains(trackId))
+        Clear();
+        _originalTracks.AddRange(tracks);
+
+        if (startTrackId is null && !isShuffled)
         {
-            _tracks.Add(trackId);
+            _currentTracks.AddRange(tracks.Skip(1));
+            return; 
+        }
+        
+        if (startTrackId is not null)
+        {
+            if (isShuffled)
+            {
+                tracks.Remove(startTrackId);
+            }
+            else
+            {
+                int startTrackIndex = _originalTracks.IndexOf(startTrackId);
+                if (startTrackIndex > -1)
+                {
+                    tracks.RemoveRange(0, startTrackIndex + 1);
+                }
+            }
+
+            _currentTracks.AddRange(tracks);
+        }
+
+        if (isShuffled)
+        {
+            Shuffle();
         }
     }
 
-    public void PlayNext(TrackId trackId)
-        => _tracks.Insert(0, trackId);
+    internal void PlayNext(TrackId trackId)
+    {
+        _currentTracks.Remove(trackId);
+        _currentTracks.Insert(0, trackId);
 
-    public TrackId? PopNext()
+        if (!_originalTracks.Contains(trackId))
+        {
+            _originalTracks.Insert(0, trackId);
+        }
+    }
+
+    internal TrackId? PopNext()
     {
         if (IsEmpty)
         {
             return null;
         }
 
-        TrackId nextTrack = _tracks[0];
-        _tracks.RemoveAt(0);
+        TrackId nextTrack = _currentTracks[0];
+        _currentTracks.RemoveAt(0);
+
         return nextTrack;
     }
 
-    public bool Delete(TrackId trackId)
-        => _tracks.Remove(trackId);
-
-    public void Clear()
-        => _tracks.Clear();
-
-    public void Shuffle()
+    internal bool Delete(TrackId trackId)
     {
-        // Простий алгоритм Фішера-Йейтса для перемішування
-        int n = _tracks.Count;
+        _originalTracks.Remove(trackId);
+        return _currentTracks.Remove(trackId);
+    }
+
+    internal void Clear()
+    {
+        _originalTracks.Clear();
+        _currentTracks.Clear();
+    }
+
+    internal void Shuffle()
+    {
+        if (_currentTracks.Count <= 1)
+        {
+            return;
+        }
+
+        int n = _currentTracks.Count;
         while (n > 1)
         {
             n--;
             int k = RandomNumberGenerator.GetInt32(n + 1);
-            (_tracks[k], _tracks[n]) = (_tracks[n], _tracks[k]);
+            (_currentTracks[k], _currentTracks[n]) = (_currentTracks[n], _currentTracks[k]);
         }
+    }
+
+    internal void ShuffleOff()
+    {
+        var remainingTracks = _originalTracks
+            .Where(t => _currentTracks.Contains(t))
+            .ToList();
+
+        _currentTracks.Clear();
+        _currentTracks.AddRange(remainingTracks);
     }
 
     private PlaybackQueue()

@@ -17,6 +17,9 @@ public sealed class StartPlaybackCommandValidator
         RuleFor(x => x.ContextExternalId)
             .NotEqual(Guid.Empty).WithMessage("External context ID is required.");
 
+        RuleFor(x => x.StartTrackId)
+            .NotEqual(Guid.Empty).WithMessage("Start Track ID is required.");
+
         RuleFor(x => x.TrackIds)
             .NotEmpty().WithMessage("Tracks IDs are required.");
     }

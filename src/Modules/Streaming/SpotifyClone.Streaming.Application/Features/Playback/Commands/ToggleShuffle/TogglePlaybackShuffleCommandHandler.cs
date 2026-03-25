@@ -37,6 +37,6 @@ internal sealed class TogglePlaybackShuffleCommandHandler(
 
         await _unit.PlaybackSessions.SaveAsync(session, cancellationToken);
 
-        return new TogglePlaybackShuffleCommandResult(session.Shuffle);
+        return new TogglePlaybackShuffleCommandResult(session.IsShuffled);
     }
 }

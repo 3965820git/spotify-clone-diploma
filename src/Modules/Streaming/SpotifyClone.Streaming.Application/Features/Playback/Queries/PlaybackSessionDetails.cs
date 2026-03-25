@@ -9,6 +9,6 @@ public sealed record PlaybackSessionDetails(
     Guid? ContextExternalId,
     int CurrentPositionMs,
     bool IsPlaying,
-    bool Shuffle,
+    bool IsShuffled,
     string RepeatMode,
     DateTimeOffset UpdatedAtUtc);
