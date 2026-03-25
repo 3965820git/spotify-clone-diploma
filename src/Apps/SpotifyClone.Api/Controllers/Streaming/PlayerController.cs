@@ -1,9 +1,13 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SpotifyClone.Api.Contracts.v1.Streaming.Playback.AddTrackToQueue;
 using SpotifyClone.Api.Contracts.v1.Streaming.Playback.GetQueue;
 using SpotifyClone.Api.Contracts.v1.Streaming.Playback.ManipulatePlayback;
+using SpotifyClone.Api.Contracts.v1.Streaming.Playback.RemoveTrackFromQueue;
 using SpotifyClone.Api.Contracts.v1.Streaming.Playback.StartPlayback;
+using SpotifyClone.Api.Contracts.v1.Streaming.Playback.ToggleRepeatMode;
+using SpotifyClone.Api.Contracts.v1.Streaming.Playback.ToggleShuffle;
 using SpotifyClone.Api.Contracts.v1.Streaming.Playback.UpdatePosition;
 using SpotifyClone.Api.Mappers;
 using SpotifyClone.Catalog.Application.Features.Albums.Queries;
@@ -11,21 +15,27 @@ using SpotifyClone.Catalog.Application.Features.Albums.Queries.GetDetails;
 using SpotifyClone.Catalog.Application.Features.Tracks.Queries;
 using SpotifyClone.Catalog.Application.Features.Tracks.Queries.GetAllByIds;
 using SpotifyClone.Catalog.Application.Features.Tracks.Queries.GetSummary;
+using SpotifyClone.Catalog.Domain.Aggregates.Tracks.Enums;
 using SpotifyClone.Playlists.Application.Features.Playlists.Queries;
 using SpotifyClone.Playlists.Application.Features.Playlists.Queries.GetDetails;
 using SpotifyClone.Shared.BuildingBlocks.Application.Auth;
 using SpotifyClone.Shared.BuildingBlocks.Application.Results;
 using SpotifyClone.Shared.Kernel.IDs;
 using SpotifyClone.Streaming.Application.Errors;
+using SpotifyClone.Streaming.Application.Features.Playback.Commands.AddTrackToQueue;
 using SpotifyClone.Streaming.Application.Features.Playback.Commands.Pause;
+using SpotifyClone.Streaming.Application.Features.Playback.Commands.RemoveTrackFromQueue;
 using SpotifyClone.Streaming.Application.Features.Playback.Commands.Resume;
 using SpotifyClone.Streaming.Application.Features.Playback.Commands.SeekPosition;
 using SpotifyClone.Streaming.Application.Features.Playback.Commands.SkipToNext;
 using SpotifyClone.Streaming.Application.Features.Playback.Commands.Start;
 using SpotifyClone.Streaming.Application.Features.Playback.Commands.SyncPosition;
+using SpotifyClone.Streaming.Application.Features.Playback.Commands.ToggleRepeatMode;
+using SpotifyClone.Streaming.Application.Features.Playback.Commands.ToggleShuffle;
 using SpotifyClone.Streaming.Application.Features.Playback.Queries;
 using SpotifyClone.Streaming.Application.Features.Playback.Queries.GetDetails;
 using SpotifyClone.Streaming.Application.Features.Playback.Queries.GetQueue;
+using SpotifyClone.Streaming.Domain.Aggregates.PlaybackSessions.Enums;
 using SpotifyClone.Streaming.Domain.ValueObjects;
 
 namespace SpotifyClone.Api.Controllers.Streaming;
@@ -148,20 +158,105 @@ public sealed class PlaybackController(IMediator mediator)
             return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
         }
 
-        Result<TrackList> tracksInQueueResult = await Mediator.Send(
+        TrackList tracksInQueue = new([]);
+        if (queueResult.Value.TracksInQueue.Any())
+        {
+            Result<TrackList> tracksInQueueResult = await Mediator.Send(
             new GetAllTracksByIdsQuery(queueResult.Value.TracksInQueue),
             cancellationToken);
-        if (tracksInQueueResult.IsFailure)
-        {
-            ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
-                tracksInQueueResult,
-                HttpContext);
-            return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
+            if (tracksInQueueResult.IsFailure)
+            {
+                ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
+                    tracksInQueueResult,
+                    HttpContext);
+                return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
+            }
+            tracksInQueue = tracksInQueueResult.Value;
         }
 
         return Ok(new GetPlaybackQueueResponse(
             currentTrackResult.Value,
-            tracksInQueueResult.Value.Tracks));
+            tracksInQueue.Tracks));
+    }
+
+    [EndpointSummary("Add Track to Playback Queue")]
+    [EndpointDescription("Adds a Track to the current User's Playback Queue.")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [Authorize(Roles = UserRoles.Listener)]
+    [HttpPost("queue")]
+    public async Task<ActionResult> AddTrackToQueue(
+        [FromBody] AddTrackToPlaybackQueueRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        Result<TrackSummary> trackResult = await Mediator.Send(
+            new GetTrackSummaryQuery(request.TrackId),
+            cancellationToken);
+        if (trackResult.IsFailure)
+        {
+            ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
+                trackResult,
+                HttpContext);
+
+            return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
+        }
+
+        Result<AddTrackToPlaybackQueueCommandResult> addTrackToQueueResult = await Mediator.Send(
+            new AddTrackToPlaybackQueueCommand(request.TrackId),
+            cancellationToken);
+        if (addTrackToQueueResult.IsFailure)
+        {
+            ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
+                addTrackToQueueResult,
+                HttpContext);
+
+            return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
+        }
+
+        return NoContent();
+    }
+
+    [EndpointSummary("Remove Track from Playback Queue")]
+    [EndpointDescription("Removes a Track from the current User's Playback Queue.")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [Authorize(Roles = UserRoles.Listener)]
+    [HttpDelete("queue/{trackId:guid}")]
+    public async Task<ActionResult> RemoveTrackFromQueue(
+        [FromRoute] RemoveTrackFromPlaybackQueueRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        Result<TrackSummary> trackResult = await Mediator.Send(
+            new GetTrackSummaryQuery(request.TrackId),
+            cancellationToken);
+        if (trackResult.IsFailure)
+        {
+            ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
+                trackResult,
+                HttpContext);
+
+            return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
+        }
+
+        Result<RemoveTrackFromPlaybackQueueCommandResult> removeTrackFromQueueResult = await Mediator.Send(
+            new RemoveTrackFromPlaybackQueueCommand(request.TrackId),
+            cancellationToken);
+        if (removeTrackFromQueueResult.IsFailure)
+        {
+            ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
+                removeTrackFromQueueResult,
+                HttpContext);
+
+            return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
+        }
+
+        return NoContent();
     }
 
     [EndpointSummary("Resume Playback")]
@@ -308,6 +403,64 @@ public sealed class PlaybackController(IMediator mediator)
         return NoContent();
     }
 
+    [EndpointSummary("Toggle Playback Shuffle")]
+    [EndpointDescription("Toggles the Shuffle mode on current User's Playback.")]
+    [ProducesResponseType(typeof(TogglePlaybackShuffleResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [Authorize(Roles = UserRoles.Listener)]
+    [HttpPatch("shuffle")]
+    public async Task<ActionResult<TogglePlaybackShuffleResponse>> ToggleShuffle(
+        [FromBody] ManipulatePlaybackRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        Result<TogglePlaybackShuffleCommandResult> result = await Mediator.Send(
+            new TogglePlaybackShuffleCommand(request.DeviceId),
+            cancellationToken);
+        if (result.IsFailure)
+        {
+            ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
+                result,
+                HttpContext);
+
+            return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
+        }
+
+        return Ok(new TogglePlaybackShuffleResponse(
+            result.Value.Shuffle));
+    }
+
+    [EndpointSummary("Toggle Playback Repeat mode")]
+    [EndpointDescription("Toggles the Repeat mode on current User's Playback.")]
+    [ProducesResponseType(typeof(TogglePlaybackRepeatModeResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [Authorize(Roles = UserRoles.Listener)]
+    [HttpPatch("repeat")]
+    public async Task<ActionResult<TogglePlaybackRepeatModeResponse>> ToggleRepeatMode(
+        [FromBody] ManipulatePlaybackRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        Result<TogglePlaybackRepeatModeCommandResult> result = await Mediator.Send(
+            new TogglePlaybackRepeatModeCommand(request.DeviceId),
+            cancellationToken);
+        if (result.IsFailure)
+        {
+            ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
+                result,
+                HttpContext);
+
+            return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
+        }
+
+        return Ok(new TogglePlaybackRepeatModeResponse(
+            ((PlaybackRepeatMode)result.Value.RepeatMode).ToString()));
+    }
+
     private async Task<Result<IEnumerable<Guid>>> GetTracksByContextTypeAsync(
         string contextType,
         Guid contextExternalId,
@@ -317,8 +470,7 @@ public sealed class PlaybackController(IMediator mediator)
         {
             return await GetTracksByAlbumContextTypeAsync(contextExternalId, cancellationToken);
         }
-        else if (contextType == PlaybackContext.PlaylistType ||
-                 contextType == PlaybackContext.CollectionType)
+        else if (contextType == PlaybackContext.PlaylistType)
         {
             return await GetTracksByPlaylistContextTypeAsync(contextExternalId, cancellationToken);
         }
@@ -342,7 +494,9 @@ public sealed class PlaybackController(IMediator mediator)
             return Result.Failure<IEnumerable<Guid>>(albumResult.Errors);
         }
 
-        return albumResult.Value.Tracks.Select(t => t.Id).ToList();
+        return albumResult.Value.Tracks
+            .Where(t => t.Status != TrackStatus.Draft.Value)
+            .Select(t => t.Id).ToList();
     }
 
     private async Task<Result<IEnumerable<Guid>>> GetTracksByPlaylistContextTypeAsync(
@@ -374,7 +528,10 @@ public sealed class PlaybackController(IMediator mediator)
             return Result.Failure<IEnumerable<Guid>>(albumResult.Errors);
         }
 
-        var tracks = albumResult.Value.Tracks.Select(t => t.Id).ToList();
+        var tracks = albumResult.Value.Tracks
+            .Where(t => t.Status != TrackStatus.Draft.Value)
+            .Select(t => t.Id).ToList();
+
         tracks.Remove(trackId.Value);
         tracks.Insert(0, trackId.Value);
         return tracks;

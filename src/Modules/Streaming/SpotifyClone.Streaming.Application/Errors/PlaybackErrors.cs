@@ -12,6 +12,10 @@ public static class PlaybackErrors
         "Playlist.EmptyQueue",
         "Playback Queue must have at least one track.");
 
+    public static readonly Error InvalidDevice = new(
+        "Playlist.InvalidDevice",
+        "The provided device is invalid.");
+
     public static readonly Error NotLoggedIn = new(
         "Playlist.NotLoggedIn",
         "User is not authenticated.");

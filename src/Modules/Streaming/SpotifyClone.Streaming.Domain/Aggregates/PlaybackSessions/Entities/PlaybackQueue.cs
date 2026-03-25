@@ -22,8 +22,13 @@ public sealed class PlaybackQueue : Entity<PlaybackQueueId, Guid>
     public void Replace(IList<TrackId> tracks)
         => _tracks = [..tracks.ToList()];
 
-    public void Enqueue(TrackId trackId)
-        => _tracks.Add(trackId);
+    public void Add(TrackId trackId)
+    {
+        if (!_tracks.Contains(trackId))
+        {
+            _tracks.Add(trackId);
+        }
+    }
 
     public void PlayNext(TrackId trackId)
         => _tracks.Insert(0, trackId);
@@ -39,6 +44,9 @@ public sealed class PlaybackQueue : Entity<PlaybackQueueId, Guid>
         _tracks.RemoveAt(0);
         return nextTrack;
     }
+
+    public bool Delete(TrackId trackId)
+        => _tracks.Remove(trackId);
 
     public void Clear()
         => _tracks.Clear();

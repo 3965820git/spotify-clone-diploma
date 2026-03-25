@@ -20,6 +20,7 @@ public sealed class StreamingDomainExceptionMapper : IDomainExceptionMapper
             TrackNotLinkedDomainException => MediaErrors.TrackNotLinkedToAudio,
             InvalidPlaybackContextDomainException => PlaybackErrors.InvalidPlaybackContext,
             EmptyPlaybackQueueDomainException => PlaybackErrors.EmptyQueue,
+            InvalidDeviceDomainException => PlaybackErrors.InvalidDevice,
             _ => CommonErrors.Unknown
         };
 }

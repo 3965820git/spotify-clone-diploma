@@ -1,4 +1,5 @@
-﻿using SpotifyClone.Shared.BuildingBlocks.Domain.Primitives;
+﻿using SpotifyClone.Shared.BuildingBlocks.Domain.Extensions;
+using SpotifyClone.Shared.BuildingBlocks.Domain.Primitives;
 using SpotifyClone.Shared.Kernel.IDs;
 using SpotifyClone.Streaming.Domain.Aggregates.PlaybackSessions.Entities;
 using SpotifyClone.Streaming.Domain.Aggregates.PlaybackSessions.Enums;
@@ -124,7 +125,11 @@ public sealed class PlaybackSession
 
     public void SeekTo(int positionMs, DeviceId deviceId)
     {
-        TryTransferTo(deviceId);
+        if (DeviceId != deviceId)
+        {
+            throw new InvalidDeviceDomainException("You can't seek on this device now.");
+        }
+
         CurrentPositionMs = positionMs;
     }
 
@@ -132,14 +137,14 @@ public sealed class PlaybackSession
     {
         if (DeviceId != deviceId)
         {
-            return;
+            throw new InvalidDeviceDomainException("You can't skip to next track on this device now.");
         }
 
         TrackId? nextTrack = Queue.PopNext();
 
         if (nextTrack != null)
         {
-            SkipTo(nextTrack, deviceId);
+            SkipTo(nextTrack);
         }
         else
         {
@@ -149,13 +154,38 @@ public sealed class PlaybackSession
         }
     }
 
-    internal void SkipTo(TrackId trackId, DeviceId deviceId)
+    public void ToggleShuffle(DeviceId deviceId)
     {
         if (DeviceId != deviceId)
         {
-            return;
+            throw new InvalidDeviceDomainException("You can't toggle Shuffle on this device now.");
         }
 
+        Shuffle = !Shuffle;
+        if (Shuffle)
+        {
+            Queue.Shuffle();
+        }
+    }
+
+    public void ToggleRepeatMode(DeviceId deviceId)
+    {
+        if (DeviceId != deviceId)
+        {
+            throw new InvalidDeviceDomainException("You can't toggle Repeat mode on this device now.");
+        }
+
+        RepeatMode = RepeatMode.Next();
+    }
+
+    public void AddTrackToQueue(TrackId trackId)
+        => Queue.Add(trackId);
+
+    public void RemoveTrackFromQueue(TrackId trackId)
+        => Queue.Delete(trackId);
+
+    internal void SkipTo(TrackId trackId)
+    {
         TrackId = trackId;
         CurrentPositionMs = 0;
         UpdatedAtUtc = DateTimeOffset.UtcNow;
