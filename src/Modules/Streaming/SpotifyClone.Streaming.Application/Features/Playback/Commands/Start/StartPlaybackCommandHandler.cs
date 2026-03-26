@@ -35,6 +35,7 @@ internal sealed class StartPlaybackCommandHandler(
         }
 
         var userId = UserId.From(_currentUser.Id);
+        TrackId? startTrackId = request.StartTrackId is null ? null : TrackId.From(request.StartTrackId.Value);
         var deviceId = DeviceId.From(request.DeviceId);
         var context = PlaybackContext.From(request.ContextType, request.ContextExternalId);
         DateTimeOffset nowUtc = DateTimeOffset.UtcNow;
@@ -44,13 +45,19 @@ internal sealed class StartPlaybackCommandHandler(
         if (session is null)
         {
             session = PlaybackSession.Create(
-                PlaybackSessionId.New(), userId, deviceId, context, nowUtc, tracks.ToList());
+                PlaybackSessionId.New(), userId, startTrackId, deviceId, context, nowUtc, tracks.ToList());
         }
         else
         {
-            session.StartNewPlayback(deviceId, context, nowUtc, 0, tracks);
+            session.StartNewPlayback(
+                startTrackId, deviceId, context, nowUtc, 0, tracks);
         }
         await _unit.PlaybackSessions.SaveAsync(session, cancellationToken);
+
+        if (session.TrackId is null)
+        {
+            return new StartPlaybackCommandResult();
+        }
 
         AudioAssetId? id = await _audioAssetReadService.GetByTrackId(session.TrackId, cancellationToken);
         if (id is null)

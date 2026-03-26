@@ -5,6 +5,7 @@ using SpotifyClone.Api.Contracts.v1.Streaming.Playback.AddTrackToQueue;
 using SpotifyClone.Api.Contracts.v1.Streaming.Playback.GetQueue;
 using SpotifyClone.Api.Contracts.v1.Streaming.Playback.ManipulatePlayback;
 using SpotifyClone.Api.Contracts.v1.Streaming.Playback.RemoveTrackFromQueue;
+using SpotifyClone.Api.Contracts.v1.Streaming.Playback.SkipToNext;
 using SpotifyClone.Api.Contracts.v1.Streaming.Playback.StartPlayback;
 using SpotifyClone.Api.Contracts.v1.Streaming.Playback.ToggleRepeatMode;
 using SpotifyClone.Api.Contracts.v1.Streaming.Playback.ToggleShuffle;
@@ -97,8 +98,7 @@ public sealed class PlaybackController(IMediator mediator)
         if (playbackResult.IsFailure)
         {
             ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
-                playbackResult,
-                HttpContext);
+                playbackResult, HttpContext);
 
             return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
         }
@@ -128,8 +128,7 @@ public sealed class PlaybackController(IMediator mediator)
         if (result.IsFailure)
         {
             ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
-                result,
-                HttpContext);
+                result, HttpContext);
 
             return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
         }
@@ -155,8 +154,7 @@ public sealed class PlaybackController(IMediator mediator)
         if (queueResult.IsFailure)
         {
             ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
-                queueResult,
-                HttpContext);
+                queueResult, HttpContext);
             return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
         }
 
@@ -166,8 +164,7 @@ public sealed class PlaybackController(IMediator mediator)
         if (queueResult.IsFailure)
         {
             ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
-                currentTrackResult,
-                HttpContext);
+                currentTrackResult, HttpContext);
             return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
         }
 
@@ -180,8 +177,7 @@ public sealed class PlaybackController(IMediator mediator)
             if (tracksInQueueResult.IsFailure)
             {
                 ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
-                    tracksInQueueResult,
-                    HttpContext);
+                    tracksInQueueResult, HttpContext);
                 return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
             }
             tracksInQueue = tracksInQueueResult.Value;
@@ -211,8 +207,7 @@ public sealed class PlaybackController(IMediator mediator)
         if (trackResult.IsFailure)
         {
             ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
-                trackResult,
-                HttpContext);
+                trackResult, HttpContext);
 
             return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
         }
@@ -223,8 +218,7 @@ public sealed class PlaybackController(IMediator mediator)
         if (addTrackToQueueResult.IsFailure)
         {
             ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
-                addTrackToQueueResult,
-                HttpContext);
+                addTrackToQueueResult, HttpContext);
 
             return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
         }
@@ -251,8 +245,7 @@ public sealed class PlaybackController(IMediator mediator)
         if (trackResult.IsFailure)
         {
             ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
-                trackResult,
-                HttpContext);
+                trackResult, HttpContext);
 
             return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
         }
@@ -263,8 +256,7 @@ public sealed class PlaybackController(IMediator mediator)
         if (removeTrackFromQueueResult.IsFailure)
         {
             ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
-                removeTrackFromQueueResult,
-                HttpContext);
+                removeTrackFromQueueResult, HttpContext);
 
             return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
         }
@@ -291,8 +283,7 @@ public sealed class PlaybackController(IMediator mediator)
         if (result.IsFailure)
         {
             ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
-                result,
-                HttpContext);
+                result, HttpContext);
 
             return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
         }
@@ -319,8 +310,7 @@ public sealed class PlaybackController(IMediator mediator)
         if (result.IsFailure)
         {
             ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
-                result,
-                HttpContext);
+                result, HttpContext);
 
             return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
         }
@@ -349,8 +339,7 @@ public sealed class PlaybackController(IMediator mediator)
         if (result.IsFailure)
         {
             ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
-                result,
-                HttpContext);
+                result, HttpContext);
 
             return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
         }
@@ -379,8 +368,7 @@ public sealed class PlaybackController(IMediator mediator)
         if (result.IsFailure)
         {
             ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
-                result,
-                HttpContext);
+                result, HttpContext);
 
             return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
         }
@@ -390,7 +378,7 @@ public sealed class PlaybackController(IMediator mediator)
 
     [EndpointSummary("Skip to next Track")]
     [EndpointDescription("Skips the Playback to the next Track in the Queue.")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(SkipToNextTrackResponse), StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -401,19 +389,48 @@ public sealed class PlaybackController(IMediator mediator)
         [FromBody] ManipulatePlaybackRequest request,
         CancellationToken cancellationToken = default)
     {
-        Result<SkipToNextTrackCommandResult> result = await Mediator.Send(
-            new SkipToNextTrackCommand(request.DeviceId),
-            cancellationToken);
-        if (result.IsFailure)
-        {
-            ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
-                result,
-                HttpContext);
+        Result<SkipToNextTrackCommandResult> skipToNextResult;
 
-            return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
+        while (true)
+        {
+            skipToNextResult = await Mediator.Send(
+                new SkipToNextTrackCommand(request.DeviceId),
+                cancellationToken);
+            if (skipToNextResult.IsFailure)
+            {
+                ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
+                    skipToNextResult, HttpContext);
+
+                return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
+            }
+
+            // If there's nothing to play, exit
+            if (skipToNextResult.Value.TrackId is null &&
+                skipToNextResult.Value.IsQueueEmpty)
+            {
+                break;
+            }
+
+            // If there's a current Track to play, check if it's playable;
+            // if it's playable - exit;
+            // if it's not - skip to the next track
+            if (skipToNextResult.Value.TrackId is not null)
+            {
+                Result<TrackSummary> trackResult = await Mediator.Send(
+                    new GetTrackSummaryQuery(skipToNextResult.Value.TrackId.Value),
+                    cancellationToken);
+                if (trackResult.IsSuccess && trackResult.Value.Status != TrackStatus.Draft.Value)
+                {
+                    break;
+                }
+            }
         }
 
-        return NoContent();
+        return Ok(new SkipToNextTrackResponse(
+            skipToNextResult.Value.HlsUrl,
+            skipToNextResult.Value.DashUrl,
+            skipToNextResult.Value.StartPositionMs,
+            skipToNextResult.Value.TrackId));
     }
 
     [EndpointSummary("Toggle Playback Shuffle")]
@@ -435,8 +452,7 @@ public sealed class PlaybackController(IMediator mediator)
         if (result.IsFailure)
         {
             ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
-                result,
-                HttpContext);
+                result, HttpContext);
 
             return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
         }
@@ -464,8 +480,7 @@ public sealed class PlaybackController(IMediator mediator)
         if (result.IsFailure)
         {
             ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
-                result,
-                HttpContext);
+                result, HttpContext);
 
             return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
         }

@@ -62,7 +62,7 @@ public sealed class PlaybackSessionRedisRepository
                 queueJson, _jsonOptions)
             ?? throw new JsonException("Failed to deserialize JSON into a PlaybackQueue object.");
 
-            snapshot = snapshot with { Queue = queueSnapshot };
+            snapshot = snapshot with { CurrentQueue = queueSnapshot };
         }
 
         return PlaybackSession.FromSnapshot(snapshot);
@@ -92,7 +92,7 @@ public sealed class PlaybackSessionRedisRepository
         string sessionKey = GetSessionKey(sessionSnapshot.UserId);
         await _cache.SetStringAsync(sessionKey, sessionJson, _options, cancellationToken);
 
-        string queueJson = JsonSerializer.Serialize(sessionSnapshot.Queue, _jsonOptions);
+        string queueJson = JsonSerializer.Serialize(sessionSnapshot.CurrentQueue, _jsonOptions);
         string queueKey = GetQueueKey(sessionSnapshot.UserId);
         await _cache.SetStringAsync(queueKey, queueJson, _options, cancellationToken);
     }

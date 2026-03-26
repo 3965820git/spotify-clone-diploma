@@ -3,7 +3,7 @@
 public sealed record PlaybackSessionSnapshot(
     Guid Id,
     Guid UserId,
-    Guid TrackId,
+    Guid? TrackId,
     Guid DeviceId,
     string ContextType,
     Guid? ContextExternalId,
@@ -12,4 +12,5 @@ public sealed record PlaybackSessionSnapshot(
     bool IsShuffled,
     int RepeatMode,
     DateTimeOffset UpdatedAtUtc,
-    IEnumerable<Guid> Queue);
+    IEnumerable<Guid> CurrentQueue,
+    IEnumerable<Guid> OriginalQueue);

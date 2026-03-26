@@ -3,7 +3,7 @@
 public sealed record PlaybackSessionDetails(
     Guid Id,
     Guid UserId,
-    Guid TrackId,
+    Guid? TrackId,
     Guid DeviceId,
     string ContextType,
     Guid? ContextExternalId,
