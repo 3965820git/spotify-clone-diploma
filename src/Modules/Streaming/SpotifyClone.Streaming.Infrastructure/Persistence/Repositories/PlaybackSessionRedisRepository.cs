@@ -1,8 +1,10 @@
 ﻿using System.Text.Json;
 using Microsoft.Extensions.Caching.Distributed;
+using Newtonsoft.Json.Linq;
 using SpotifyClone.Shared.Kernel.IDs;
 using SpotifyClone.Streaming.Domain.Aggregates.PlaybackSessions;
 using SpotifyClone.Streaming.Domain.Aggregates.PlaybackSessions.ValueObjects;
+using SpotifyClone.Streaming.Infrastructure.Persistence.Models;
 
 namespace SpotifyClone.Streaming.Infrastructure.Persistence.Repositories;
 
@@ -53,16 +55,19 @@ public sealed class PlaybackSessionRedisRepository
         // 2. Десеріалізуємо основу (SessionCore)
         PlaybackSessionSnapshot snapshot = JsonSerializer.Deserialize<PlaybackSessionSnapshot>(
             sessionJson, _jsonOptions)
-            ?? throw new JsonException("Failed to deserialize JSON into a PlaybackSession object.");
+            ?? throw new JsonException("Failed to deserialize JSON into a valid Session.");
 
         // 3. Десеріалізуємо чергу, якщо вона є
         if (!string.IsNullOrEmpty(queueJson))
         {
-            IEnumerable<Guid> queueSnapshot = JsonSerializer.Deserialize<IEnumerable<Guid>>(
-                queueJson, _jsonOptions)
-            ?? throw new JsonException("Failed to deserialize JSON into a PlaybackQueue object.");
+            PlaybackQueueData queueData = JsonSerializer.Deserialize<PlaybackQueueData>(queueJson, _jsonOptions)
+                ?? throw new JsonException("Failed to deserialize JSON into a valid Queue.");
 
-            snapshot = snapshot with { CurrentQueue = queueSnapshot };
+            snapshot = snapshot with
+            {
+                CurrentQueue = queueData.CurrentQueue,
+                OriginalQueue = queueData.OriginalQueue
+            };
         }
 
         return PlaybackSession.FromSnapshot(snapshot);
@@ -73,8 +78,8 @@ public sealed class PlaybackSessionRedisRepository
         CancellationToken cancellationToken = default)
     {
         PlaybackSessionSnapshot sessionSnapshot = session.ToSnapshot();
-        var sessionWithoutQueue = new
-        {
+
+        var sessionData = new PlaybackSessionData(
             sessionSnapshot.Id,
             sessionSnapshot.UserId,
             sessionSnapshot.TrackId,
@@ -85,14 +90,13 @@ public sealed class PlaybackSessionRedisRepository
             sessionSnapshot.IsPlaying,
             sessionSnapshot.IsShuffled,
             sessionSnapshot.RepeatMode,
-            sessionSnapshot.UpdatedAtUtc
-        };
-
-        string sessionJson = JsonSerializer.Serialize(sessionWithoutQueue, _jsonOptions);
+            sessionSnapshot.UpdatedAtUtc);
+        string sessionJson = JsonSerializer.Serialize(sessionData, _jsonOptions);
         string sessionKey = GetSessionKey(sessionSnapshot.UserId);
         await _cache.SetStringAsync(sessionKey, sessionJson, _options, cancellationToken);
 
-        string queueJson = JsonSerializer.Serialize(sessionSnapshot.CurrentQueue, _jsonOptions);
+        var queueData = new PlaybackQueueData(sessionSnapshot.CurrentQueue, sessionSnapshot.OriginalQueue);
+        string queueJson = JsonSerializer.Serialize(queueData, _jsonOptions);
         string queueKey = GetQueueKey(sessionSnapshot.UserId);
         await _cache.SetStringAsync(queueKey, queueJson, _options, cancellationToken);
     }

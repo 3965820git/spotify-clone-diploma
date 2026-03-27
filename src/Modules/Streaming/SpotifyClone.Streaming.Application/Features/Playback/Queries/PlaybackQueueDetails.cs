@@ -1,5 +1,5 @@
 ﻿namespace SpotifyClone.Streaming.Application.Features.Playback.Queries;
 
 public sealed record PlaybackQueueDetails(
-    Guid CurrentTrackId,
+    Guid? CurrentTrackId,
     IEnumerable<Guid> TracksInQueue);

@@ -5,6 +5,7 @@ using SpotifyClone.Streaming.Application.Abstractions.Data;
 using SpotifyClone.Streaming.Application.Features.Playback.Queries;
 using SpotifyClone.Streaming.Domain.Aggregates.PlaybackSessions.Enums;
 using SpotifyClone.Streaming.Domain.Aggregates.PlaybackSessions.ValueObjects;
+using SpotifyClone.Streaming.Infrastructure.Persistence.Models;
 
 namespace SpotifyClone.Streaming.Infrastructure.Persistence.Queries;
 
@@ -70,7 +71,10 @@ internal sealed class PlaybackSessionRedisReadService
             return [];
         }
 
-        return JsonSerializer.Deserialize<IEnumerable<Guid>>(json, _jsonOptions) ?? [];
+        PlaybackQueueData queueData = JsonSerializer.Deserialize<PlaybackQueueData>(json, _jsonOptions)
+            ?? throw new JsonException("Failed to deserialize JSON into a valid Queue.");
+
+        return queueData.CurrentQueue;
     }
 
     private static string GetSessionKey(Guid userId) => $"{SessionKeyPrefix}{userId}";

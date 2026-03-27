@@ -78,16 +78,21 @@ public sealed class PlaybackQueue : Entity<PlaybackQueueId, Guid>
 
     internal TrackId? PopNext(PlaybackRepeatMode repeatMode, bool isShuffled)
     {
-        if (IsEmpty && repeatMode == PlaybackRepeatMode.All)
+        if (IsEmpty)
         {
-            _currentTracks = [ .._originalTracks];
-
-            if (isShuffled)
+            if (repeatMode == PlaybackRepeatMode.All)
             {
-                Shuffle();
-            }
+                _currentTracks = [.. _originalTracks];
 
-            return null;
+                if (isShuffled)
+                {
+                    Shuffle();
+                }
+            }
+            else if (repeatMode == PlaybackRepeatMode.Off)
+            {
+                return null;
+            }
         }
 
         TrackId nextTrack = _currentTracks[0];

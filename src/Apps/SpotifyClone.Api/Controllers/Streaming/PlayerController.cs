@@ -158,14 +158,18 @@ public sealed class PlaybackController(IMediator mediator)
             return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
         }
 
-        Result<TrackSummary> currentTrackResult = await Mediator.Send(
-            new GetTrackSummaryQuery(queueResult.Value.CurrentTrackId),
-            cancellationToken);
-        if (queueResult.IsFailure)
+        Result<TrackSummary>? currentTrackResult = null;
+        if (queueResult.Value.CurrentTrackId is not null)
         {
-            ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
-                currentTrackResult, HttpContext);
-            return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
+            currentTrackResult = await Mediator.Send(
+            new GetTrackSummaryQuery(queueResult.Value.CurrentTrackId.Value),
+            cancellationToken);
+            if (queueResult.IsFailure)
+            {
+                ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
+                    currentTrackResult, HttpContext);
+                return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
+            }
         }
 
         TrackList tracksInQueue = new([]);
@@ -184,7 +188,7 @@ public sealed class PlaybackController(IMediator mediator)
         }
 
         return Ok(new GetPlaybackQueueResponse(
-            currentTrackResult.Value,
+            currentTrackResult?.Value,
             tracksInQueue.Tracks));
     }
 
