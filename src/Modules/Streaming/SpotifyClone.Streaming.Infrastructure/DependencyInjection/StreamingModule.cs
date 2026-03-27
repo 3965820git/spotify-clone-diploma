@@ -20,6 +20,7 @@ using SpotifyClone.Streaming.Domain.Aggregates.AudioAssets;
 using SpotifyClone.Streaming.Domain.Aggregates.ImageAssets;
 using SpotifyClone.Streaming.Domain.Aggregates.PlaybackSessions;
 using SpotifyClone.Streaming.Infrastructure.Media;
+using SpotifyClone.Streaming.Infrastructure.Notifications;
 using SpotifyClone.Streaming.Infrastructure.Persistence;
 using SpotifyClone.Streaming.Infrastructure.Persistence.Database;
 using SpotifyClone.Streaming.Infrastructure.Persistence.Queries;
@@ -57,6 +58,7 @@ public static class StreamingModule
 
         services.AddSingleton<IMediaService, FfmpegMediaService>();
         services.AddSingleton<IFileStorage, MinioFileStorage>();
+        services.AddSingleton<IStreamingNotificationClient, SignalRStreamingNotificationClient>();
 
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<IStreamingUnitOfWork>());
         services.AddScoped<IStreamingUnitOfWork, StreamingEfCoreUnitOfWork>();

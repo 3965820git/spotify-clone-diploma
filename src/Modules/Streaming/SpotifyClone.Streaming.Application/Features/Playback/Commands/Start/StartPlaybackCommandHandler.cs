@@ -17,13 +17,15 @@ internal sealed class StartPlaybackCommandHandler(
     IStreamingUnitOfWork unit,
     IAudioAssetReadService audioAssetReadService,
     IFileStorage storage,
-    ICurrentUser currentUser)
+    ICurrentUser currentUser,
+    IStreamingNotificationClient notificationClient)
     : ICommandHandler<StartPlaybackCommand, StartPlaybackCommandResult>
 {
     private readonly IStreamingUnitOfWork _unit = unit;
     private readonly IAudioAssetReadService _audioAssetReadService = audioAssetReadService;
     private readonly IFileStorage _storage = storage;
     private readonly ICurrentUser _currentUser = currentUser;
+    private readonly IStreamingNotificationClient _notificationClient = notificationClient;
 
     public async Task<Result<StartPlaybackCommandResult>> Handle(
         StartPlaybackCommand request,
@@ -36,6 +38,7 @@ internal sealed class StartPlaybackCommandHandler(
 
         var userId = UserId.From(_currentUser.Id);
         TrackId? startTrackId = request.StartTrackId is null ? null : TrackId.From(request.StartTrackId.Value);
+        DeviceId? oldDeviceId = null;
         var deviceId = DeviceId.From(request.DeviceId);
         var context = PlaybackContext.From(request.ContextType, request.ContextExternalId);
         DateTimeOffset nowUtc = DateTimeOffset.UtcNow;
@@ -49,10 +52,10 @@ internal sealed class StartPlaybackCommandHandler(
         }
         else
         {
+            oldDeviceId = session.DeviceId;
             session.StartNewPlayback(
                 startTrackId, deviceId, context, nowUtc, 0, tracks);
         }
-        await _unit.PlaybackSessions.SaveAsync(session, cancellationToken);
 
         if (session.TrackId is null)
         {
@@ -68,6 +71,14 @@ internal sealed class StartPlaybackCommandHandler(
         string baseUrl = _storage.GetAudioRootPath();
         string hlsUrl = $"{baseUrl}/{id.Value}/master.m3u8";
         string dashUrl = $"{baseUrl}/{id.Value}/manifest.mpd";
+
+        await _unit.PlaybackSessions.SaveAsync(session, cancellationToken);
+
+        if (oldDeviceId is not null && oldDeviceId != session.DeviceId)
+        {
+            await _notificationClient.SendStopPlaybackSignalAsync(
+                session.UserId, oldDeviceId, cancellationToken);
+        }
 
         return new StartPlaybackCommandResult(
             hlsUrl, dashUrl,
