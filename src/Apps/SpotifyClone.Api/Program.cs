@@ -1,6 +1,7 @@
 using System.Text;
 using System.Threading.RateLimiting;
 using Hangfire;
+using Hangfire.MemoryStorage;
 using Hangfire.Redis.StackExchange;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
@@ -39,8 +40,12 @@ builder.Services.AddProblemDetails();
 
 builder.Services.AddHttpContextAccessor();
 
-builder.Services.AddHangfire(config => config.UseRedisStorage(
-    builder.Configuration.GetConnectionString("Redis")));
+builder.Services.AddHangfire(config => config
+            .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+            .UseSimpleAssemblyNameTypeSerializer()
+            .UseRecommendedSerializerSettings()
+            .UseRedisStorage(builder.Configuration.GetConnectionString("Redis")));
+builder.Services.AddHangfireServer();
 
 builder.Services.AddSignalR();
 

@@ -61,7 +61,7 @@ public sealed class PlaybackController(IMediator mediator)
         if (!PlaybackContext.IsValid(request.ContextType, request.ContextExternalId))
         {
             ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
-                Result.Failure<StartPlaybackResponse>(PlaybackErrors.InvalidPlaybackContext),
+                Result.Failure<StartPlaybackResponse>(PlaybackErrors.InvalidContext),
                 HttpContext);
             return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
         }

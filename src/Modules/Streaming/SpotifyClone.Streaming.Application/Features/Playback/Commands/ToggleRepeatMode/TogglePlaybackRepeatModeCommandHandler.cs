@@ -30,7 +30,7 @@ internal sealed class TogglePlaybackRepeatModeCommandHandler(
             UserId.From(_currentUser.Id), cancellationToken);
         if (session is null)
         {
-            return Result.Failure<TogglePlaybackRepeatModeCommandResult>(PlaybackErrors.NotFound);
+            return Result.Failure<TogglePlaybackRepeatModeCommandResult>(PlaybackErrors.SessionNotFound);
         }
 
         session.ToggleRepeatMode(DeviceId.From(request.DeviceId));

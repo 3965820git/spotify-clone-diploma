@@ -30,7 +30,7 @@ internal sealed class SyncPlaybackPositionCommandHandler(
             UserId.From(_currentUser.Id), cancellationToken);
         if (session is null)
         {
-            return Result.Failure<SyncPlaybackPositionCommandResult>(PlaybackErrors.NotFound);
+            return Result.Failure<SyncPlaybackPositionCommandResult>(PlaybackErrors.SessionNotFound);
         }
 
         session.SeekTo(request.PositionMs, DeviceId.From(request.DeviceId));

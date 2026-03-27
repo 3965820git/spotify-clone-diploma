@@ -30,7 +30,7 @@ internal sealed class GetPlaybackQueueQueryHandler(
             userId, cancellationToken);
         if (session is null)
         {
-            return Result.Failure<PlaybackQueueDetails>(PlaybackErrors.NotFound);
+            return Result.Failure<PlaybackQueueDetails>(PlaybackErrors.SessionNotFound);
         }
 
         IEnumerable<Guid> tracksInQueue = await _playbackSessionReadService.GetQueue(

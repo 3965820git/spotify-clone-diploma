@@ -16,6 +16,7 @@ internal sealed class AudioAssetEfCoreReadService(
         TrackId trackId,
         CancellationToken cancellationToken = default)
         => await _context.AudioAssets
+        .AsNoTracking()
         .Where(a => a.TrackId == trackId)
         .Select(a => a.Id)
         .SingleOrDefaultAsync(cancellationToken);

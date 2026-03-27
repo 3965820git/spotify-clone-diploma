@@ -30,7 +30,7 @@ internal sealed class ResumePlaybackCommandHandler(
             UserId.From(_currentUser.Id), cancellationToken);
         if (session is null)
         {
-            return Result.Failure<ResumePlaybackCommandResult>(PlaybackErrors.NotFound);
+            return Result.Failure<ResumePlaybackCommandResult>(PlaybackErrors.SessionNotFound);
         }
 
         session.Resume(DeviceId.From(request.DeviceId));

@@ -30,7 +30,7 @@ internal sealed class TogglePlaybackShuffleCommandHandler(
             UserId.From(_currentUser.Id), cancellationToken);
         if (session is null)
         {
-            return Result.Failure<TogglePlaybackShuffleCommandResult>(PlaybackErrors.NotFound);
+            return Result.Failure<TogglePlaybackShuffleCommandResult>(PlaybackErrors.SessionNotFound);
         }
 
         session.ToggleShuffle(DeviceId.From(request.DeviceId));

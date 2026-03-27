@@ -203,15 +203,15 @@ Additional (maybe will be added in the future):
 - Id: PlaybackSessionId (Value Object):
     - Value: Guid
 - UserId: UserId (Value Object - [SharedKernel](#shared-kernel))
-- TrackId: TrackId (Value Object - [SharedKernel](#shared-kernel))
+- TrackId: TrackId? (Value Object - [SharedKernel](#shared-kernel))
 - DeviceId: DeviceId (Value Object):
     - Value: Guid
 - Context: PlaybackContext (Value Object):
-    - ExternalId: Guid?
     - Type: String
+    - ExternalId: Guid?
 - CurrentPositionMs: Integer
 - IsPlaying: Boolean
-- Shuffle: Boolean
+- IsShuffled: Boolean
 - RepeatMode: PlaybackRepeatMode (Enumeration):
     - Off,
     - All,
@@ -225,10 +225,9 @@ Additional (maybe will be added in the future):
 - UserId: UserId (Value Object - [SharedKernel](#shared-kernel))
 - TrackId: TrackId (Value Object - [SharedKernel](#shared-kernel))
 - Context: PlaybackContext (Value Object):
-    - ExternalId: Guid?
     - Type: String
-- PlayedAt: DateTime
-- PlayedDurationMs: Integer
+    - ExternalId: Guid?
+- PlayedAtUtc: DateTimeOffset
 
 ## Search BC
 

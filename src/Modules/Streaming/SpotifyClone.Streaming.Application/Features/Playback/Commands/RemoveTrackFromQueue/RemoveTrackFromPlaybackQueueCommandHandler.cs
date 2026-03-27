@@ -29,7 +29,7 @@ internal sealed class RemoveTrackFromPlaybackQueueCommandHandler(
             UserId.From(_currentUser.Id), cancellationToken);
         if (session is null)
         {
-            return Result.Failure<RemoveTrackFromPlaybackQueueCommandResult>(PlaybackErrors.NotFound);
+            return Result.Failure<RemoveTrackFromPlaybackQueueCommandResult>(PlaybackErrors.SessionNotFound);
         }
 
         session.RemoveTrackFromQueue(TrackId.From(request.TrackId));

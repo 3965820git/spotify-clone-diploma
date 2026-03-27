@@ -30,7 +30,7 @@ internal sealed class PausePlaybackCommandHandler(
             UserId.From(_currentUser.Id), cancellationToken);
         if (session is null)
         {
-            return Result.Failure<PausePlaybackCommandResult>(PlaybackErrors.NotFound);
+            return Result.Failure<PausePlaybackCommandResult>(PlaybackErrors.SessionNotFound);
         }
 
         session.Pause(DeviceId.From(request.DeviceId));

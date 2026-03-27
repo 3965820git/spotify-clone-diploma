@@ -27,6 +27,6 @@ internal sealed class GetPlaybackSessionDetailsQueryHandler(
         PlaybackSessionDetails? playbackSession = await _playbackSessionReadService.GetDetails(
             UserId.From(_currentUser.Id), cancellationToken);
 
-        return playbackSession ?? Result.Failure<PlaybackSessionDetails>(PlaybackErrors.NotFound);
+        return playbackSession ?? Result.Failure<PlaybackSessionDetails>(PlaybackErrors.SessionNotFound);
     }
 }

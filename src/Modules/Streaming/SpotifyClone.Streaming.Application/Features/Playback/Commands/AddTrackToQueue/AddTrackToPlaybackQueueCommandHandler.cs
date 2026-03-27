@@ -29,7 +29,7 @@ internal sealed class AddTrackToPlaybackQueueCommandHandler(
             UserId.From(_currentUser.Id), cancellationToken);
         if (session is null)
         {
-            return Result.Failure<AddTrackToPlaybackQueueCommandResult>(PlaybackErrors.NotFound);
+            return Result.Failure<AddTrackToPlaybackQueueCommandResult>(PlaybackErrors.SessionNotFound);
         }
 
         session.AddTrackToQueue(TrackId.From(request.TrackId));

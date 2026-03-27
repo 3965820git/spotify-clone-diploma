@@ -8,152 +8,201 @@ using SpotifyClone.Streaming.Infrastructure.Persistence.Database;
 
 #nullable disable
 
-namespace SpotifyClone.Streaming.Infrastructure.Persistence.Migrations
+namespace SpotifyClone.Streaming.Infrastructure.Persistence.Migrations;
+
+[DbContext(typeof(StreamingAppDbContext))]
+partial class StreamingAppDbContextModelSnapshot : ModelSnapshot
 {
-    [DbContext(typeof(StreamingAppDbContext))]
-    partial class StreamingAppDbContextModelSnapshot : ModelSnapshot
+    protected override void BuildModel(ModelBuilder modelBuilder)
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
-        {
 #pragma warning disable 612, 618
-            modelBuilder
-                .HasDefaultSchema("streaming")
-                .HasAnnotation("ProductVersion", "10.0.2")
-                .HasAnnotation("Relational:MaxIdentifierLength", 63);
+        modelBuilder
+            .HasDefaultSchema("streaming")
+            .HasAnnotation("ProductVersion", "10.0.3")
+            .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+        NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("SpotifyClone.Shared.BuildingBlocks.Application.Outbox.OutboxMessage", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
+        modelBuilder.Entity("SpotifyClone.Shared.BuildingBlocks.Application.Outbox.OutboxMessage", b =>
+            {
+                b.Property<Guid>("Id")
+                    .HasColumnType("uuid")
+                    .HasColumnName("id");
 
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("content");
+                b.Property<string>("Content")
+                    .IsRequired()
+                    .HasColumnType("text")
+                    .HasColumnName("content");
 
-                    b.Property<string>("Error")
-                        .HasColumnType("text")
-                        .HasColumnName("error");
+                b.Property<string>("Error")
+                    .HasColumnType("text")
+                    .HasColumnName("error");
 
-                    b.Property<DateTimeOffset>("OccurredOn")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("occured_on");
+                b.Property<DateTimeOffset>("OccurredOn")
+                    .HasColumnType("timestamp with time zone")
+                    .HasColumnName("occured_on");
 
-                    b.Property<DateTimeOffset?>("ProcessedOn")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("processed_on");
+                b.Property<DateTimeOffset?>("ProcessedOn")
+                    .HasColumnType("timestamp with time zone")
+                    .HasColumnName("processed_on");
 
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("type");
+                b.Property<string>("Type")
+                    .IsRequired()
+                    .HasMaxLength(255)
+                    .HasColumnType("character varying(255)")
+                    .HasColumnName("type");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.HasIndex("ProcessedOn");
+                b.HasIndex("ProcessedOn");
 
-                    b.ToTable("outbox_messages", "streaming");
-                });
+                b.ToTable("outbox_messages", "streaming");
+            });
 
-            modelBuilder.Entity("SpotifyClone.Streaming.Domain.Aggregates.AudioAssets.AudioAsset", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
+        modelBuilder.Entity("SpotifyClone.Streaming.Domain.Aggregates.AudioAssets.AudioAsset", b =>
+            {
+                b.Property<Guid>("Id")
+                    .HasColumnType("uuid")
+                    .HasColumnName("id");
 
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
+                b.Property<DateTimeOffset>("CreatedAt")
+                    .HasColumnType("timestamp with time zone")
+                    .HasColumnName("created_at");
 
-                    b.Property<TimeSpan>("Duration")
-                        .HasColumnType("interval")
-                        .HasColumnName("duration");
+                b.Property<TimeSpan>("Duration")
+                    .HasColumnType("interval")
+                    .HasColumnName("duration");
 
-                    b.Property<string>("Format")
-                        .HasMaxLength(16)
-                        .HasColumnType("character varying(16)")
-                        .HasColumnName("format");
+                b.Property<string>("Format")
+                    .HasMaxLength(16)
+                    .HasColumnType("character varying(16)")
+                    .HasColumnName("format");
 
-                    b.Property<long?>("SizeInBytes")
-                        .HasColumnType("bigint")
-                        .HasColumnName("size_in_bytes");
+                b.Property<long?>("SizeInBytes")
+                    .HasColumnType("bigint")
+                    .HasColumnName("size_in_bytes");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("status");
+                b.Property<string>("Status")
+                    .IsRequired()
+                    .HasColumnType("text")
+                    .HasColumnName("status");
 
-                    b.Property<Guid?>("TrackId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("track_id");
+                b.Property<Guid?>("TrackId")
+                    .HasColumnType("uuid")
+                    .HasColumnName("track_id");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.ToTable("audio_assets", "streaming");
-                });
+                b.ToTable("audio_assets", "streaming");
+            });
 
-            modelBuilder.Entity("SpotifyClone.Streaming.Domain.Aggregates.ImageAssets.ImageAsset", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
+        modelBuilder.Entity("SpotifyClone.Streaming.Domain.Aggregates.ImageAssets.ImageAsset", b =>
+            {
+                b.Property<Guid>("Id")
+                    .HasColumnType("uuid")
+                    .HasColumnName("id");
 
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
+                b.Property<DateTimeOffset>("CreatedAt")
+                    .HasColumnType("timestamp with time zone")
+                    .HasColumnName("created_at");
 
-                    b.Property<bool>("IsReady")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_ready");
+                b.Property<bool>("IsReady")
+                    .HasColumnType("boolean")
+                    .HasColumnName("is_ready");
 
-                    b.Property<int>("LinkCount")
-                        .HasColumnType("integer")
-                        .HasColumnName("link_count");
+                b.Property<int>("LinkCount")
+                    .HasColumnType("integer")
+                    .HasColumnName("link_count");
 
-                    b.HasKey("Id");
+                b.HasKey("Id");
 
-                    b.ToTable("image_assets", "streaming");
-                });
+                b.ToTable("image_assets", "streaming");
+            });
 
-            modelBuilder.Entity("SpotifyClone.Streaming.Domain.Aggregates.ImageAssets.ImageAsset", b =>
-                {
-                    b.OwnsOne("SpotifyClone.Shared.Kernel.ValueObjects.ImageMetadata", "Metadata", b1 =>
-                        {
-                            b1.Property<Guid>("ImageAssetId")
-                                .HasColumnType("uuid");
+        modelBuilder.Entity("SpotifyClone.Streaming.Domain.Aggregates.PlaybackHistoryEntries.PlaybackHistoryEntry", b =>
+            {
+                b.Property<Guid>("Id")
+                    .HasColumnType("uuid")
+                    .HasColumnName("id");
 
-                            b1.Property<string>("FileType")
-                                .HasMaxLength(10)
-                                .HasColumnType("character varying(10)")
-                                .HasColumnName("metadata_file_type");
+                b.Property<DateTimeOffset>("PlayedAtUtc")
+                    .HasColumnType("timestamp with time zone");
 
-                            b1.Property<int>("Height")
-                                .HasColumnType("integer")
-                                .HasColumnName("metadata_height");
+                b.Property<Guid>("TrackId")
+                    .HasColumnType("uuid")
+                    .HasColumnName("track_id");
 
-                            b1.Property<long>("SizeInBytes")
-                                .HasColumnType("bigint")
-                                .HasColumnName("metadata_size_in_bytes");
+                b.Property<Guid>("UserId")
+                    .HasColumnType("uuid")
+                    .HasColumnName("user_id");
 
-                            b1.Property<int>("Width")
-                                .HasColumnType("integer")
-                                .HasColumnName("metadata_width");
+                b.HasKey("Id");
 
-                            b1.HasKey("ImageAssetId");
+                b.ToTable("playback_history_entries", "streaming");
+            });
 
-                            b1.ToTable("image_assets", "streaming");
+        modelBuilder.Entity("SpotifyClone.Streaming.Domain.Aggregates.ImageAssets.ImageAsset", b =>
+            {
+                b.OwnsOne("SpotifyClone.Shared.Kernel.ValueObjects.ImageMetadata", "Metadata", b1 =>
+                    {
+                        b1.Property<Guid>("ImageAssetId")
+                            .HasColumnType("uuid");
 
-                            b1.WithOwner()
-                                .HasForeignKey("ImageAssetId");
-                        });
+                        b1.Property<string>("FileType")
+                            .HasMaxLength(10)
+                            .HasColumnType("character varying(10)")
+                            .HasColumnName("metadata_file_type");
 
-                    b.Navigation("Metadata");
-                });
+                        b1.Property<int>("Height")
+                            .HasColumnType("integer")
+                            .HasColumnName("metadata_height");
+
+                        b1.Property<long>("SizeInBytes")
+                            .HasColumnType("bigint")
+                            .HasColumnName("metadata_size_in_bytes");
+
+                        b1.Property<int>("Width")
+                            .HasColumnType("integer")
+                            .HasColumnName("metadata_width");
+
+                        b1.HasKey("ImageAssetId");
+
+                        b1.ToTable("image_assets", "streaming");
+
+                        b1.WithOwner()
+                            .HasForeignKey("ImageAssetId");
+                    });
+
+                b.Navigation("Metadata");
+            });
+
+        modelBuilder.Entity("SpotifyClone.Streaming.Domain.Aggregates.PlaybackHistoryEntries.PlaybackHistoryEntry", b =>
+            {
+                b.OwnsOne("SpotifyClone.Streaming.Domain.ValueObjects.PlaybackContext", "Context", b1 =>
+                    {
+                        b1.Property<Guid>("PlaybackHistoryEntryId")
+                            .HasColumnType("uuid");
+
+                        b1.Property<Guid?>("ExternalId")
+                            .HasColumnType("uuid")
+                            .HasColumnName("context_external_id");
+
+                        b1.Property<string>("Type")
+                            .IsRequired()
+                            .HasColumnType("text")
+                            .HasColumnName("context_type");
+
+                        b1.HasKey("PlaybackHistoryEntryId");
+
+                        b1.ToTable("playback_history_entries", "streaming");
+
+                        b1.WithOwner()
+                            .HasForeignKey("PlaybackHistoryEntryId");
+                    });
+
+                b.Navigation("Context")
+                    .IsRequired();
+            });
 #pragma warning restore 612, 618
-        }
     }
 }

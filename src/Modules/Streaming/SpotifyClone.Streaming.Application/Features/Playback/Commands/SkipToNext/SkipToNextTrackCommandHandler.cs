@@ -37,7 +37,7 @@ internal sealed class SkipToNextTrackCommandHandler(
             UserId.From(_currentUser.Id), cancellationToken);
         if (session is null)
         {
-            return Result.Failure<SkipToNextTrackCommandResult>(PlaybackErrors.NotFound);
+            return Result.Failure<SkipToNextTrackCommandResult>(PlaybackErrors.SessionNotFound);
         }
 
         session.SkipToNext(DeviceId.From(request.DeviceId));
