@@ -43,6 +43,10 @@ internal sealed class PlaybackHistoryEntryEfCoreConfiguration
                 .IsRequired();
         });
 
+        builder.Property(e => e.PlayedAtUtc)
+            .HasColumnName("played_at_utc")
+            .IsRequired();
+
         builder.Ignore(e => e.DomainEvents);
     }
 }

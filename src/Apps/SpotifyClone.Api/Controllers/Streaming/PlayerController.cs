@@ -5,7 +5,7 @@ using SpotifyClone.Api.Contracts.v1.Streaming.Playback.AddTrackToQueue;
 using SpotifyClone.Api.Contracts.v1.Streaming.Playback.GetQueue;
 using SpotifyClone.Api.Contracts.v1.Streaming.Playback.ManipulatePlayback;
 using SpotifyClone.Api.Contracts.v1.Streaming.Playback.RemoveTrackFromQueue;
-using SpotifyClone.Api.Contracts.v1.Streaming.Playback.SkipToNext;
+using SpotifyClone.Api.Contracts.v1.Streaming.Playback.SkipToTrack;
 using SpotifyClone.Api.Contracts.v1.Streaming.Playback.StartPlayback;
 using SpotifyClone.Api.Contracts.v1.Streaming.Playback.ToggleRepeatMode;
 using SpotifyClone.Api.Contracts.v1.Streaming.Playback.ToggleShuffle;
@@ -29,6 +29,7 @@ using SpotifyClone.Streaming.Application.Features.Playback.Commands.RemoveTrackF
 using SpotifyClone.Streaming.Application.Features.Playback.Commands.Resume;
 using SpotifyClone.Streaming.Application.Features.Playback.Commands.SeekPosition;
 using SpotifyClone.Streaming.Application.Features.Playback.Commands.SkipToNext;
+using SpotifyClone.Streaming.Application.Features.Playback.Commands.SkipToPrevious;
 using SpotifyClone.Streaming.Application.Features.Playback.Commands.Start;
 using SpotifyClone.Streaming.Application.Features.Playback.Commands.SyncPosition;
 using SpotifyClone.Streaming.Application.Features.Playback.Commands.ToggleRepeatMode;
@@ -382,7 +383,7 @@ public sealed class PlaybackController(IMediator mediator)
 
     [EndpointSummary("Skip to next Track")]
     [EndpointDescription("Skips the Playback to the next Track in the Queue.")]
-    [ProducesResponseType(typeof(SkipToNextTrackResponse), StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(SkipToTrackResponse), StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -410,7 +411,7 @@ public sealed class PlaybackController(IMediator mediator)
 
             // If there's nothing to play, exit
             if (skipToNextResult.Value.TrackId is null &&
-                skipToNextResult.Value.IsQueueEmpty)
+                skipToNextResult.Value.IsCurrentQueueEmpty)
             {
                 break;
             }
@@ -430,11 +431,68 @@ public sealed class PlaybackController(IMediator mediator)
             }
         }
 
-        return Ok(new SkipToNextTrackResponse(
+        return Ok(new SkipToTrackResponse(
             skipToNextResult.Value.HlsUrl,
             skipToNextResult.Value.DashUrl,
             skipToNextResult.Value.StartPositionMs,
             skipToNextResult.Value.TrackId));
+    }
+
+    [EndpointSummary("Skip to previous Track")]
+    [EndpointDescription("Skips the Playback to the previous Track from the history.")]
+    [ProducesResponseType(typeof(SkipToTrackResponse), StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [Authorize(Roles = UserRoles.Listener)]
+    [HttpPost("previous")]
+    public async Task<ActionResult> SkipToPrevious(
+        [FromBody] ManipulatePlaybackRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        Result<SkipToPreviousTrackCommandResult> skipToPreviousResult;
+
+        while (true)
+        {
+            skipToPreviousResult = await Mediator.Send(
+                new SkipToPreviousTrackCommand(request.DeviceId),
+                cancellationToken);
+            if (skipToPreviousResult.IsFailure)
+            {
+                ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
+                    skipToPreviousResult, HttpContext);
+
+                return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
+            }
+
+            // If there's nothing to play, exit
+            if (skipToPreviousResult.Value.TrackId is null &&
+                skipToPreviousResult.Value.IsPreviousQueueEmpty)
+            {
+                break;
+            }
+
+            // If there's a Track to play, check if it's playable;
+            // if it's playable - exit;
+            // if it's not - skip to the previous track
+            if (skipToPreviousResult.Value.TrackId is not null)
+            {
+                Result<TrackSummary> trackResult = await Mediator.Send(
+                    new GetTrackSummaryQuery(skipToPreviousResult.Value.TrackId.Value),
+                    cancellationToken);
+                if (trackResult.IsSuccess && trackResult.Value.Status != TrackStatus.Draft.Value)
+                {
+                    break;
+                }
+            }
+        }
+
+        return Ok(new SkipToTrackResponse(
+            skipToPreviousResult.Value.HlsUrl,
+            skipToPreviousResult.Value.DashUrl,
+            skipToPreviousResult.Value.StartPositionMs,
+            skipToPreviousResult.Value.TrackId));
     }
 
     [EndpointSummary("Toggle Playback Shuffle")]

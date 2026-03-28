@@ -66,6 +66,7 @@ public sealed class PlaybackSessionRedisRepository
             snapshot = snapshot with
             {
                 CurrentQueue = queueData.CurrentQueue,
+                PreviousQueue = queueData.PreviousQueue,
                 OriginalQueue = queueData.OriginalQueue
             };
         }
@@ -95,7 +96,8 @@ public sealed class PlaybackSessionRedisRepository
         string sessionKey = GetSessionKey(sessionSnapshot.UserId);
         await _cache.SetStringAsync(sessionKey, sessionJson, _options, cancellationToken);
 
-        var queueData = new PlaybackQueueData(sessionSnapshot.CurrentQueue, sessionSnapshot.OriginalQueue);
+        var queueData = new PlaybackQueueData(
+            sessionSnapshot.CurrentQueue, sessionSnapshot.PreviousQueue, sessionSnapshot.OriginalQueue);
         string queueJson = JsonSerializer.Serialize(queueData, _jsonOptions);
         string queueKey = GetQueueKey(sessionSnapshot.UserId);
         await _cache.SetStringAsync(queueKey, queueJson, _options, cancellationToken);

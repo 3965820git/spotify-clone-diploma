@@ -3,6 +3,7 @@ using SpotifyClone.Shared.BuildingBlocks.Domain.Primitives;
 using SpotifyClone.Shared.Kernel.IDs;
 using SpotifyClone.Streaming.Domain.Aggregates.PlaybackSessions.Entities;
 using SpotifyClone.Streaming.Domain.Aggregates.PlaybackSessions.Enums;
+using SpotifyClone.Streaming.Domain.Aggregates.PlaybackSessions.Events;
 using SpotifyClone.Streaming.Domain.Aggregates.PlaybackSessions.Exceptions;
 using SpotifyClone.Streaming.Domain.Aggregates.PlaybackSessions.ValueObjects;
 using SpotifyClone.Streaming.Domain.ValueObjects;
@@ -47,10 +48,20 @@ public sealed class PlaybackSession
 
         bool isShuffled = false;
 
-        return new PlaybackSession(
-            id, userId, startTrackId ?? trackList[0], deviceId, context, 0, true, isShuffled, PlaybackRepeatMode.Off,
-            nowUtc.ToUniversalTime(), new PlaybackQueue(
-                PlaybackQueueId.New(), trackList, trackList, startTrackId, isShuffled));
+        var playbackSession = new PlaybackSession(
+            id, userId, startTrackId ?? trackList[0], deviceId, context, 0, true, isShuffled,
+            PlaybackRepeatMode.Off,
+            nowUtc.ToUniversalTime(),
+            new PlaybackQueue(
+                PlaybackQueueId.New(), trackList, [], trackList, startTrackId, isShuffled));
+
+        playbackSession.RaiseDomainEvent(new NewPlaybackStartedDomainEvent(
+            playbackSession.UserId,
+            playbackSession.TrackId!,
+            playbackSession.Context,
+            playbackSession.UpdatedAtUtc));
+
+        return playbackSession;
     }
 
     public void StartNewPlayback(
@@ -86,6 +97,8 @@ public sealed class PlaybackSession
         CurrentPositionMs = positionMs ?? 0;
         IsPlaying = true;
         UpdatedAtUtc = nowUtc.ToUniversalTime();
+
+        RaiseDomainEvent(new NewPlaybackStartedDomainEvent(UserId, TrackId!, Context, UpdatedAtUtc));
     }
 
     public void Resume(DeviceId deviceId)
@@ -141,24 +154,32 @@ public sealed class PlaybackSession
             throw new InvalidDeviceDomainException("You can't skip to next track on this device now.");
         }
 
-        TrackId? nextTrack = TrackId;
+        TrackId? nextTrack =
+            RepeatMode == PlaybackRepeatMode.Track
+            ? TrackId
+            : Queue.PopNext(RepeatMode, IsShuffled);
 
-        if (RepeatMode != PlaybackRepeatMode.Track)
+        if (TrackId is not null)
         {
-            nextTrack = Queue.PopNext(RepeatMode, IsShuffled);
+            Queue.PushToPrevious(TrackId);
         }
 
-        if (nextTrack != null)
+        SkipTo(nextTrack);
+    }
+
+    public void SkipToPrevious(DeviceId deviceId)
+    {
+        if (DeviceId != deviceId)
         {
-            SkipTo(nextTrack);
+            throw new InvalidDeviceDomainException("You can't skip to next track on this device now.");
         }
-        else
+
+        if (TrackId is not null)
         {
-            IsPlaying = false;
-            TrackId = null;
-            CurrentPositionMs = 0;
-            UpdatedAtUtc = DateTimeOffset.UtcNow;
+            Queue.PushToNext(TrackId);
         }
+
+        SkipTo(Queue.PopPrevious(RepeatMode, IsShuffled));
     }
 
     public void ToggleShuffle(DeviceId deviceId)
@@ -191,16 +212,22 @@ public sealed class PlaybackSession
     }
 
     public void AddTrackToQueue(TrackId trackId)
-        => Queue.PlayNext(trackId);
+        => Queue.PushToNext(trackId);
 
     public void RemoveTrackFromQueue(TrackId trackId)
         => Queue.Delete(trackId);
 
-    internal void SkipTo(TrackId trackId)
+    internal void SkipTo(TrackId? trackId)
     {
         TrackId = trackId;
         CurrentPositionMs = 0;
+        IsPlaying = trackId is not null;
         UpdatedAtUtc = DateTimeOffset.UtcNow;
+
+        if (TrackId is not null)
+        {
+            RaiseDomainEvent(new NewPlaybackStartedDomainEvent(UserId, TrackId, Context, UpdatedAtUtc));
+        }
     }
 
     private void TryTransferTo(DeviceId deviceId)
@@ -228,6 +255,7 @@ public sealed class PlaybackSession
             (int)RepeatMode,
             UpdatedAtUtc,
             Queue.CurrentTracks.Select(t => t.Value),
+            Queue.PreviousTracks.Select(t => t.Value),
             Queue.OriginalTracks.Select(t => t.Value));
 
     public static PlaybackSession FromSnapshot(PlaybackSessionSnapshot snapshot)
@@ -245,6 +273,7 @@ public sealed class PlaybackSession
             new PlaybackQueue(
                 PlaybackQueueId.New(),
                 snapshot.CurrentQueue.Select(t => TrackId.From(t)).ToList(),
+                snapshot.PreviousQueue.Select(t => TrackId.From(t)).ToList(),
                 snapshot.OriginalQueue.Select(t => TrackId.From(t)).ToList(),
                 snapshot.TrackId is null ? null : TrackId.From(snapshot.TrackId.Value),
                 snapshot.IsShuffled));

@@ -2,4 +2,5 @@
 
 public sealed record PlaybackQueueData(
     IEnumerable<Guid> CurrentQueue,
+    IEnumerable<Guid> PreviousQueue,
     IEnumerable<Guid> OriginalQueue);

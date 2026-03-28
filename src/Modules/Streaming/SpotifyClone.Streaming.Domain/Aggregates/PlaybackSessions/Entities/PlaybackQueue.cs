@@ -9,15 +9,19 @@ namespace SpotifyClone.Streaming.Domain.Aggregates.PlaybackSessions.Entities;
 public sealed class PlaybackQueue : Entity<PlaybackQueueId, Guid>
 {
     private List<TrackId> _currentTracks = [];
+    private List<TrackId> _previousTracks = [];
     private readonly List<TrackId> _originalTracks = [];
 
     public IReadOnlyList<TrackId> CurrentTracks => _currentTracks.AsReadOnly();
+    public IReadOnlyList<TrackId> PreviousTracks => _previousTracks.AsReadOnly();
     public IReadOnlyList<TrackId> OriginalTracks => _originalTracks.AsReadOnly();
-    public bool IsEmpty => _currentTracks.Count == 0;
+    public bool IsCurrentTracksEmpty => _currentTracks.Count <= 0;
+    public bool IsPreviousTracksEmpty => _previousTracks.Count <= 0;
 
     internal PlaybackQueue(
         PlaybackQueueId id,
         List<TrackId> currentTracks,
+        List<TrackId> previousTracks,
         List<TrackId> originalTracks,
         TrackId? startTrackId,
         bool isShuffled)
@@ -33,6 +37,8 @@ public sealed class PlaybackQueue : Entity<PlaybackQueueId, Guid>
             _originalTracks = originalTracks;
             _currentTracks = currentTracks;
         }
+
+        _previousTracks = previousTracks;
     }
 
     internal void Replace(List<TrackId> tracks, TrackId? startTrackId, bool isShuffled)
@@ -70,7 +76,7 @@ public sealed class PlaybackQueue : Entity<PlaybackQueueId, Guid>
         }
     }
 
-    internal void PlayNext(TrackId trackId)
+    internal void PushToNext(TrackId trackId)
     {
         _currentTracks.Remove(trackId);
         _currentTracks.Insert(0, trackId);
@@ -78,7 +84,7 @@ public sealed class PlaybackQueue : Entity<PlaybackQueueId, Guid>
 
     internal TrackId? PopNext(PlaybackRepeatMode repeatMode, bool isShuffled)
     {
-        if (IsEmpty)
+        if (IsCurrentTracksEmpty)
         {
             if (repeatMode == PlaybackRepeatMode.All)
             {
@@ -101,18 +107,51 @@ public sealed class PlaybackQueue : Entity<PlaybackQueueId, Guid>
         return nextTrack;
     }
 
+    internal void PushToPrevious(TrackId finishedTrackId)
+    {
+        _previousTracks.Remove(finishedTrackId);
+        _previousTracks.Add(finishedTrackId);
+    }
+
+    internal TrackId? PopPrevious(PlaybackRepeatMode repeatMode, bool isShuffled)
+    {
+        if (IsPreviousTracksEmpty)
+        {
+            if (repeatMode == PlaybackRepeatMode.All)
+            {
+                _previousTracks = [.. _originalTracks];
+
+                if (isShuffled)
+                {
+                    Shuffle();
+                }
+            }
+            else if (repeatMode == PlaybackRepeatMode.Off)
+            {
+                return null;
+            }
+        }
+
+        TrackId previousTrack = _previousTracks[^1];
+        _previousTracks.Remove(previousTrack);
+
+        return previousTrack;
+    }
+
     internal bool Delete(TrackId trackId)
     {
-        bool deletedFromOriginalTracks = _originalTracks.Remove(trackId);
         bool deletedFromCurrentTracks = _currentTracks.Remove(trackId);
+        bool deletedFromPreviousTracks = _currentTracks.Remove(trackId);
+        bool deletedFromOriginalTracks = _originalTracks.Remove(trackId);
 
-        return deletedFromCurrentTracks && deletedFromOriginalTracks;
+        return deletedFromCurrentTracks && deletedFromPreviousTracks && deletedFromOriginalTracks;
     }
 
     internal void Clear()
     {
-        _originalTracks.Clear();
         _currentTracks.Clear();
+        _previousTracks.Clear();
+        _originalTracks.Clear();
     }
 
     internal void Shuffle()

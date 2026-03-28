@@ -13,4 +13,5 @@ public sealed record PlaybackSessionSnapshot(
     int RepeatMode,
     DateTimeOffset UpdatedAtUtc,
     IEnumerable<Guid> CurrentQueue,
+    IEnumerable<Guid> PreviousQueue,
     IEnumerable<Guid> OriginalQueue);

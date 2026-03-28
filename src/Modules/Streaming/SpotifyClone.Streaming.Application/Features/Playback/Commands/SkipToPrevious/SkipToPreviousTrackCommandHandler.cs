@@ -12,15 +12,15 @@ using SpotifyClone.Streaming.Domain.Aggregates.AudioAssets.ValueObjects;
 using SpotifyClone.Streaming.Domain.Aggregates.PlaybackSessions;
 using SpotifyClone.Streaming.Domain.ValueObjects;
 
-namespace SpotifyClone.Streaming.Application.Features.Playback.Commands.SkipToNext;
+namespace SpotifyClone.Streaming.Application.Features.Playback.Commands.SkipToPrevious;
 
-internal sealed class SkipToNextTrackCommandHandler(
+internal sealed class SkipToPreviousTrackCommandHandler(
     IStreamingUnitOfWork unit,
     IAudioAssetReadService audioAssetReadService,
     IFileStorage storage,
     ICurrentUser currentUser,
     IPublisher publisher)
-    : ICommandHandler<SkipToNextTrackCommand, SkipToNextTrackCommandResult>
+    : ICommandHandler<SkipToPreviousTrackCommand, SkipToPreviousTrackCommandResult>
 {
     private readonly IStreamingUnitOfWork _unit = unit;
     private readonly IAudioAssetReadService _audioAssetReadService = audioAssetReadService;
@@ -28,33 +28,32 @@ internal sealed class SkipToNextTrackCommandHandler(
     private readonly ICurrentUser _currentUser = currentUser;
     private readonly IPublisher _publisher = publisher;
 
-    public async Task<Result<SkipToNextTrackCommandResult>> Handle(
-        SkipToNextTrackCommand request,
+    public async Task<Result<SkipToPreviousTrackCommandResult>> Handle(
+        SkipToPreviousTrackCommand request,
         CancellationToken cancellationToken)
     {
         if (!_currentUser.IsAuthenticated)
         {
-            return Result.Failure<SkipToNextTrackCommandResult>(PlaybackErrors.NotLoggedIn);
+            return Result.Failure<SkipToPreviousTrackCommandResult>(PlaybackErrors.NotLoggedIn);
         }
+        var userId = UserId.From(_currentUser.Id);
 
-        PlaybackSession? session = await _unit.PlaybackSessions.GetByUserIdAsync(
-            UserId.From(_currentUser.Id), cancellationToken);
+        PlaybackSession? session = await _unit.PlaybackSessions.GetByUserIdAsync(userId, cancellationToken);
         if (session is null)
         {
-            return Result.Failure<SkipToNextTrackCommandResult>(PlaybackErrors.SessionNotFound);
+            return Result.Failure<SkipToPreviousTrackCommandResult>(PlaybackErrors.SessionNotFound);
         }
 
-        session.SkipToNext(DeviceId.From(request.DeviceId));
-
+        session.SkipToPrevious(DeviceId.From(request.DeviceId));
         if (session.TrackId is null)
         {
-            return new SkipToNextTrackCommandResult(session.Queue.IsCurrentTracksEmpty);
+            return new SkipToPreviousTrackCommandResult(session.Queue.IsPreviousTracksEmpty);
         }
 
         AudioAssetId? id = await _audioAssetReadService.GetByTrackId(session.TrackId, cancellationToken);
         if (id is null)
         {
-            return Result.Failure<SkipToNextTrackCommandResult>(MediaErrors.MediaAssetNotFound);
+            return Result.Failure<SkipToPreviousTrackCommandResult>(MediaErrors.MediaAssetNotFound);
         }
 
         string baseUrl = _storage.GetAudioRootPath();
@@ -68,10 +67,10 @@ internal sealed class SkipToNextTrackCommandHandler(
             await _publisher.Publish(domainEvent, cancellationToken);
         }
 
-        return new SkipToNextTrackCommandResult(
-            session.Queue.IsCurrentTracksEmpty,
+        return new SkipToPreviousTrackCommandResult(
+            session.Queue.IsPreviousTracksEmpty,
             hlsUrl, dashUrl,
             session.CurrentPositionMs,
-            session.TrackId.Value);
+            session.TrackId!.Value);
     }
 }

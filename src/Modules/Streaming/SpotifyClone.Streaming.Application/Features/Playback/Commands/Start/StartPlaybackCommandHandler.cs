@@ -1,6 +1,8 @@
-﻿using SpotifyClone.Shared.BuildingBlocks.Application.Abstractions.Commands;
+﻿using MediatR;
+using SpotifyClone.Shared.BuildingBlocks.Application.Abstractions.Commands;
 using SpotifyClone.Shared.BuildingBlocks.Application.Abstractions.Primitives;
 using SpotifyClone.Shared.BuildingBlocks.Application.Results;
+using SpotifyClone.Shared.BuildingBlocks.Domain.Primitives;
 using SpotifyClone.Shared.Kernel.IDs;
 using SpotifyClone.Streaming.Application.Abstractions;
 using SpotifyClone.Streaming.Application.Abstractions.Data;
@@ -18,7 +20,8 @@ internal sealed class StartPlaybackCommandHandler(
     IAudioAssetReadService audioAssetReadService,
     IFileStorage storage,
     ICurrentUser currentUser,
-    IStreamingNotificationClient notificationClient)
+    IStreamingNotificationClient notificationClient,
+    IPublisher publisher)
     : ICommandHandler<StartPlaybackCommand, StartPlaybackCommandResult>
 {
     private readonly IStreamingUnitOfWork _unit = unit;
@@ -26,6 +29,7 @@ internal sealed class StartPlaybackCommandHandler(
     private readonly IFileStorage _storage = storage;
     private readonly ICurrentUser _currentUser = currentUser;
     private readonly IStreamingNotificationClient _notificationClient = notificationClient;
+    private readonly IPublisher _publisher = publisher;
 
     public async Task<Result<StartPlaybackCommandResult>> Handle(
         StartPlaybackCommand request,
@@ -72,7 +76,12 @@ internal sealed class StartPlaybackCommandHandler(
         string hlsUrl = $"{baseUrl}/{id.Value}/master.m3u8";
         string dashUrl = $"{baseUrl}/{id.Value}/manifest.mpd";
 
+        // needs to be moved into _unit.CommitAsync() somehow
         await _unit.PlaybackSessions.SaveAsync(session, cancellationToken);
+        foreach (DomainEvent domainEvent in session.DomainEvents)
+        {
+            await _publisher.Publish(domainEvent, cancellationToken);
+        }
 
         if (oldDeviceId is not null && oldDeviceId != session.DeviceId)
         {

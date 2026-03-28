@@ -31,7 +31,7 @@ public sealed class PlaybackHistoryEntry
             throw new InvalidPlayedAtDateDomainException("Played at date cannot be in the future");
         }
 
-        return new PlaybackHistoryEntry(id, userId, trackId, context, playedAtUtc);
+        return new PlaybackHistoryEntry(id, userId, trackId, context, playedAtUtc.ToUniversalTime());
     }
 
     private PlaybackHistoryEntry(
