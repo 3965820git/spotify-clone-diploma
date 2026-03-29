@@ -1,11 +1,13 @@
 using System.Text;
 using System.Threading.RateLimiting;
 using Hangfire;
+using Hangfire.MemoryStorage;
 using Hangfire.Redis.StackExchange;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using Serilog;
@@ -18,6 +20,7 @@ using SpotifyClone.Playlists.Infrastructure.DependencyInjection;
 using SpotifyClone.Playlists.Infrastructure.Persistence.Database;
 using SpotifyClone.Shared.BuildingBlocks.Infrastructure.DependencyInjection;
 using SpotifyClone.Streaming.Infrastructure.DependencyInjection;
+using SpotifyClone.Streaming.Infrastructure.Notifications;
 using SpotifyClone.Streaming.Infrastructure.Persistence.Database;
 using Xabe.FFmpeg;
 
@@ -37,8 +40,14 @@ builder.Services.AddProblemDetails();
 
 builder.Services.AddHttpContextAccessor();
 
-builder.Services.AddHangfire(config => config.UseRedisStorage(
-    builder.Configuration.GetConnectionString("Redis")));
+builder.Services.AddHangfire(config => config
+            .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+            .UseSimpleAssemblyNameTypeSerializer()
+            .UseRecommendedSerializerSettings()
+            .UseRedisStorage(builder.Configuration.GetConnectionString("Redis")));
+builder.Services.AddHangfireServer();
+
+builder.Services.AddSignalR();
 
 builder.Services
     .AddAuthentication(options =>
@@ -46,21 +55,42 @@ builder.Services
         options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
         options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
     })
-    .AddJwtBearer(options
-    => options.TokenValidationParameters = new TokenValidationParameters
+    .AddJwtBearer(options =>
     {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
 
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        ValidAudience = builder.Configuration["Jwt:Audience"],
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
 
-        IssuerSigningKey = new SymmetricSecurityKey(
+            IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"]!)),
 
-        ClockSkew = TimeSpan.Zero
+            ClockSkew = TimeSpan.FromSeconds(30)
+        };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                StringValues accessToken = context.Request.Query["access_token"];
+
+                PathString path = context.HttpContext.Request.Path;
+
+                // 3. ПЕРЕВІРКА: Ми допомагаємо ТІЛЬКИ SignalR запитам
+                if (!string.IsNullOrEmpty(accessToken) &&
+                    path.StartsWithSegments("/hubs/streaming"))
+                {
+                    context.Token = accessToken;
+                }
+
+                return Task.CompletedTask;
+            }
+        };
     })
     .AddGoogle(options =>
     {
@@ -149,8 +179,9 @@ app.UseRouting();
 app.UseRateLimiter();
 
 app.UseExceptionHandler();
-
 app.UseStatusCodePages();
+
+app.MapHub<StreamingHub>("/hubs/streaming");
 
 app.UseAuthentication();
 app.UseAuthorization();

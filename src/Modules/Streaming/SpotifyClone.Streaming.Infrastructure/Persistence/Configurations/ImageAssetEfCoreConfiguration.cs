@@ -6,7 +6,8 @@ using SpotifyClone.Streaming.Infrastructure.Persistence.Configurations.Converter
 
 namespace SpotifyClone.Streaming.Infrastructure.Persistence.Configurations;
 
-internal sealed class ImageAssetEfCoreConfiguration : IEntityTypeConfiguration<ImageAsset>
+internal sealed class ImageAssetEfCoreConfiguration
+    : IEntityTypeConfiguration<ImageAsset>
 {
     public void Configure(EntityTypeBuilder<ImageAsset> builder)
     {

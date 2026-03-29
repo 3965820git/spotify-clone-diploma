@@ -14,7 +14,6 @@ using SpotifyClone.Api.Contracts.v1.Accounts.Profile.EditProfileDetails;
 using SpotifyClone.Api.Contracts.v1.Accounts.Profile.LinkNewAvatar;
 using SpotifyClone.Api.Mappers;
 using SpotifyClone.Playlists.Application.Features.Playlists.Queries;
-using SpotifyClone.Playlists.Application.Features.Playlists.Queries.GetAllByCurrentUser;
 using SpotifyClone.Playlists.Application.Features.Playlists.Queries.GetAllByOwner;
 using SpotifyClone.Shared.BuildingBlocks.Application.Auth;
 using SpotifyClone.Shared.BuildingBlocks.Application.Results;
@@ -93,33 +92,6 @@ public sealed class UsersController(IMediator mediator)
     {
         Result<CurrentUserDetails> result = await Mediator.Send(
             new GetCurrentUserDetailsQuery(),
-            cancellationToken);
-        if (result.IsFailure)
-        {
-            ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
-                result,
-                HttpContext);
-
-            return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
-        }
-
-        return Ok(result.Value);
-    }
-
-    [EndpointSummary("Get current User Playlists")]
-    [EndpointDescription("Returns the current User's playlists.")]
-    [ProducesResponseType(typeof(PlaylistList), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    [Authorize(Roles = UserRoles.Listener)]
-    [HttpGet("me/playlists")]
-    public async Task<ActionResult<PlaylistList>> GetCurrentUserPlaylists(
-        CancellationToken cancellationToken = default)
-    {
-        Result<PlaylistList> result = await Mediator.Send(
-            new GetAllPlaylistsByCurrentUserQuery(),
             cancellationToken);
         if (result.IsFailure)
         {

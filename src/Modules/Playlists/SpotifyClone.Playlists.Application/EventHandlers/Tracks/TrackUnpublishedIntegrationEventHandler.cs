@@ -19,11 +19,7 @@ internal sealed class TrackUnpublishedIntegrationEventHandler(
     {
         if (!await _unit.TrackReferences.ExistsAsync(notification.TrackId, cancellationToken))
         {
-            _logger.LogError(
-                "Track {TrackId} was not found in the Playlists module.",
-                notification.TrackId);
-            throw new InvalidOperationException(
-                $"Track {notification.TrackId} was not found in the Playlists module.");
+            return;
         }
 
         await _unit.TrackReferences.MarkAsNotPublishedAsync(notification.TrackId, cancellationToken);

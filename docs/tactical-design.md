@@ -203,20 +203,20 @@ Additional (maybe will be added in the future):
 - Id: PlaybackSessionId (Value Object):
     - Value: Guid
 - UserId: UserId (Value Object - [SharedKernel](#shared-kernel))
-- TrackId: TrackId (Value Object - [SharedKernel](#shared-kernel))
-- StartedAt: DateTime
-- EndedAt: DateTime?
+- TrackId: TrackId? (Value Object - [SharedKernel](#shared-kernel))
+- DeviceId: DeviceId (Value Object):
+    - Value: Guid
+- Context: PlaybackContext (Value Object):
+    - Type: String
+    - ExternalId: Guid?
 - CurrentPositionMs: Integer
-- IsPaused: Boolean
-- ShuffleMode: Boolean (in future - Enumeration)
+- IsPlaying: Boolean
+- IsShuffled: Boolean
 - RepeatMode: PlaybackRepeatMode (Enumeration):
-    - RepeatOff
-    - RepeatAll
-    - RepeatOne
-- DeviceType: PlaybackDeviceType (Enumeration):
-    - Web
-    - Desktop
-    - Mobile
+    - Off,
+    - All,
+    - Track
+- UpdatedAtUtc: DateTimeOffset
 
 ### PlaybackHistoryEntry
 
@@ -224,15 +224,10 @@ Additional (maybe will be added in the future):
     - Value: Guid
 - UserId: UserId (Value Object - [SharedKernel](#shared-kernel))
 - TrackId: TrackId (Value Object - [SharedKernel](#shared-kernel))
-- PlayedAt: DateTime
-- PlayedSeconds: uint
-- Completed: Boolean
-
-### LikedTrack
-
-- UserId: UserId (Value Object - [SharedKernel](#shared-kernel))
-- TrackId: TrackId (Value Object - [SharedKernel](#shared-kernel))
-- LikedAt: DateTime
+- Context: PlaybackContext (Value Object):
+    - Type: String
+    - ExternalId: Guid?
+- PlayedAtUtc: DateTimeOffset
 
 ## Search BC
 

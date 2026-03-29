@@ -7,8 +7,20 @@ namespace SpotifyClone.Catalog.Application.Abstractions.Data;
 
 public interface ITrackReadService
 {
+    Task<bool> ExistsAsync(
+        TrackId id,
+        CancellationToken cancellationToken = default);
+
     Task<TrackDetails?> GetDetailsAsync(
         TrackId id,
+        CancellationToken cancellationToken = default);
+
+    Task<TrackSummary?> GetSummaryAsync(
+        TrackId id,
+        CancellationToken cancellationToken = default);
+
+    Task<IEnumerable<TrackSummary>> GetAllByIdsAsync(
+        IEnumerable<TrackId> ids,
         CancellationToken cancellationToken = default);
 
     Task<IEnumerable<TrackSummary>> GetAllByGenreIdAsync(

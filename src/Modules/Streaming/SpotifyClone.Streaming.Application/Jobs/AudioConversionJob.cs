@@ -93,7 +93,13 @@ public sealed class AudioConversionJob(
             throw new Exception($"Failed to get metadata from {audioId}");
         }
 
-        AudioAsset? audioAsset = await _unit.AudioAssets.GetByIdAsync(AudioAssetId.From(audioId), cancellationToken);
+        AudioAsset? audioAsset = null;
+        for (int i = 0; audioAsset is null && i < 10; i++)
+        {
+            await Task.Delay(1000, cancellationToken);
+            audioAsset = await _unit.AudioAssets.GetByIdAsync(AudioAssetId.From(audioId), cancellationToken);
+        }
+
         if (audioAsset is null)
         {
             _logger.LogError("Audio asset not found for {AudioId}", audioId);

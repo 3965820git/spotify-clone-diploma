@@ -18,7 +18,7 @@ namespace SpotifyClone.Streaming.Infrastructure.Persistence.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("streaming")
-                .HasAnnotation("ProductVersion", "10.0.2")
+                .HasAnnotation("ProductVersion", "10.0.3")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -119,6 +119,29 @@ namespace SpotifyClone.Streaming.Infrastructure.Persistence.Migrations
                     b.ToTable("image_assets", "streaming");
                 });
 
+            modelBuilder.Entity("SpotifyClone.Streaming.Domain.Aggregates.PlaybackHistoryEntries.PlaybackHistoryEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("PlayedAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("played_at_utc");
+
+                    b.Property<Guid>("TrackId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("track_id");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("playback_history_entries", "streaming");
+                });
+
             modelBuilder.Entity("SpotifyClone.Streaming.Domain.Aggregates.ImageAssets.ImageAsset", b =>
                 {
                     b.OwnsOne("SpotifyClone.Shared.Kernel.ValueObjects.ImageMetadata", "Metadata", b1 =>
@@ -152,6 +175,34 @@ namespace SpotifyClone.Streaming.Infrastructure.Persistence.Migrations
                         });
 
                     b.Navigation("Metadata");
+                });
+
+            modelBuilder.Entity("SpotifyClone.Streaming.Domain.Aggregates.PlaybackHistoryEntries.PlaybackHistoryEntry", b =>
+                {
+                    b.OwnsOne("SpotifyClone.Streaming.Domain.ValueObjects.PlaybackContext", "Context", b1 =>
+                        {
+                            b1.Property<Guid>("PlaybackHistoryEntryId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<Guid?>("ExternalId")
+                                .HasColumnType("uuid")
+                                .HasColumnName("context_external_id");
+
+                            b1.Property<string>("Type")
+                                .IsRequired()
+                                .HasColumnType("text")
+                                .HasColumnName("context_type");
+
+                            b1.HasKey("PlaybackHistoryEntryId");
+
+                            b1.ToTable("playback_history_entries", "streaming");
+
+                            b1.WithOwner()
+                                .HasForeignKey("PlaybackHistoryEntryId");
+                        });
+
+                    b.Navigation("Context")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

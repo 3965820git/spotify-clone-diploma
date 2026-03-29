@@ -1,6 +1,5 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 using SpotifyClone.Shared.BuildingBlocks.Application.Abstractions;
 using SpotifyClone.Shared.BuildingBlocks.Domain.Primitives;
 

@@ -10,6 +10,7 @@ using SpotifyClone.Shared.BuildingBlocks.Application.Abstractions;
 using SpotifyClone.Shared.BuildingBlocks.Application.Abstractions.Mappers;
 using SpotifyClone.Streaming.Application;
 using SpotifyClone.Streaming.Application.Abstractions;
+using SpotifyClone.Streaming.Application.Abstractions.Data;
 using SpotifyClone.Streaming.Application.Abstractions.Repositories;
 using SpotifyClone.Streaming.Application.Abstractions.Services;
 using SpotifyClone.Streaming.Application.Behaviors;
@@ -17,9 +18,13 @@ using SpotifyClone.Streaming.Application.Errors;
 using SpotifyClone.Streaming.Application.Jobs;
 using SpotifyClone.Streaming.Domain.Aggregates.AudioAssets;
 using SpotifyClone.Streaming.Domain.Aggregates.ImageAssets;
+using SpotifyClone.Streaming.Domain.Aggregates.PlaybackHistoryEntries;
+using SpotifyClone.Streaming.Domain.Aggregates.PlaybackSessions;
 using SpotifyClone.Streaming.Infrastructure.Media;
+using SpotifyClone.Streaming.Infrastructure.Notifications;
 using SpotifyClone.Streaming.Infrastructure.Persistence;
 using SpotifyClone.Streaming.Infrastructure.Persistence.Database;
+using SpotifyClone.Streaming.Infrastructure.Persistence.Queries;
 using SpotifyClone.Streaming.Infrastructure.Persistence.Repositories;
 using SpotifyClone.Streaming.Infrastructure.Storage;
 
@@ -41,25 +46,25 @@ public static class StreamingModule
                 configuration.GetConnectionString("MainDb"),
                 b => b.MigrationsAssembly(typeof(StreamingAppDbContext).Assembly.FullName)));
 
-        services.AddHangfire(config => config
-            .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
-            .UseSimpleAssemblyNameTypeSerializer()
-            .UseRecommendedSerializerSettings()
-            .UseMemoryStorage());
-        services.AddHangfireServer();
-
         services.AddHostedService<MinioInitializer>();
 
         services.Configure<MinioOptions>(configuration.GetSection(MinioOptions.SectionName));
 
         services.AddSingleton<IMediaService, FfmpegMediaService>();
         services.AddSingleton<IFileStorage, MinioFileStorage>();
+        services.AddSingleton<IStreamingNotificationClient, SignalRStreamingNotificationClient>();
 
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<IStreamingUnitOfWork>());
         services.AddScoped<IStreamingUnitOfWork, StreamingEfCoreUnitOfWork>();
         services.AddScoped<IAudioAssetRepository, AudioAssetEfCoreRepository>();
         services.AddScoped<IImageAssetRepository, ImageAssetEfCoreRepository>();
+        services.AddScoped<IPlaybackSessionRepository, PlaybackSessionRedisRepository>();
+        services.AddScoped<IPlaybackHistoryEntryRepository, PlaybackHistoryEntryEfCoreRepository>();
         services.AddScoped<IOutboxRepository, OutboxEfCoreRepository>();
+
+        services.AddScoped<IAudioAssetReadService, AudioAssetEfCoreReadService>();
+        services.AddScoped<IPlaybackSessionReadService, PlaybackSessionRedisReadService>();
+        services.AddScoped<IPlaybackHistoryEntryReadService, PlaybackHistoryEntryEfCoreReadService>();
         services.AddScoped<IDomainExceptionMapper, StreamingDomainExceptionMapper>();
 
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(StreamingTransactionalPipelineBehavior<,>));

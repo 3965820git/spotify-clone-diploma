@@ -6,11 +6,11 @@ namespace SpotifyClone.Streaming.Application.Features.Media.Queries.GetAudioAsse
 
 internal sealed class GetAudioAssetQueryHandler(
     IFileStorage storage)
-    : IQueryHandler<GetAudioAssetQuery, GetAudioAssetQueryResult>
+    : IQueryHandler<GetAudioAssetQuery, AudioAssetDetails>
 {
     private readonly IFileStorage _storage = storage;
 
-    public async Task<Result<GetAudioAssetQueryResult>> Handle(
+    public async Task<Result<AudioAssetDetails>> Handle(
         GetAudioAssetQuery request,
         CancellationToken cancellationToken)
     {
@@ -18,6 +18,6 @@ internal sealed class GetAudioAssetQueryHandler(
         string hlsUrl = $"{baseUrl}/{request.AudioId}/master.m3u8";
         string dashUrl = $"{baseUrl}/{request.AudioId}/manifest.mpd";
 
-        return new GetAudioAssetQueryResult(request.AudioId, hlsUrl, dashUrl);
+        return new AudioAssetDetails(request.AudioId, hlsUrl, dashUrl);
     }
 }

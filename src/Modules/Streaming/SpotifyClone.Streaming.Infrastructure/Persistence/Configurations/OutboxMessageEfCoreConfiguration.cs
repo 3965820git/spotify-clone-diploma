@@ -4,7 +4,8 @@ using SpotifyClone.Shared.BuildingBlocks.Application.Outbox;
 
 namespace SpotifyClone.Streaming.Infrastructure.Persistence.Configurations;
 
-internal sealed class OutboxMessageEfCoreConfiguration : IEntityTypeConfiguration<OutboxMessage>
+internal sealed class OutboxMessageEfCoreConfiguration
+    : IEntityTypeConfiguration<OutboxMessage>
 {
     public void Configure(EntityTypeBuilder<OutboxMessage> builder)
     {

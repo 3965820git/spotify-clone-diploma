@@ -5,7 +5,8 @@ using SpotifyClone.Streaming.Infrastructure.Persistence.Configurations.Converter
 
 namespace SpotifyClone.Streaming.Infrastructure.Persistence.Configurations;
 
-internal sealed class AudioAssetEfCoreConfiguration : IEntityTypeConfiguration<AudioAsset>
+internal sealed class AudioAssetEfCoreConfiguration
+    : IEntityTypeConfiguration<AudioAsset>
 {
     public void Configure(EntityTypeBuilder<AudioAsset> builder)
     {
@@ -41,7 +42,7 @@ internal sealed class AudioAssetEfCoreConfiguration : IEntityTypeConfiguration<A
 
         builder.Property(x => x.TrackId)
             .HasColumnName("track_id")
-            .HasConversion(StreamingEfCoreValueConverters.TrackIdConverter);
+            .HasConversion(StreamingEfCoreValueConverters.NullableTrackIdConverter);
 
         builder.Ignore(x => x.DomainEvents);
     }

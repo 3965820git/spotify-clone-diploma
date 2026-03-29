@@ -23,6 +23,7 @@ internal sealed class GenreEfCoreReadService(
         GenreId id,
         CancellationToken cancellationToken = default)
         => await _context.Genres
+        .AsNoTracking()
         .Where(g => g.Id == id)
         .Select(g => new GenreDetails(
             g.Id.Value,

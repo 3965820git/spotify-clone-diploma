@@ -4,4 +4,4 @@ namespace SpotifyClone.Streaming.Application.Features.Media.Queries.GetAudioAsse
 
 public sealed record GetAudioAssetQuery(
     Guid AudioId)
-    : IQuery<GetAudioAssetQueryResult>;
+    : IQuery<AudioAssetDetails>;

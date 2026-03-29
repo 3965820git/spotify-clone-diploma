@@ -6,4 +6,5 @@ public sealed record ArtistSummary(
     Guid Id,
     string Name,
     string Status,
+    Guid? OwnerId,
     ImageMetadataDetails? Avatar);
