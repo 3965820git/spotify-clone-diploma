@@ -15,6 +15,11 @@
     <Project Path="src/Modules/Accounts/SpotifyClone.Accounts.Domain/SpotifyClone.Accounts.Domain.csproj" Id="44b6d0a5-3ac9-4943-9116-4c5242fc68b1" />
     <Project Path="src/Modules/Accounts/SpotifyClone.Accounts.Infrastructure/SpotifyClone.Accounts.Infrastructure.csproj" Id="546dd04c-4395-4792-bb5b-103c8a27c107" />
   </Folder>
+  <Folder Name="/src/Modules/Billing/">
+    <Project Path="src/Modules/Billing/SpotifyClone.Billing.Application/SpotifyClone.Billing.Application.csproj" Id="f46ebae2-ab91-4d87-ac8c-3dfb5f537053" />
+    <Project Path="src/Modules/Billing/SpotifyClone.Billing.Domain/SpotifyClone.Billing.Domain.csproj" Id="40ba9c0f-781c-4afe-af95-6cef158477d1" />
+    <Project Path="src/Modules/Billing/SpotifyClone.Billing.Infrastructure/SpotifyClone.Billing.Infrastructure.csproj" Id="9aa35290-8e95-4a9a-afb1-761833a169fa" />
+  </Folder>
   <Folder Name="/src/Modules/Catalog/">
     <Project Path="src/Modules/Catalog/SpotifyClone.Catalog.Application/SpotifyClone.Catalog.Application.csproj" Id="9d403607-8e17-4389-8990-6dc7c6260ba4" />
     <Project Path="src/Modules/Catalog/SpotifyClone.Catalog.Domain/SpotifyClone.Catalog.Domain.csproj" Id="7db7d70b-2b9d-4761-8e17-c28b870f8235" />
