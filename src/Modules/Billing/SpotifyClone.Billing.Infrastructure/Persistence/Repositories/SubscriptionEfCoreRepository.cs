@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SpotifyClone.Billing.Domain.Aggregates.Subscriptions;
-using SpotifyClone.Billing.Domain.Aggregates.Subscriptions.ValueObjects;
 using SpotifyClone.Billing.Infrastructure.Persistence.Database;
+using SpotifyClone.Shared.Kernel.IDs;
 
 namespace SpotifyClone.Billing.Infrastructure.Persistence.Repositories;
 
@@ -16,11 +16,11 @@ internal sealed class SubscriptionEfCoreRepository(
         CancellationToken cancellationToken = default)
         => await _subscriptions.AddAsync(subscription, cancellationToken);
 
-    public async Task<Subscription?> GetByIdAsync(
-        SubscriptionId id,
+    public async Task<Subscription?> GetByUserIdAsync(
+        UserId userId,
         CancellationToken cancellationToken = default)
         => await _subscriptions
-        .Where(s => s.Id == id)
+        .Where(s => s.UserId == userId)
         .SingleOrDefaultAsync(cancellationToken);
 
     public async Task DeleteAsync(

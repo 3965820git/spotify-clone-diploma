@@ -1,4 +1,4 @@
-﻿using SpotifyClone.Billing.Domain.Aggregates.Subscriptions.ValueObjects;
+﻿using SpotifyClone.Shared.Kernel.IDs;
 
 namespace SpotifyClone.Billing.Domain.Aggregates.Subscriptions;
 
@@ -8,8 +8,8 @@ public interface ISubscriptionRepository
         Subscription subscription,
         CancellationToken cancellationToken = default);
 
-    Task<Subscription?> GetByIdAsync(
-            SubscriptionId id,
+    Task<Subscription?> GetByUserIdAsync(
+            UserId userId,
             CancellationToken cancellationToken = default);
 
     Task DeleteAsync(

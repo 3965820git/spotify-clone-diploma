@@ -42,6 +42,11 @@ public sealed class Subscription : AggregateRoot<SubscriptionId, Guid>
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(externalSubscriptionId);
 
+        if (Status == SubscriptionStatus.Active)
+        {
+            return;
+        }
+
         if (periodEnd <= periodStart)
         {
             throw new InvalidSubscriptionPeriodDomainException(

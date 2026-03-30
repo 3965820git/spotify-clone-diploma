@@ -51,7 +51,7 @@ public static class BillingModule
         services.AddScoped<ISubscriptionReadService, SubscriptionEfCoreReadService>();
 
         services.AddScoped<IDomainExceptionMapper, BillingDomainExceptionMapper>();
-        services.AddScoped<ICheckoutService, StripeCheckoutService>();
+        services.AddScoped<IPaymentProviderService, StripePaymentProviderService>();
 
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(BillingTransactionalPipelineBehavior<,>));
         services.AddTransient<ProcessOutboxMessagesJob>();
