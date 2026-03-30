@@ -56,8 +56,8 @@ public sealed class Subscription : AggregateRoot<SubscriptionId, Guid>
 
         ExternalIdentity = new PaymentProviderIdentity(ExternalIdentity.CustomerId, externalSubscriptionId);
         Status = SubscriptionStatus.Active;
-        CurrentPeriodStart = periodStart;
-        CurrentPeriodEnd = periodEnd;
+        CurrentPeriodStart = periodStart.ToUniversalTime();
+        CurrentPeriodEnd = periodEnd.ToUniversalTime();
         CancelAtPeriodEnd = false;
 
         RaiseDomainEvent(new SubscriptionActivatedDomainEvent(Id, UserId));
@@ -80,8 +80,8 @@ public sealed class Subscription : AggregateRoot<SubscriptionId, Guid>
         }
 
         Status = SubscriptionStatus.Active;
-        CurrentPeriodStart = newPeriodStart;
-        CurrentPeriodEnd = newPeriodEnd;
+        CurrentPeriodStart = newPeriodStart.ToUniversalTime();
+        CurrentPeriodEnd = newPeriodEnd.ToUniversalTime();
         CancelAtPeriodEnd = false;
 
         RaiseDomainEvent(new SubscriptionRenewedDomainEvent(Id, UserId));

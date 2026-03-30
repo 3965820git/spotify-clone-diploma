@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using SpotifyClone.Shared.BuildingBlocks.Application.Outbox;
 
-namespace SpotifyClone.Playlists.Infrastructure.Persistence.Configurations;
+namespace SpotifyClone.Billing.Infrastructure.Persistence.Configurations;
 
 internal sealed class OutboxMessageEfCoreConfiguration
     : IEntityTypeConfiguration<OutboxMessage>

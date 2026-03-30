@@ -1,6 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+	<PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+    <PackageReference Include="Stripe.net" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\..\Shared\BuildingBlocks\SpotifyClone.Shared.BuildingBlocks.Application\SpotifyClone.Shared.BuildingBlocks.Application.csproj" />
     <ProjectReference Include="..\..\..\Shared\BuildingBlocks\SpotifyClone.Shared.BuildingBlocks.Domain\SpotifyClone.Shared.BuildingBlocks.Domain.csproj" />
     <ProjectReference Include="..\..\..\Shared\BuildingBlocks\SpotifyClone.Shared.BuildingBlocks.Infrastructure\SpotifyClone.Shared.BuildingBlocks.Infrastructure.csproj" />

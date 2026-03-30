@@ -41,6 +41,7 @@
     <PackageVersion Include="Scrutor.AspNetCore" Version="3.3.0" />
     <PackageVersion Include="Serilog.AspNetCore" Version="10.0.0" />
     <PackageVersion Include="SonarAnalyzer.CSharp" Version="10.20.0.135146" />
+    <PackageVersion Include="Stripe.net" Version="51.0.0" />
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="10.1.4" />
     <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.15.0" />
     <PackageVersion Include="Twilio" Version="7.14.1" />
