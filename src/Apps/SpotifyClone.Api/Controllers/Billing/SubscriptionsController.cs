@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using SpotifyClone.Api.Contracts.v1.Billing.Subscriptions;
 using SpotifyClone.Api.Mappers;
+using SpotifyClone.Billing.Application.Features.Subscriptions.Commands.Cancel;
 using SpotifyClone.Billing.Application.Features.Subscriptions.Commands.CreateCheckoutSession;
 using SpotifyClone.Billing.Application.Features.Subscriptions.Commands.HandleCheckoutWebhook;
 using SpotifyClone.Billing.Application.Models;
@@ -26,7 +27,7 @@ public sealed class BillingController(IMediator mediator)
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     [Authorize(Roles = UserRoles.Listener)]
-    [HttpPost("checkout")]
+    [HttpPost("checkout/me")]
     public async Task<ActionResult<CreateCheckoutSessionResponse>> CreateCheckoutSession(
         CancellationToken cancellationToken = default)
     {
@@ -132,5 +133,30 @@ public sealed class BillingController(IMediator mediator)
         {
             return BadRequest($"Webhook Error: {e.Message}");
         }
+    }
+
+    [EndpointSummary("Cancel Subscription")]
+    [EndpointDescription("Cancel the current user's Subscription.")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [Authorize(Roles = UserRoles.Listener)]
+    [HttpPost("cancel/me")]
+    public async Task<ActionResult> CancelSubscription(
+        CancellationToken cancellationToken = default)
+    {
+        Result<CancelSubscriptionCommandResult> result = await Mediator.Send(
+            new CancelSubscriptionCommand(),
+            cancellationToken);
+        if (result.IsFailure)
+        {
+            ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
+                result, HttpContext);
+
+            return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
+        }
+
+        return NoContent();
     }
 }
