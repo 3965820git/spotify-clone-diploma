@@ -1,11 +1,7 @@
 ﻿namespace SpotifyClone.Billing.Application.Features.Subscriptions.Queries;
 
 public sealed record SubscriptionDetails(
-    Guid Id,
-    Guid UserId,
-    string ExternalCustomerId,
-    string? ExternalSubscriptionId,
-    string Status,
-    DateTimeOffset? CurrentPeriodStart,
+    bool IsPremium,
+    string? Status,
     DateTimeOffset? CurrentPeriodEnd,
-    bool CancelAtPeriodEnd);
+    bool? WillCancelAtPeriodEnd);

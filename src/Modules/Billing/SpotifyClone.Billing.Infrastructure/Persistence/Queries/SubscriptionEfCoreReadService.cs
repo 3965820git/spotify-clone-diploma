@@ -2,7 +2,6 @@
 using SpotifyClone.Billing.Application.Abstractions.Data;
 using SpotifyClone.Billing.Application.Features.Subscriptions.Queries;
 using SpotifyClone.Billing.Domain.Aggregates.Subscriptions.Enums;
-using SpotifyClone.Billing.Domain.Aggregates.Subscriptions.ValueObjects;
 using SpotifyClone.Billing.Infrastructure.Persistence.Database;
 using SpotifyClone.Shared.Kernel.IDs;
 
@@ -14,27 +13,28 @@ internal sealed class SubscriptionEfCoreReadService(
 {
     private readonly BillingAppDbContext _context = context;
 
-    public async Task<SubscriptionDetails?> GetDetailsAsync(
-        SubscriptionId id,
+    public async Task<SubscriptionDetails> GetDetailsByUserIdAsync(
+        UserId userId,
         CancellationToken cancellationToken = default)
         => await _context.Subscriptions
         .AsNoTracking()
-        .Where(s => s.Id == id)
+        .OrderByDescending(s => s.Status == SubscriptionStatus.Active)
+        .ThenByDescending(s => s.CurrentPeriodEnd)
+        .Where(s => s.UserId == userId)
         .Select(s => new SubscriptionDetails(
-            s.Id.Value,
-            s.UserId.Value,
-            s.ExternalIdentity.CustomerId,
-            s.ExternalIdentity.SubscriptionId,
-            s.Status.ToString(),
-            s.CurrentPeriodStart,
+            s.Status == SubscriptionStatus.Active || s.Status == SubscriptionStatus.Canceled,
+            s.Status.ToString().ToLowerInvariant(),
             s.CurrentPeriodEnd,
             s.CancelAtPeriodEnd))
-        .SingleOrDefaultAsync(cancellationToken);
+        .FirstOrDefaultAsync(cancellationToken)
+        ?? new SubscriptionDetails(false, null, null, null);
 
     public async Task<bool> UserHasActiveSubscriptionAsync(
         UserId userId,
         CancellationToken cancellationToken = default)
         => await _context.Subscriptions
         .AsNoTracking()
-        .AnyAsync(s => s.UserId == userId && s.Status == SubscriptionStatus.Active, cancellationToken);
+        .AnyAsync(
+            s => s.UserId == userId && s.Status == SubscriptionStatus.Active,
+            cancellationToken);
 }

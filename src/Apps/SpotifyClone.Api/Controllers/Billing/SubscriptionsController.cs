@@ -7,6 +7,8 @@ using SpotifyClone.Api.Mappers;
 using SpotifyClone.Billing.Application.Features.Subscriptions.Commands.Cancel;
 using SpotifyClone.Billing.Application.Features.Subscriptions.Commands.CreateCheckoutSession;
 using SpotifyClone.Billing.Application.Features.Subscriptions.Commands.HandleCheckoutWebhook;
+using SpotifyClone.Billing.Application.Features.Subscriptions.Queries;
+using SpotifyClone.Billing.Application.Features.Subscriptions.Queries.GetMyDetails;
 using SpotifyClone.Billing.Application.Models;
 using SpotifyClone.Billing.Infrastructure.Payment;
 using SpotifyClone.Shared.BuildingBlocks.Application.Auth;
@@ -16,7 +18,7 @@ using Stripe.Checkout;
 
 namespace SpotifyClone.Api.Controllers.Billing;
 
-[Route("api/v1/billing")]
+[Route("api/v1/billing/me")]
 public sealed class BillingController(IMediator mediator)
     : ApiController(mediator)
 {
@@ -142,8 +144,8 @@ public sealed class BillingController(IMediator mediator)
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     [Authorize(Roles = UserRoles.Listener)]
-    [HttpPost("cancel/me")]
-    public async Task<ActionResult> CancelSubscription(
+    [HttpPost("cancel")]
+    public async Task<ActionResult> Cancel(
         CancellationToken cancellationToken = default)
     {
         Result<CancelSubscriptionCommandResult> result = await Mediator.Send(
@@ -158,5 +160,30 @@ public sealed class BillingController(IMediator mediator)
         }
 
         return NoContent();
+    }
+
+    [EndpointSummary("Get Subscription details")]
+    [EndpointDescription("Get the current user's Subscription details.")]
+    [ProducesResponseType(typeof(SubscriptionDetails), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [Authorize(Roles = UserRoles.Listener)]
+    [HttpGet()]
+    public async Task<ActionResult<SubscriptionDetails>> GetDetails(
+        CancellationToken cancellationToken = default)
+    {
+        Result<SubscriptionDetails> result = await Mediator.Send(
+            new GetMySubscriptionDetailsQuery(),
+            cancellationToken);
+        if (result.IsFailure)
+        {
+            ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
+                result, HttpContext);
+
+            return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
+        }
+
+        return Ok(result.Value);
     }
 }
