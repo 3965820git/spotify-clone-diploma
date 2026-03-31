@@ -69,5 +69,15 @@ public static class BillingModule
             job => job.ProcessAsync(),
             "*/5 * * * * *" // Every 5 seconds (Cron expression)
         );
+
+        recurringJobManager.AddOrUpdate<SubscriptionSyncJob>(
+            "subscription-sync",
+            job => job.ProcessAsync(),
+            Cron.Daily(3));
+
+        RecurringJob.AddOrUpdate<PaymentWarningJob>(
+            "payment-warning",
+            job => job.ProcessAsync(CancellationToken.None),
+            Cron.Daily(10));
     }
 }

@@ -29,7 +29,7 @@ public sealed class BillingController(IMediator mediator)
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     [Authorize(Roles = UserRoles.Listener)]
-    [HttpPost("checkout/me")]
+    [HttpPost("checkout")]
     public async Task<ActionResult<CreateCheckoutSessionResponse>> CreateCheckoutSession(
         CancellationToken cancellationToken = default)
     {
@@ -101,6 +101,18 @@ public sealed class BillingController(IMediator mediator)
                     null,
                     lineItem?.Period?.Start,
                     lineItem?.Period?.End
+                );
+            }
+            else if (stripeEvent.Type == CheckoutWebhookEvents.InvoicePaymentFailed)
+            {
+                var invoice = stripeEvent.Data.Object as Invoice;
+                InvoiceLineItem? lineItem = invoice?.Lines?.Data?.FirstOrDefault();
+
+                command = new HandleCheckoutWebhookCommand(
+                    stripeEvent.Type,
+                    invoice!.CustomerId,
+                    lineItem?.SubscriptionId,
+                    null, null, null
                 );
             }
             else if (stripeEvent.Type == CheckoutWebhookEvents.SubscriptionDeleted)

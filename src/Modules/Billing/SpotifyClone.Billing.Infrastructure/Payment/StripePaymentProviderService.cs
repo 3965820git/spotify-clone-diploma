@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 using SpotifyClone.Billing.Application.Abstractions.Services;
+using SpotifyClone.Billing.Infrastructure.Models;
 using SpotifyClone.Shared.BuildingBlocks.Application.Configuration;
 using Stripe;
 using Stripe.Checkout;
@@ -58,6 +59,40 @@ internal sealed class StripePaymentProviderService(
         Session session = await service.CreateAsync(options, cancellationToken: cancellationToken);
 
         return session.Url;
+    }
+
+    public async Task<string> GetSubscriptionStatusAsync(
+        string externalSubscriptionId,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var service = new SubscriptionService();
+
+            Subscription stripeSubscription = await service.GetAsync(
+                externalSubscriptionId,
+                cancellationToken: cancellationToken);
+
+            return stripeSubscription.Status.ToLowerInvariant();
+        }
+        catch (StripeException ex)
+        {
+            if (ex.StripeError?.Code == PaymentProviderSubscriptionStatuses.ResourceMissing)
+            {
+                return PaymentProviderSubscriptionStatuses.Canceled;
+            }
+
+            throw;
+        }
+    }
+
+    public async Task<string> GetCustomerEmailAsync(
+        string customerId,
+        CancellationToken cancellationToken = default)
+    {
+        var service = new CustomerService();
+        Customer customer = await service.GetAsync(customerId, cancellationToken: cancellationToken);
+        return customer.Email;
     }
 
     public async Task CancelSubscriptionAtPeriodEndAsync(
