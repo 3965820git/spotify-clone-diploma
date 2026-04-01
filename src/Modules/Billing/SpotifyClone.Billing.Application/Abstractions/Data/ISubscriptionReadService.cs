@@ -8,8 +8,4 @@ public interface ISubscriptionReadService
     Task<SubscriptionDetails> GetDetailsByUserIdAsync(
         UserId userId,
         CancellationToken cancellationToken = default);
-
-    Task<bool> UserHasActiveSubscriptionAsync(
-        UserId userId,
-        CancellationToken cancellationToken = default);
 }

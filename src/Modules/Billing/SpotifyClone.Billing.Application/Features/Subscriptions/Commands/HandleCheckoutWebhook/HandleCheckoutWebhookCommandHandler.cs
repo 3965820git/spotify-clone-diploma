@@ -3,10 +3,12 @@ using Microsoft.Extensions.Options;
 using SpotifyClone.Billing.Application.Abstractions;
 using SpotifyClone.Billing.Application.Abstractions.Services;
 using SpotifyClone.Billing.Application.Errors;
+using SpotifyClone.Billing.Application.Features.Subscriptions.Commands.CreateCheckoutSession;
 using SpotifyClone.Billing.Application.Models;
 using SpotifyClone.Billing.Domain.Aggregates.Subscriptions;
 using SpotifyClone.Billing.Domain.Aggregates.Subscriptions.ValueObjects;
 using SpotifyClone.Shared.BuildingBlocks.Application.Abstractions.Commands;
+using SpotifyClone.Shared.BuildingBlocks.Application.Abstractions.Primitives;
 using SpotifyClone.Shared.BuildingBlocks.Application.Configuration;
 using SpotifyClone.Shared.BuildingBlocks.Application.Email;
 using SpotifyClone.Shared.BuildingBlocks.Application.Results;
@@ -44,6 +46,62 @@ internal sealed class HandleCheckoutWebhookCommandHandler(
             _ => new HandleCheckoutWebhookCommandResult(),
         };
 
+    private async Task<Result<HandleCheckoutWebhookCommandResult>> HandleCheckoutCompletedAsync(
+        HandleCheckoutWebhookCommand request,
+        CancellationToken cancellationToken)
+    {
+        if (request.UserId is null || request.SubscriptionId is null)
+        {
+            return Result.Failure<HandleCheckoutWebhookCommandResult>(SubscriptionErrors.InvalidWebhookData);
+        }
+
+        if (await _unit.Subscriptions.UserHasActiveSubscriptionAsync(
+            UserId.From(request.UserId.Value), cancellationToken))
+        {
+            return Result.Failure<HandleCheckoutWebhookCommandResult>(SubscriptionErrors.AlreadyActivated);
+        }
+
+        var subscription = Subscription.Create(
+            SubscriptionId.New(),
+            UserId.From(request.UserId.Value),
+            request.CustomerId!);
+
+        subscription.Activate(
+            request.SubscriptionId,
+            request.PeriodStart ?? DateTimeOffset.UtcNow,
+            request.PeriodEnd ?? DateTimeOffset.UtcNow.AddDays(30));
+
+        await _unit.Subscriptions.AddAsync(subscription, cancellationToken);
+
+        return new HandleCheckoutWebhookCommandResult();
+    }
+
+    private async Task<Result<HandleCheckoutWebhookCommandResult>> HandleInvoicePaidAsync(
+        HandleCheckoutWebhookCommand request,
+        CancellationToken cancellationToken)
+    {
+        Subscription? subscription = await _unit.Subscriptions.GetByExternalIdAsync(
+            request.SubscriptionId!, cancellationToken);
+
+        if (subscription is null && request.UserId.HasValue)
+        {
+            subscription = await _unit.Subscriptions.GetActiveByUserIdAsync(
+                UserId.From(request.UserId.Value), cancellationToken);
+        }
+
+        if (subscription is null)
+        {
+            return Result.Failure<HandleCheckoutWebhookCommandResult>(SubscriptionErrors.NotFound);
+        }
+
+        if (request.PeriodStart.HasValue && request.PeriodEnd.HasValue)
+        {
+            subscription.Renew(request.PeriodStart.Value, request.PeriodEnd.Value);
+        }
+
+        return new HandleCheckoutWebhookCommandResult();
+    }
+
     private async Task<Result<HandleCheckoutWebhookCommandResult>> HandleInvoicePaymentFailedAsync(
         HandleCheckoutWebhookCommand request,
         CancellationToken cancellationToken)
@@ -80,56 +138,6 @@ internal sealed class HandleCheckoutWebhookCommandHandler(
         if (emailResult.IsFailure)
         {
             _logger.LogError("Failed to send payment failure email to {Email}", customerEmail);
-        }
-
-        return new HandleCheckoutWebhookCommandResult();
-    }
-
-    private async Task<Result<HandleCheckoutWebhookCommandResult>> HandleCheckoutCompletedAsync(
-        HandleCheckoutWebhookCommand request,
-        CancellationToken cancellationToken)
-    {
-        if (request.UserId is null || request.SubscriptionId is null)
-        {
-            return Result.Failure<HandleCheckoutWebhookCommandResult>(SubscriptionErrors.InvalidWebhookData);
-        }
-
-        var subscription = Subscription.Create(
-            SubscriptionId.New(),
-            UserId.From(request.UserId.Value),
-            request.CustomerId!);
-
-        subscription.Activate(
-            request.SubscriptionId,
-            request.PeriodStart ?? DateTimeOffset.UtcNow,
-            request.PeriodEnd ?? DateTimeOffset.UtcNow.AddDays(30));
-
-        await _unit.Subscriptions.AddAsync(subscription, cancellationToken);
-
-        return new HandleCheckoutWebhookCommandResult();
-    }
-
-    private async Task<Result<HandleCheckoutWebhookCommandResult>> HandleInvoicePaidAsync(
-        HandleCheckoutWebhookCommand request,
-        CancellationToken cancellationToken)
-    {
-        Subscription? subscription = await _unit.Subscriptions.GetByExternalIdAsync(
-            request.SubscriptionId!, cancellationToken);
-
-        if (subscription is null && request.UserId.HasValue)
-        {
-            subscription = await _unit.Subscriptions.GetByUserIdAsync(
-                UserId.From(request.UserId.Value), cancellationToken);
-        }
-
-        if (subscription is null)
-        {
-            return Result.Failure<HandleCheckoutWebhookCommandResult>(SubscriptionErrors.NotFound);
-        }
-
-        if (request.PeriodStart.HasValue && request.PeriodEnd.HasValue)
-        {
-            subscription.Renew(request.PeriodStart.Value, request.PeriodEnd.Value);
         }
 
         return new HandleCheckoutWebhookCommandResult();

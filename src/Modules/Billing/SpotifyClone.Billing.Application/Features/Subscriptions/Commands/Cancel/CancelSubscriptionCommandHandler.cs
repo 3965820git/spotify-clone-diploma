@@ -10,24 +10,26 @@ using SpotifyClone.Shared.Kernel.IDs;
 namespace SpotifyClone.Billing.Application.Features.Subscriptions.Commands.Cancel;
 
 internal sealed class CancelSubscriptionCommandHandler(
+    IBillingUnitOfWork unit,
     ICurrentUser currentUser,
-    IPaymentProviderService paymentProviderService,
-    IBillingUnitOfWork unit)
+    IPaymentProviderService paymentProviderService)
     : ICommandHandler<CancelSubscriptionCommand, CancelSubscriptionCommandResult>
 {
     private readonly IBillingUnitOfWork _unit = unit;
+    private readonly ICurrentUser _currentUser = currentUser;
+    private readonly IPaymentProviderService _paymentProviderService = paymentProviderService;
 
     public async Task<Result<CancelSubscriptionCommandResult>> Handle(
         CancelSubscriptionCommand request,
         CancellationToken cancellationToken)
     {
-        if (!currentUser.IsAuthenticated)
+        if (!_currentUser.IsAuthenticated)
         {
             return Result.Failure<CancelSubscriptionCommandResult>(SubscriptionErrors.NotLoggedIn);
         }
 
         var userId = UserId.From(currentUser.Id);
-        Subscription? subscription = await _unit.Subscriptions.GetByUserIdAsync(userId, cancellationToken);
+        Subscription? subscription = await _unit.Subscriptions.GetActiveByUserIdAsync(userId, cancellationToken);
         if (subscription is null)
         {
             return Result.Failure<CancelSubscriptionCommandResult>(SubscriptionErrors.NotFound);
@@ -38,7 +40,7 @@ internal sealed class CancelSubscriptionCommandHandler(
             return Result.Failure<CancelSubscriptionCommandResult>(SubscriptionErrors.InvalidState);
         }
 
-        await paymentProviderService.CancelSubscriptionAtPeriodEndAsync(
+        await _paymentProviderService.CancelSubscriptionAtPeriodEndAsync(
             subscription.ExternalIdentity.SubscriptionId,
             cancellationToken);
 

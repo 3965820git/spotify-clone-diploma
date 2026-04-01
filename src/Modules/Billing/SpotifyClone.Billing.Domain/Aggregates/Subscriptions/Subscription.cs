@@ -65,7 +65,7 @@ public sealed class Subscription : AggregateRoot<SubscriptionId, Guid>
         CurrentPeriodEnd = periodEnd.ToUniversalTime();
         CancelAtPeriodEnd = false;
 
-        RaiseDomainEvent(new SubscriptionActivatedDomainEvent(Id, UserId));
+        RaiseDomainEvent(new SubscriptionActivatedDomainEvent(UserId));
     }
 
     public void Renew(

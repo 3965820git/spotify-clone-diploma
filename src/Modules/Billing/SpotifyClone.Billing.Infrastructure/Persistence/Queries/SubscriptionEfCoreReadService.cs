@@ -28,13 +28,4 @@ internal sealed class SubscriptionEfCoreReadService(
             s.CancelAtPeriodEnd))
         .FirstOrDefaultAsync(cancellationToken)
         ?? new SubscriptionDetails(false, null, null, null);
-
-    public async Task<bool> UserHasActiveSubscriptionAsync(
-        UserId userId,
-        CancellationToken cancellationToken = default)
-        => await _context.Subscriptions
-        .AsNoTracking()
-        .AnyAsync(
-            s => s.UserId == userId && s.Status == SubscriptionStatus.Active,
-            cancellationToken);
 }

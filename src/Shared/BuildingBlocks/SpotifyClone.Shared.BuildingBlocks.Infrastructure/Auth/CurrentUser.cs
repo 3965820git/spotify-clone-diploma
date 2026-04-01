@@ -37,6 +37,15 @@ internal sealed class CurrentUser(
         }
     }
 
+    public bool IsPremium
+    {
+        get
+        {
+            ArgumentNullException.ThrowIfNull(User);
+            return User.HasClaim(c => c.Type == "subscription_level" && c.Value == "premium");
+        }
+    }
+
     public bool IsInRole(string role)
     {
         if (User is null || !IsAuthenticated)

@@ -7,21 +7,27 @@ using Stripe.Checkout;
 
 namespace SpotifyClone.Billing.Infrastructure.Payment;
 
-internal sealed class StripePaymentProviderService(
-    IOptions<StripeSettings> stripeSettings,
-    IOptions<ApplicationSettings> appSettings)
+internal sealed class StripePaymentProviderService
     : IPaymentProviderService
 {
-    private readonly StripeSettings _stripeSettings = stripeSettings.Value;
-    private readonly ApplicationSettings _appSettings = appSettings.Value;
+    private readonly StripeSettings _stripeSettings;
+    private readonly ApplicationSettings _appSettings;
+
+    public StripePaymentProviderService(
+        IOptions<StripeSettings> stripeSettings,
+        IOptions<ApplicationSettings> appSettings)
+    {
+        _stripeSettings = stripeSettings.Value;
+        _appSettings = appSettings.Value;
+
+        StripeConfiguration.ApiKey = _stripeSettings.SecretKey;
+    }
 
     public async Task<string> CreateCheckoutSessionUrlAsync(
         Guid userId,
         string? email,
         CancellationToken cancellationToken = default)
     {
-        StripeConfiguration.ApiKey = _stripeSettings.SecretKey;
-
         var options = new SessionCreateOptions
         {
             CustomerEmail = email,

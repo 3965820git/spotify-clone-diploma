@@ -17,12 +17,20 @@ internal sealed class SubscriptionEfCoreRepository(
         CancellationToken cancellationToken = default)
         => await _subscriptions.AddAsync(subscription, cancellationToken);
 
-    public async Task<Subscription?> GetByUserIdAsync(
+    public async Task<Subscription?> GetActiveByUserIdAsync(
         UserId userId,
         CancellationToken cancellationToken = default)
         => await _subscriptions
-        .Where(s => s.UserId == userId)
+        .Where(s => s.UserId == userId && s.Status == SubscriptionStatus.Active)
         .SingleOrDefaultAsync(cancellationToken);
+
+    public async Task<bool> UserHasActiveSubscriptionAsync(
+        UserId userId,
+        CancellationToken cancellationToken = default)
+        => await _subscriptions
+        .AnyAsync(
+            s => s.UserId == userId && s.Status == SubscriptionStatus.Active,
+            cancellationToken);
 
     public async Task<Subscription?> GetByExternalIdAsync(
         string externalSubscriptionId,

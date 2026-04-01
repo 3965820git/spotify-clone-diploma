@@ -8,9 +8,13 @@ public interface ISubscriptionRepository
         Subscription subscription,
         CancellationToken cancellationToken = default);
 
-    Task<Subscription?> GetByUserIdAsync(
-            UserId userId,
-            CancellationToken cancellationToken = default);
+    Task<Subscription?> GetActiveByUserIdAsync(
+        UserId userId,
+        CancellationToken cancellationToken = default);
+
+    Task<bool> UserHasActiveSubscriptionAsync(
+        UserId userId,
+        CancellationToken cancellationToken = default);
 
     Task<Subscription?> GetByExternalIdAsync(
         string externalSubscriptionId,

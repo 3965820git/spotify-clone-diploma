@@ -99,4 +99,9 @@ public interface IIdentityService
         Guid id,
         ExternalLoginInfoEnvelope loginInfo,
         CancellationToken cancellationToken = default);
+
+    Task<Result> UpdateUserSubscriptionLevelAsync(
+        Guid userId,
+        string subscriptionLevel,
+        CancellationToken cancellationToken = default);
 }

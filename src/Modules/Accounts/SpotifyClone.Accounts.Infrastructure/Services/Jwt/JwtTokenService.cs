@@ -10,7 +10,8 @@ using SpotifyClone.Shared.Kernel.IDs;
 
 namespace SpotifyClone.Accounts.Infrastructure.Services.Jwt;
 
-internal sealed class JwtTokenService(IOptions<JwtOptions> options) : ITokenService
+internal sealed class JwtTokenService(IOptions<JwtOptions> options)
+    : ITokenService
 {
     private readonly JwtOptions _options = options.Value;
     private readonly JwtSecurityTokenHandler _tokenHandler = new();
@@ -18,7 +19,7 @@ internal sealed class JwtTokenService(IOptions<JwtOptions> options) : ITokenServ
     public AccessToken GenerateAccessToken(
         IdentityUserInfo user,
         IReadOnlyCollection<string> roles,
-        IReadOnlyDictionary<string, string>? claims = null)
+        IReadOnlyCollection<Claim>? claims = null)
     {
         DateTime now = DateTime.UtcNow;
 
@@ -54,9 +55,9 @@ internal sealed class JwtTokenService(IOptions<JwtOptions> options) : ITokenServ
 
         if (claims is not null)
         {
-            foreach ((string? key, string? value) in claims)
+            foreach (Claim claim in claims)
             {
-                jwtClaims.Add(new Claim(key, value));
+                jwtClaims.Add(claim);
             }
         }
 

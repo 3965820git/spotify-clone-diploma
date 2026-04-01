@@ -1,4 +1,4 @@
-﻿using SpotifyClone.Billing.Application.Abstractions.Data;
+﻿using SpotifyClone.Billing.Application.Abstractions;
 using SpotifyClone.Billing.Application.Abstractions.Services;
 using SpotifyClone.Billing.Application.Errors;
 using SpotifyClone.Shared.BuildingBlocks.Application.Abstractions.Commands;
@@ -9,12 +9,12 @@ using SpotifyClone.Shared.Kernel.IDs;
 namespace SpotifyClone.Billing.Application.Features.Subscriptions.Commands.CreateCheckoutSession;
 
 internal sealed class CreateCheckoutSessionCommandHandler(
-    ISubscriptionReadService subscriptionReadService,
+    IBillingUnitOfWork unit,
     IPaymentProviderService checkoutService,
     ICurrentUser currentUser)
     : ICommandHandler<CreateCheckoutSessionCommand, CreateCheckoutSessionCommandResult>
 {
-    private readonly ISubscriptionReadService _subscriptionReadService = subscriptionReadService;
+    private readonly IBillingUnitOfWork _unit = unit;
     private readonly IPaymentProviderService _checkoutService = checkoutService;
     private readonly ICurrentUser _currentUser = currentUser;
 
@@ -27,7 +27,7 @@ internal sealed class CreateCheckoutSessionCommandHandler(
             return Result.Failure<CreateCheckoutSessionCommandResult>(SubscriptionErrors.NotLoggedIn);
         }
 
-        if (await _subscriptionReadService.UserHasActiveSubscriptionAsync(
+        if (await _unit.Subscriptions.UserHasActiveSubscriptionAsync(
             UserId.From(_currentUser.Id), cancellationToken))
         {
             return Result.Failure<CreateCheckoutSessionCommandResult>(SubscriptionErrors.AlreadyActivated);
