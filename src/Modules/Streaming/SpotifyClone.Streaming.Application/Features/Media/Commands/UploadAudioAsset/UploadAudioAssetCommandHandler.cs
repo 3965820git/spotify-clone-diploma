@@ -9,7 +9,6 @@ using SpotifyClone.Streaming.Application.Abstractions.Services.Models;
 using SpotifyClone.Streaming.Application.Errors;
 using SpotifyClone.Streaming.Application.Jobs;
 using SpotifyClone.Streaming.Domain.Aggregates.AudioAssets;
-using SpotifyClone.Streaming.Domain.Aggregates.AudioAssets.Enums;
 using SpotifyClone.Streaming.Domain.Aggregates.AudioAssets.ValueObjects;
 
 namespace SpotifyClone.Streaming.Application.Features.Media.Commands.UploadAudioAsset;
@@ -39,8 +38,20 @@ internal sealed class UploadAudioAssetCommandHandler(
         {
             await _storage.SaveTempFileToLocal(request.FileStream, relativeSrcPath);
 
+            AudioMetadata metadata = await _mediaService.GetAudioMetadataAsync(fullPath);
+
+            var audioAsset = AudioAsset.Create(
+                AudioAssetId.From(audioId),
+                metadata.Duration,
+                null, null,
+                TrackId.From(request.TrackId));
+
+            await _unit.AudioAssets.AddAsync(audioAsset, cancellationToken);
+
             _jobService.Enqueue<AudioConversionJob>(job
                 => job.ProcessAsync(request.FileName, audioId));
+
+            return new UploadAudioAssetCommandResult(audioId);
         }
         catch (DomainExceptionBase)
         {
@@ -50,17 +61,5 @@ internal sealed class UploadAudioAssetCommandHandler(
         {
             return Result.Failure<UploadAudioAssetCommandResult>(MediaErrors.AudioUploadFailed);
         }
-
-        AudioMetadata metadata = await _mediaService.GetAudioMetadataAsync(fullPath);
-
-        var audioAsset = AudioAsset.Create(
-            AudioAssetId.From(audioId),
-            metadata.Duration,
-            null, null,
-            TrackId.From(request.TrackId));
-
-        await _unit.AudioAssets.AddAsync(audioAsset, cancellationToken);
-
-        return new UploadAudioAssetCommandResult(audioId);
     }
 }
