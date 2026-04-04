@@ -90,37 +90,34 @@ public class FfmpegMediaService(
                 return Result.Failure(MediaErrors.MediaStreamNotFound);
             }
 
-            _logger.LogInformation("Starting Multi-Bitrate HLS/DASH conversion for {AudioId}...", audioId);
+            _logger.LogInformation("Starting CMAF (HLS + DASH) conversion for {AudioId}...", audioId);
 
-            // Використовуємо прямі слеші для FFmpeg
             string normalizedPath = specificAudioFolder.Replace("\\", "/");
 
             IConversion conversion = FFmpeg.Conversions.New()
-                .AddStream(audioStream) // Це автоматично створює перший потік (a:0)
-                .AddParameter("-map 0:a:0") // Створюємо ДРУГИЙ потік (a:1) вручну
+                .AddStream(audioStream)
+                .AddParameter("-map 0:a:0")
 
-                // ТУТ ВАЖЛИВО: тільки два потоки!
                 .AddParameter("-c:a:0 aac -b:a:0 128k")
                 .AddParameter("-c:a:1 aac -b:a:1 192k")
                 .AddParameter("-vn")
 
-                .AddParameter("-f hls")
-                .AddParameter("-hls_segment_type fmp4")
-                .AddParameter("-hls_time 10")
-                .AddParameter("-hls_list_size 0")
+                .AddParameter("-f dash")
+                .AddParameter("-hls_playlist 1")
 
-                // Мапимо два потоки на дві папки: 0 та 1
-                .AddParameter("-var_stream_map \"a:0,name:0 a:1,name:1\"")
+                .AddParameter("-seg_duration 10")
+                .AddParameter("-use_template 1")
+                .AddParameter("-use_timeline 1")
+                .AddParameter("-dash_segment_type mp4")
 
-                .AddParameter("-hls_playlist_type vod")
-                .AddParameter("-master_pl_name master.m3u8")
+                // Шаблон для ініт-файлів та медіа-чанків всередині папок
+                .AddParameter($"-init_seg_name \"$RepresentationID$/init.mp4\"")
+                .AddParameter($"-media_seg_name \"$RepresentationID$/chunk_$Number%03d$.m4s\"")
 
-                // Використовуємо шаблони для імен файлів
+                // %v підставить 0 або 1 автоматично
                 .AddParameter($"-hls_segment_filename \"{normalizedPath}/%v/chunk_%03d.m4s\"")
 
-                // ВАЖЛИВО: SetOutput має бути таким, щоб FFmpeg міг підставити %v
-                // Не використовувати Path.Combine для частини з %v, бо він може додати зайві слеші
-                .SetOutput($"{normalizedPath}/%v/index.m3u8");
+                .SetOutput($"{normalizedPath}/manifest.mpd");
 
             await conversion.Start();
 

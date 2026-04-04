@@ -58,8 +58,18 @@ internal sealed class SkipToNextTrackCommandHandler(
         }
 
         string baseUrl = _storage.GetAudioRootPath();
-        string hlsUrl = $"{baseUrl}/{id.Value}/master.m3u8";
-        string dashUrl = $"{baseUrl}/{id.Value}/manifest.mpd";
+        string hlsUrl;
+        string? dashUrl;
+        if (_currentUser.IsPremium)
+        {
+            hlsUrl = $"{baseUrl}/{id.Value}/master.m3u8";
+            dashUrl = $"{baseUrl}/{id.Value}/manifest.mpd";
+        }
+        else
+        {
+            hlsUrl = $"{baseUrl}/{id.Value}/media_0.m3u8";
+            dashUrl = null;
+        }
 
         // needs to be moved into _unit.CommitAsync() somehow
         await _unit.PlaybackSessions.SaveAsync(session, cancellationToken);
