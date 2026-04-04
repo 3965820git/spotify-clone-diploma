@@ -5,6 +5,9 @@
 
 #### Static code analysis rule customizations
 
+# S3267: Loops should be simplified with "LINQ" expressions
+dotnet_diagnostic.S3267.severity = suggestion
+
 # CA1310: Specify StringComparison for correctness
 dotnet_diagnostic.CA1310.severity = suggestion
 

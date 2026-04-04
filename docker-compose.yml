@@ -17,6 +17,8 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
       Jwt__SecretKey: some-fairly-super-super-long-secret-key-for-validating-JWTs
+      Minio__Endpoint: minio
+      Minio__LocalScratchPath: /app/wwwroot/temp/conversion
       Minio__AccessKey: admin
       Minio__SecretKey: password123
       ConnectionStrings__MainDb: Host=postgres;Port=5432;Database=spotifyclone_dev;Username=postgres;Password=postgres

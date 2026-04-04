@@ -57,6 +57,7 @@ public sealed class AuthController(IMediator mediator, IHostEnvironment hostEnvi
     [EnableRateLimiting("login-limits")]
     public async Task<ActionResult<RegisterUserResponse>> RegisterUser(
         RegisterUserRequest request,
+        IOptions<ApplicationSettings> appSettings,
         CancellationToken cancellationToken = default)
     {
         Result<RegisterUserCommandResult> registrationResult = await Mediator.Send(
@@ -108,7 +109,7 @@ public sealed class AuthController(IMediator mediator, IHostEnvironment hostEnvi
         Response.Cookies.Append("refreshToken", loginResultData.RefreshToken, _cookieOptions);
 
         return Created(
-            new Uri($"api/v1/users/users/{registrationResultData.UserId}"),
+            new Uri($"{appSettings.Value.ApiUrl}/api/v1/users/{registrationResultData.UserId}"),
             new RegisterUserResponse(
                 registrationResultData.UserId,
                 registrationResultData.Email,

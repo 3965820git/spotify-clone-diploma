@@ -26,6 +26,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Modules\Accounts\SpotifyClone.Accounts.Application\SpotifyClone.Accounts.Application.csproj" />
     <ProjectReference Include="..\..\Modules\Accounts\SpotifyClone.Accounts.Infrastructure\SpotifyClone.Accounts.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Modules\Billing\SpotifyClone.Billing.Application\SpotifyClone.Billing.Application.csproj" />
+    <ProjectReference Include="..\..\Modules\Billing\SpotifyClone.Billing.Infrastructure\SpotifyClone.Billing.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Modules\Catalog\SpotifyClone.Catalog.Application\SpotifyClone.Catalog.Application.csproj" />
     <ProjectReference Include="..\..\Modules\Catalog\SpotifyClone.Catalog.Infrastructure\SpotifyClone.Catalog.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Modules\Playlists\SpotifyClone.Playlists.Application\SpotifyClone.Playlists.Application.csproj" />

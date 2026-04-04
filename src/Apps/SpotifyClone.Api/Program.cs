@@ -1,7 +1,6 @@
 using System.Text;
 using System.Threading.RateLimiting;
 using Hangfire;
-using Hangfire.MemoryStorage;
 using Hangfire.Redis.StackExchange;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
@@ -14,6 +13,8 @@ using Serilog;
 using SpotifyClone.Accounts.Infrastructure.DependencyInjection;
 using SpotifyClone.Accounts.Infrastructure.Persistence.Accounts.Database;
 using SpotifyClone.Accounts.Infrastructure.Persistence.Identity.Database;
+using SpotifyClone.Billing.Infrastructure.DependencyInjection;
+using SpotifyClone.Billing.Infrastructure.Persistence.Database;
 using SpotifyClone.Catalog.Infrastructure.DependencyInjection;
 using SpotifyClone.Catalog.Infrastructure.Persistence.Database;
 using SpotifyClone.Playlists.Infrastructure.DependencyInjection;
@@ -31,6 +32,7 @@ builder.Services.AddAccountsModule(builder.Configuration);
 builder.Services.AddCatalogModule(builder.Configuration);
 builder.Services.AddStreamingModule(builder.Configuration);
 builder.Services.AddPlaylistsModule(builder.Configuration);
+builder.Services.AddBillingModule(builder.Configuration);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -212,6 +214,9 @@ if (app.Environment.IsDevelopment())
 
         PlaylistsAppDbContext playlistsDb = services.GetRequiredService<PlaylistsAppDbContext>();
         await playlistsDb.Database.MigrateAsync();
+
+        BillingAppDbContext billingDb = services.GetRequiredService<BillingAppDbContext>();
+        await billingDb.Database.MigrateAsync();
     }
 
     app.UseHttpsRedirection();
@@ -232,5 +237,6 @@ await app.UseAccountsModule();
 app.UseCatalogModule();
 app.UseStreamingModule();
 app.UsePlaylistsModule();
+app.UseBillingModule();
 
 await app.RunAsync();

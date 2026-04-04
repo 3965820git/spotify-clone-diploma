@@ -25,6 +25,11 @@ internal sealed class RemoveTrackFromPlaybackQueueCommandHandler(
             return Result.Failure<RemoveTrackFromPlaybackQueueCommandResult>(PlaybackErrors.NotLoggedIn);
         }
 
+        if (!_currentUser.IsPremium)
+        {
+            return Result.Failure<RemoveTrackFromPlaybackQueueCommandResult>(PlaybackErrors.NotAllowed);
+        }
+
         PlaybackSession? session = await _unit.PlaybackSessions.GetByUserIdAsync(
             UserId.From(_currentUser.Id), cancellationToken);
         if (session is null)

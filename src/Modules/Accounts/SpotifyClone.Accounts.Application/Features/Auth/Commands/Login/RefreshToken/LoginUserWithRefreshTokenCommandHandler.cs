@@ -1,4 +1,5 @@
-﻿using SpotifyClone.Accounts.Application.Abstractions;
+﻿using System.Security.Claims;
+using SpotifyClone.Accounts.Application.Abstractions;
 using SpotifyClone.Accounts.Application.Abstractions.Services;
 using SpotifyClone.Accounts.Application.Errors;
 using SpotifyClone.Accounts.Application.Models;
@@ -63,8 +64,16 @@ internal sealed class LoginUserWithRefreshTokenCommandHandler(
             return Result.Failure<LoginUserCommandResult>(rolesResult.Errors);
         }
 
+        Result<IReadOnlyCollection<Claim>> claimsResult = await _identity.GetUserClaimsAsync(
+            identityResult.Value.Id);
+        if (claimsResult.IsFailure)
+        {
+            return Result.Failure<LoginUserCommandResult>(claimsResult.Errors);
+        }
+
         IdentityUserInfo user = identityResult.Value;
-        AccessToken accessToken = _tokenService.GenerateAccessToken(user, rolesResult.Value);
+        AccessToken accessToken = _tokenService.GenerateAccessToken(
+            user, rolesResult.Value, claimsResult.Value);
 
         RefreshTokenEnvelope newRefreshToken = _tokenService.GenerateRefreshToken(user.Id);
         string newTokenHash = _tokenHasher.Hash(newRefreshToken.RawToken);

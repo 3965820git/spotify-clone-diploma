@@ -229,6 +229,12 @@ internal sealed class IdentityService(
             }
         }
 
+        Result claimResult = await UpdateUserSubscriptionLevelAsync(user.Id, "free");
+        if (claimResult.IsFailure)
+        {
+            return Result.Failure<Guid>(claimResult.Errors);
+        }
+
         return user.Id;
     }
 
@@ -462,6 +468,41 @@ internal sealed class IdentityService(
         if (!addLoginResult.Succeeded)
         {
             return Result.Failure(IdentityErrorsToApplicationErrors(addLoginResult.Errors));
+        }
+
+        return Result.Success();
+    }
+
+    public async Task<Result> UpdateUserSubscriptionLevelAsync(
+        Guid userId,
+        string subscriptionLevel,
+        CancellationToken cancellationToken = default)
+    {
+        string subscriptionLevelClaimType = "subscription_level";
+
+        ApplicationUser? user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user is null)
+        {
+            return Result.Failure(IdentityUserErrors.NotFound);
+        }
+
+        IList<Claim> claims = await _userManager.GetClaimsAsync(user);
+
+        if (claims.Any(c => c.Type == subscriptionLevelClaimType))
+        {
+            IdentityResult removeResult = await _userManager.RemoveClaimsAsync(
+                user, claims.Where(c => c.Type == subscriptionLevelClaimType));
+            if (!removeResult.Succeeded)
+            {
+                return Result.Failure(IdentityErrorsToApplicationErrors(removeResult.Errors));
+            }
+        }
+
+        IdentityResult addResult = await _userManager.AddClaimAsync(
+            user, new Claim(subscriptionLevelClaimType, subscriptionLevel));
+        if (!addResult.Succeeded)
+        {
+            return Result.Failure(IdentityErrorsToApplicationErrors(addResult.Errors));
         }
 
         return Result.Success();

@@ -20,6 +20,10 @@ public static class PlaybackErrors
         "Playback.InvalidPlayedAtDate",
         "The specified played at date is invalid.");
 
+    public static readonly Error NotAllowed = new(
+        "Playback.NotAllowed",
+        "This feature is Premium-only.");
+
     public static readonly Error NotLoggedIn = new(
         "Playback.NotLoggedIn",
         "User is not authenticated.");

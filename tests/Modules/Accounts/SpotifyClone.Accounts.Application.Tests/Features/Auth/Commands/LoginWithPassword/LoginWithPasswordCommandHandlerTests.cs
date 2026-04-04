@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using System.Security.Claims;
+using FluentAssertions;
 using Moq;
 using SpotifyClone.Accounts.Application.Abstractions;
 using SpotifyClone.Accounts.Application.Abstractions.Services;
@@ -65,6 +66,10 @@ public sealed class LoginWithPasswordCommandHandlerTests
             .Setup(x => x.GetUserRolesAsync(userId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success<IReadOnlyCollection<string>>(Array.Empty<string>()));
 
+        _identityMock
+            .Setup(x => x.GetUserClaimsAsync(userId))
+            .ReturnsAsync(Result.Success<IReadOnlyCollection<Claim>>(Array.Empty<Claim>()));
+
         _tokenServiceMock
             .Setup(x => x.GenerateAccessToken(identityInfo, It.IsAny<IReadOnlyCollection<string>>()))
             .Returns(new AccessToken("accessToken", DateTimeOffset.UtcNow.AddMinutes(5)));
@@ -113,6 +118,10 @@ public sealed class LoginWithPasswordCommandHandlerTests
         _identityMock
             .Setup(x => x.GetUserRolesAsync(userId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success<IReadOnlyCollection<string>>(Array.Empty<string>()));
+
+        _identityMock
+            .Setup(x => x.GetUserClaimsAsync(userId))
+            .ReturnsAsync(Result.Success<IReadOnlyCollection<Claim>>(Array.Empty<Claim>()));
 
         _tokenServiceMock
             .Setup(x => x.GenerateAccessToken(identityInfo, It.IsAny<IReadOnlyCollection<string>>()))
@@ -181,8 +190,13 @@ public sealed class LoginWithPasswordCommandHandlerTests
             .Setup(x => x.GetUserRolesAsync(userId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success<IReadOnlyCollection<string>>(Array.Empty<string>()));
 
+        _identityMock
+            .Setup(x => x.GetUserClaimsAsync(userId))
+            .ReturnsAsync(Result.Success<IReadOnlyCollection<Claim>>(Array.Empty<Claim>()));
+
         _tokenServiceMock
-            .Setup(x => x.GenerateAccessToken(identityInfo, It.IsAny<IReadOnlyCollection<string>>()))
+            .Setup(x => x.GenerateAccessToken(
+                identityInfo, It.IsAny<IReadOnlyCollection<string>>(), It.IsAny<IReadOnlyCollection<Claim>>()))
             .Returns(new AccessToken("accessToken", DateTimeOffset.UtcNow));
 
         _tokenServiceMock
