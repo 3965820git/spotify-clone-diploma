@@ -25,6 +25,11 @@ internal sealed class AddTrackToPlaybackQueueCommandHandler(
             return Result.Failure<AddTrackToPlaybackQueueCommandResult>(PlaybackErrors.NotLoggedIn);
         }
 
+        if (!_currentUser.IsPremium)
+        {
+            return Result.Failure<AddTrackToPlaybackQueueCommandResult>(PlaybackErrors.NotAllowed);
+        }
+
         PlaybackSession? session = await _unit.PlaybackSessions.GetByUserIdAsync(
             UserId.From(_currentUser.Id), cancellationToken);
         if (session is null)
