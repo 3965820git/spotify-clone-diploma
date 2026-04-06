@@ -29,6 +29,10 @@ partial class CatalogAppDbContextModelSnapshot : ModelSnapshot
                     .HasColumnType("uuid")
                     .HasColumnName("id");
 
+                b.Property<DateTimeOffset>("CreatedAtUtc")
+                    .HasColumnType("timestamp with time zone")
+                    .HasColumnName("created_at_utc");
+
                 b.Property<DateTimeOffset?>("ReleaseDate")
                     .HasColumnType("timestamp with time zone")
                     .HasColumnName("release_date");
@@ -91,6 +95,10 @@ partial class CatalogAppDbContextModelSnapshot : ModelSnapshot
                     .HasColumnType("character varying(1500)")
                     .HasColumnName("bio");
 
+                b.Property<DateTimeOffset>("CreatedAtUtc")
+                    .HasColumnType("timestamp with time zone")
+                    .HasColumnName("created_at_utc");
+
                 b.Property<string>("Name")
                     .IsRequired()
                     .HasMaxLength(30)
@@ -117,6 +125,10 @@ partial class CatalogAppDbContextModelSnapshot : ModelSnapshot
                     .HasColumnType("uuid")
                     .HasColumnName("id");
 
+                b.Property<DateTimeOffset>("CreatedAtUtc")
+                    .HasColumnType("timestamp with time zone")
+                    .HasColumnName("created_at_utc");
+
                 b.Property<string>("Name")
                     .IsRequired()
                     .HasMaxLength(30)
@@ -136,6 +148,10 @@ partial class CatalogAppDbContextModelSnapshot : ModelSnapshot
                 b.Property<Guid>("Id")
                     .HasColumnType("uuid")
                     .HasColumnName("id");
+
+                b.Property<DateTimeOffset>("CreatedAtUtc")
+                    .HasColumnType("timestamp with time zone")
+                    .HasColumnName("created_at_utc");
 
                 b.Property<string>("Name")
                     .IsRequired()
@@ -168,6 +184,10 @@ partial class CatalogAppDbContextModelSnapshot : ModelSnapshot
                 b.Property<bool>("ContainsExplicitContent")
                     .HasColumnType("boolean")
                     .HasColumnName("contains_explicit_content");
+
+                b.Property<DateTimeOffset>("CreatedAtUtc")
+                    .HasColumnType("timestamp with time zone")
+                    .HasColumnName("created_at_utc");
 
                 b.Property<TimeSpan?>("Duration")
                     .HasColumnType("interval")

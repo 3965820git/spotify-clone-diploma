@@ -1,10 +1,12 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using SpotifyClone.Catalog.Application.Features.Albums.Commands.Create;
+using SpotifyClone.Catalog.Application.Features.Albums.Commands.PublishAlbum;
 using SpotifyClone.Catalog.Application.Features.Artists.Commands.Create;
 using SpotifyClone.Catalog.Application.Features.Genres.Commands.Create;
 using SpotifyClone.Catalog.Application.Features.Moods.Commands.Create;
 using SpotifyClone.Catalog.Application.Features.Tracks.Commands.Create;
+using SpotifyClone.Catalog.Domain.Aggregates.Tracks.Enums;
 using SpotifyClone.Catalog.Infrastructure.Persistence.Database;
 
 namespace SpotifyClone.Catalog.Infrastructure.Persistence.Initialization;
@@ -87,8 +89,8 @@ public static class CatalogSeeder
     }
 
     public static async Task SeedTracksAsync(
-    CatalogAppDbContext context,
-    ISender sender)
+        CatalogAppDbContext context,
+        ISender sender)
     {
         if (!Albums.Any() || !Artists.Any() || !Genres.Any() || !Moods.Any() || await context.Tracks.AnyAsync())
         {
@@ -168,5 +170,33 @@ public static class CatalogSeeder
             [],
             [Genres[0]],
             [Moods[0]]))).Value.TrackId);
+    }
+
+    public static async Task PublishSeededAlbumsAsync(
+        CatalogAppDbContext context,
+        ISender sender)
+    {
+        if (!Albums.Any() || !Artists.Any() || !Genres.Any() || !Moods.Any() || !Tracks.Any())
+        {
+            return;
+        }
+
+        for (int i = 0;
+             await context.Tracks.CountAsync(t => t.Status == TrackStatus.Published) != 24
+             && i < 30;
+             i++)
+        {
+            await Task.Delay(10_000);
+        }
+
+        if (await context.Tracks.CountAsync(t => t.Status == TrackStatus.Published) != 24)
+        {
+            return;
+        }
+
+        foreach (Guid albumId in Albums)
+        {
+            await sender.Send(new PublishAlbumCommand(albumId, DateTimeOffset.UtcNow));
+        }
     }
 }

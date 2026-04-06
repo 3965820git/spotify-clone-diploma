@@ -47,7 +47,7 @@ public sealed class GenresAdminController(IMediator mediator)
         CreateGenreCommandResult createResultData = createResult.Value;
 
         return CreatedAtAction(
-            actionName: nameof(GenresController.GetGenreDetails),
+            actionName: nameof(GenresController.GetDetails),
             controllerName: "Genres",
             routeValues: new { id = createResultData.GenreId },
             value: new CreateGenreResponse(createResultData.GenreId));

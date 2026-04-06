@@ -17,12 +17,11 @@ public static class PlaylistsSeeder
         PlaylistsAppDbContext context,
         ISender sender)
     {
-        for (
-            int i = 0;
-            await context.TrackReferences.CountAsync() != TrackCount
-            && await context.UserReferences.AnyAsync()
-            && i < 30;
-            i++)
+        for (int i = 0;
+             await context.TrackReferences.CountAsync() != TrackCount
+             && await context.UserReferences.AnyAsync()
+             && i < 30;
+             i++)
         {
             await Task.Delay(10_000);
         }

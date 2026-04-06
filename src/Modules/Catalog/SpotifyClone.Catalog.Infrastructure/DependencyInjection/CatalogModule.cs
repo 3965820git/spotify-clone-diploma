@@ -83,6 +83,7 @@ public static class CatalogModule
         await CatalogSeeder.SeedArtistsAsync(dbContext, sender);
         await CatalogSeeder.SeedAlbumsAsync(dbContext, sender);
         await CatalogSeeder.SeedTracksAsync(dbContext, sender);
+        //await CatalogSeeder.PublishSeededAlbumsAsync(dbContext, sender);
 
         IRecurringJobManager recurringJobManager =
             scope.ServiceProvider.GetRequiredService<IRecurringJobManager>();
