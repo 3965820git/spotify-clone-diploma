@@ -17,8 +17,11 @@ using SpotifyClone.Billing.Infrastructure.DependencyInjection;
 using SpotifyClone.Billing.Infrastructure.Persistence.Database;
 using SpotifyClone.Catalog.Infrastructure.DependencyInjection;
 using SpotifyClone.Catalog.Infrastructure.Persistence.Database;
+using SpotifyClone.Catalog.Infrastructure.Persistence.Initialization;
 using SpotifyClone.Playlists.Infrastructure.DependencyInjection;
 using SpotifyClone.Playlists.Infrastructure.Persistence.Database;
+using SpotifyClone.Shared.BuildingBlocks.Application.Abstractions.Primitives;
+using SpotifyClone.Shared.BuildingBlocks.Application.Auth;
 using SpotifyClone.Shared.BuildingBlocks.Infrastructure.DependencyInjection;
 using SpotifyClone.Streaming.Infrastructure.DependencyInjection;
 using SpotifyClone.Streaming.Infrastructure.Notifications;
@@ -234,9 +237,15 @@ if (app.Environment.IsDevelopment())
 }
 
 await app.UseAccountsModule();
-app.UseCatalogModule();
-app.UseStreamingModule();
-app.UsePlaylistsModule();
+using (IServiceScope scope = app.Services.CreateScope())
+{
+    ICurrentUser currentUser = scope.ServiceProvider.GetRequiredService<ICurrentUser>();
+    currentUser.SetUser(Guid.NewGuid(), UserRoles.Admin, true);
+
+    await app.UseCatalogModule();
+    await app.UseStreamingModule(CatalogSeeder.Tracks);
+    await app.UsePlaylistsModule();
+}
 app.UseBillingModule();
 
 await app.RunAsync();

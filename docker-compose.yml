@@ -26,6 +26,7 @@ services:
     ports:
       - "5000:8080"
     volumes:
+      - ./src/Modules/Streaming/SpotifyClone.Streaming.Infrastructure/Persistence/Initialization/AudioFiles:/app/seed_data/audio
       - audio_data:/app/wwwroot/audio
       - temp_data:/app/wwwroot/temp
 
