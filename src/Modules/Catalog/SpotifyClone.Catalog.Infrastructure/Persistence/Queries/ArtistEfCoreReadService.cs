@@ -2,8 +2,12 @@
 using SpotifyClone.Catalog.Application.Abstractions.Data;
 using SpotifyClone.Catalog.Application.Features.Artists.Queries;
 using SpotifyClone.Catalog.Application.Models;
+using SpotifyClone.Catalog.Domain.Aggregates.Artists;
+using SpotifyClone.Catalog.Domain.Aggregates.Artists.Enums;
 using SpotifyClone.Catalog.Domain.Aggregates.Artists.ValueObjects;
 using SpotifyClone.Catalog.Infrastructure.Persistence.Database;
+using SpotifyClone.Shared.BuildingBlocks.Application.Pagination;
+using SpotifyClone.Shared.BuildingBlocks.Infrastructure.Persistence.Extensions;
 
 namespace SpotifyClone.Catalog.Infrastructure.Persistence.Queries;
 
@@ -69,7 +73,7 @@ internal sealed class ArtistEfCoreReadService(
                 a.Avatar.Metadata.SizeInBytes)))
         .SingleOrDefaultAsync(cancellationToken);
 
-    public async Task<IEnumerable<ArtistSummary>> GetAllAsync(
+    public async Task<IEnumerable<ArtistSummary>> GetAllByIdsAsync(
         IEnumerable<ArtistId> artistIds,
         CancellationToken cancellationToken = default)
         => await _context.Artists
@@ -86,4 +90,31 @@ internal sealed class ArtistEfCoreReadService(
                 a.Avatar.Metadata.FileType.Value,
                 a.Avatar.Metadata.SizeInBytes)))
         .ToListAsync(cancellationToken);
+
+    public async Task<PagedList<ArtistSummary>> GetList(
+        bool includeBanned,
+        PaginationParams pagination,
+        CancellationToken cancellationToken = default)
+    {
+        IQueryable<Artist> query = _context.Artists
+            .AsNoTracking();
+
+        if (includeBanned)
+        {
+            query = query.Where(a => a.Status == ArtistStatus.Banned);
+        }
+
+        return await query
+            .OrderBy(a => a.CreatedAtUtc)
+            .Select(a => new ArtistSummary(
+                a.Id.Value, a.Name, a.Status.Value,
+                a.OwnerId == null ? null : a.OwnerId.Value,
+                a.Avatar == null ? null : new ImageMetadataDetails(
+                    a.Avatar.ImageId.Value,
+                    a.Avatar.Metadata.Width,
+                    a.Avatar.Metadata.Height,
+                    a.Avatar.Metadata.FileType.Value,
+                    a.Avatar.Metadata.SizeInBytes)))
+        .ToPagedListAsync(pagination, cancellationToken);
+    }
 }

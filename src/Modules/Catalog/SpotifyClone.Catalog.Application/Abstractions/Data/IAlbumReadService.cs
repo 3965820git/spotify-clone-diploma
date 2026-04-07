@@ -1,6 +1,6 @@
 ﻿using SpotifyClone.Catalog.Application.Features.Albums.Queries;
 using SpotifyClone.Catalog.Domain.Aggregates.Albums.ValueObjects;
-using SpotifyClone.Catalog.Domain.Aggregates.Artists.ValueObjects;
+using SpotifyClone.Shared.BuildingBlocks.Application.Pagination;
 using SpotifyClone.Shared.Kernel.IDs;
 
 namespace SpotifyClone.Catalog.Application.Abstractions.Data;
@@ -23,11 +23,9 @@ public interface IAlbumReadService
         TrackId trackId,
         CancellationToken cancellationToken = default);
 
-    Task<IEnumerable<AlbumSummary>> GetAllByArtistIdAsync(
-        ArtistId artistId,
-        CancellationToken cancellationToken = default);
-
-    Task<IEnumerable<AlbumSummary>> GetAllPublishedByArtistIdAsync(
-        ArtistId artistId,
+    Task<PagedList<AlbumSummary>> GetAllAsync(
+        UserId? ownerId,
+        bool isAdmin,
+        PaginationParams pagination,
         CancellationToken cancellationToken = default);
 }

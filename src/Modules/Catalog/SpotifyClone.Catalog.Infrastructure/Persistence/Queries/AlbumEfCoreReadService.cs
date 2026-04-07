@@ -4,10 +4,12 @@ using SpotifyClone.Catalog.Application.Features.Albums.Queries;
 using SpotifyClone.Catalog.Application.Features.Artists.Queries;
 using SpotifyClone.Catalog.Application.Features.Tracks.Queries;
 using SpotifyClone.Catalog.Application.Models;
+using SpotifyClone.Catalog.Domain.Aggregates.Albums;
 using SpotifyClone.Catalog.Domain.Aggregates.Albums.Enums;
 using SpotifyClone.Catalog.Domain.Aggregates.Albums.ValueObjects;
-using SpotifyClone.Catalog.Domain.Aggregates.Artists.ValueObjects;
 using SpotifyClone.Catalog.Infrastructure.Persistence.Database;
+using SpotifyClone.Shared.BuildingBlocks.Application.Pagination;
+using SpotifyClone.Shared.BuildingBlocks.Infrastructure.Persistence.Extensions;
 using SpotifyClone.Shared.Kernel.IDs;
 
 namespace SpotifyClone.Catalog.Infrastructure.Persistence.Queries;
@@ -278,60 +280,44 @@ internal sealed class AlbumEfCoreReadService(
             .ToList()))
         .SingleOrDefaultAsync(cancellationToken);
 
-    public async Task<IEnumerable<AlbumSummary>> GetAllByArtistIdAsync(
-        ArtistId artistId,
+    public async Task<PagedList<AlbumSummary>> GetAllAsync(
+        UserId? ownerId,
+        bool isAdmin,
+        PaginationParams pagination,
         CancellationToken cancellationToken = default)
-        => await _context.Albums
-        .Where(a => a.MainArtists.Any(a => a.Value == artistId.Value))
-        .Select(a => new AlbumSummary(
-            a.Id.Value,
-            a.Title,
-            a.ReleaseDate,
-            a.Status.Value,
-            a.Type.Value,
-            a.Cover == null ? null : new ImageMetadataDetails(
-                a.Cover.ImageId.Value,
-                a.Cover.Metadata.Width,
-                a.Cover.Metadata.Height,
-                a.Cover.Metadata.FileType.Value,
-                a.Cover.Metadata.SizeInBytes),
-            _context.Artists
-            .Where(art => a.MainArtists.Select(ma => ma.Value).Contains(art.Id.Value))
-            .Select(art => new ArtistSummary(
-                art.Id.Value,
-                art.Name,
-                art.Status.Value,
-                art.OwnerId == null ? null : art.OwnerId.Value,
-                art.Avatar == null ? null : new ImageMetadataDetails(
-                    art.Avatar.ImageId.Value,
-                    art.Avatar.Metadata.Width,
-                    art.Avatar.Metadata.Height,
-                    art.Avatar.Metadata.FileType.Value,
-                    art.Avatar.Metadata.SizeInBytes)))
-            .ToList()))
-        .ToListAsync(cancellationToken);
+    {
+        IQueryable<Album> query = _context.Albums.AsNoTracking();
 
-    public async Task<IEnumerable<AlbumSummary>> GetAllPublishedByArtistIdAsync(
-        ArtistId artistId,
-        CancellationToken cancellationToken = default)
-        => await _context.Albums
-        .Where(a =>
-            a.Status.Value == AlbumStatus.Published.Value &&
-            a.MainArtists.Any(a => a.Value == artistId.Value))
-        .Select(a => new AlbumSummary(
-            a.Id.Value,
-            a.Title,
-            a.ReleaseDate,
-            a.Status.Value,
-            a.Type.Value,
-            a.Cover == null ? null : new ImageMetadataDetails(
-                a.Cover.ImageId.Value,
-                a.Cover.Metadata.Width,
-                a.Cover.Metadata.Height,
-                a.Cover.Metadata.FileType.Value,
-                a.Cover.Metadata.SizeInBytes),
-            _context.Artists
-            .Where(art => a.MainArtists.Select(ma => ma.Value).Contains(art.Id.Value))
+        if (!isAdmin)
+        {
+            query = ownerId is null
+                ? query
+                    .Where(a => a.Status == AlbumStatus.Published)
+                : query
+                    .Where(a => a.Status == AlbumStatus.Published || a.MainArtists.Any(ma => _context.Artists
+                        .Where(art => art.Id == ma)
+                        .Any(art => art.OwnerId == ownerId)));
+        }
+
+        PagedList<Album> pagedAlbums = await query
+        .OrderBy(a => a.CreatedAtUtc)
+        .ToPagedListAsync(pagination, cancellationToken);
+
+        // Якщо сторінка порожня - одразу повертаємо результат
+        if (!pagedAlbums.Items.Any())
+        {
+            return new PagedList<AlbumSummary>([], pagedAlbums.TotalCount, pagination.Page, pagination.PageSize);
+        }
+
+        // Збираємо всі унікальні ID артистів ТІЛЬКИ для цієї сторінки
+        var artistIdsForThisPage = pagedAlbums.Items
+            .SelectMany(a => a.MainArtists)
+            .Distinct()
+            .ToList();
+
+        // Порівнюємо прямо об'єкт з об'єктом
+        Dictionary<Guid, ArtistSummary> artistSummaries = await _context.Artists
+            .Where(art => artistIdsForThisPage.Contains(art.Id))
             .Select(art => new ArtistSummary(
                 art.Id.Value,
                 art.Name,
@@ -343,6 +329,34 @@ internal sealed class AlbumEfCoreReadService(
                     art.Avatar.Metadata.Height,
                     art.Avatar.Metadata.FileType.Value,
                     art.Avatar.Metadata.SizeInBytes)))
-            .ToList()))
-        .ToListAsync(cancellationToken);
+            .ToDictionaryAsync(a => a.Id, cancellationToken);
+
+        // Склеюємо дані в пам'яті (це відбувається миттєво)
+        var finalSummaries = pagedAlbums.Items.Select(a => new AlbumSummary(
+            a.Id.Value,
+            a.Title,
+            a.ReleaseDate,
+            a.Status.Value,
+            a.Type.Value,
+            a.Cover == null ? null : new ImageMetadataDetails(
+                a.Cover.ImageId.Value,
+                a.Cover.Metadata.Width,
+                a.Cover.Metadata.Height,
+                a.Cover.Metadata.FileType.Value,
+                a.Cover.Metadata.SizeInBytes),
+
+            // Знаходимо артистів зі словника
+            a.MainArtists
+                .Where(ma => artistSummaries.ContainsKey(ma.Value))
+                .Select(ma => artistSummaries[ma.Value])
+                .ToList()
+        )).ToList();
+
+        // Повертаємо нову пагіновану колекцію
+        return new PagedList<AlbumSummary>(
+            finalSummaries,
+            pagedAlbums.TotalCount,
+            pagination.Page,
+            pagination.PageSize);
+    }
 }

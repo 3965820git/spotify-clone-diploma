@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using System.Text.Json;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SpotifyClone.Api.Contracts.v1.Catalog.Albums.AddTrackToAlbum;
@@ -23,7 +24,9 @@ using SpotifyClone.Catalog.Application.Features.Albums.Commands.UnpublishAlbum;
 using SpotifyClone.Catalog.Application.Features.Albums.Commands.UpdateMainArtists;
 using SpotifyClone.Catalog.Application.Features.Albums.Queries;
 using SpotifyClone.Catalog.Application.Features.Albums.Queries.GetDetails;
+using SpotifyClone.Catalog.Application.Features.Albums.Queries.List;
 using SpotifyClone.Shared.BuildingBlocks.Application.Auth;
+using SpotifyClone.Shared.BuildingBlocks.Application.Pagination;
 using SpotifyClone.Shared.BuildingBlocks.Application.Results;
 
 namespace SpotifyClone.Api.Controllers.Catalog.Albums;
@@ -33,6 +36,42 @@ namespace SpotifyClone.Api.Controllers.Catalog.Albums;
 public sealed class AlbumsController(IMediator mediator)
     : ApiController(mediator)
 {
+    [EndpointSummary("List Albums")]
+    [EndpointDescription("Returns a list of Albums with pagination support.")]
+    [ProducesResponseType(typeof(AlbumList), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [AllowAnonymous]
+    [HttpGet]
+    public async Task<ActionResult<AlbumList>> GetDetails(
+        [FromQuery] PaginationParams pagination,
+        CancellationToken cancellationToken = default)
+    {
+        Result<AlbumList> result = await Mediator.Send(
+            new ListAlbumsQuery(pagination),
+            cancellationToken);
+        if (result.IsFailure)
+        {
+            ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
+                result,
+                HttpContext);
+
+            return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
+        }
+
+        Response.Headers.Append("X-Pagination", JsonSerializer.Serialize(new
+        {
+            page = result.Value.Albums.Page,
+            pageSize = result.Value.Albums.PageSize,
+            hasPreviousPage = result.Value.Albums.HasPreviousPage,
+            hasNextPage = result.Value.Albums.HasNextPage,
+            totalCount = result.Value.Albums.TotalCount,
+        }));
+
+        return Ok(result.Value.Albums.Items);
+    }
+
     [EndpointSummary("Get Album Details")]
     [EndpointDescription("Returns all the necessary Album details.")]
     [ProducesResponseType(typeof(AlbumDetails), StatusCodes.Status200OK)]

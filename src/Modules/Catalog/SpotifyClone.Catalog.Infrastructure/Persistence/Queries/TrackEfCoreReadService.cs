@@ -5,9 +5,14 @@ using SpotifyClone.Catalog.Application.Features.Genres.Queries;
 using SpotifyClone.Catalog.Application.Features.Moods.Queries;
 using SpotifyClone.Catalog.Application.Features.Tracks.Queries;
 using SpotifyClone.Catalog.Application.Models;
+using SpotifyClone.Catalog.Domain.Aggregates.Artists.ValueObjects;
 using SpotifyClone.Catalog.Domain.Aggregates.Genres.ValueObjects;
 using SpotifyClone.Catalog.Domain.Aggregates.Moods.ValueObjects;
+using SpotifyClone.Catalog.Domain.Aggregates.Tracks;
+using SpotifyClone.Catalog.Domain.Aggregates.Tracks.Enums;
 using SpotifyClone.Catalog.Infrastructure.Persistence.Database;
+using SpotifyClone.Shared.BuildingBlocks.Application.Pagination;
+using SpotifyClone.Shared.BuildingBlocks.Infrastructure.Persistence.Extensions;
 using SpotifyClone.Shared.Kernel.IDs;
 
 namespace SpotifyClone.Catalog.Infrastructure.Persistence.Queries;
@@ -128,6 +133,56 @@ internal sealed class TrackEfCoreReadService(
             t.FeaturedArtists.Select(a => a.Value)))
         .SingleOrDefaultAsync(cancellationToken);
 
+    public async Task<PagedList<TrackSummary>> GetAllAsync(
+    UserId? ownerId,
+    bool isAdmin,
+    PaginationParams pagination,
+    CancellationToken cancellationToken = default)
+    {
+        IQueryable<Track> query = _context.Tracks.AsNoTracking();
+
+        if (!isAdmin)
+        {
+            if (ownerId is null)
+            {
+                query = query.Where(t => t.Status == TrackStatus.Published);
+            }
+            else
+            {
+                // Отримуємо ID артистів користувача як об'єкти типу ArtistId
+                List<ArtistId> userArtistIds = await _context.Artists
+                    .Where(art => art.OwnerId == ownerId)
+                    .Select(art => art.Id)
+                    .ToListAsync(cancellationToken);
+
+                // 2. Фільтруємо: трек опубліковано АБО 
+                // користувач володіє хоча б одним з основних артистів АБО 
+                // користувач володіє хоча б одним із запрошених артистів
+                query = query.Where(t =>
+                    t.Status == TrackStatus.Published ||
+                    t.MainArtists.Any(ma => userArtistIds.Contains(ma)) ||
+                    t.FeaturedArtists.Any(fa => userArtistIds.Contains(fa))
+                );
+            }
+        }
+
+        return await query
+            // Додано сортування, щоб ToPagedListAsync працював коректно 
+            .OrderBy(t => t.CreatedAtUtc)
+            .Select(t => new TrackSummary(
+                t.Id.Value,
+                t.Title,
+                t.Duration,
+                t.ReleaseDate,
+                t.ContainsExplicitContent,
+                t.Status.Value,
+                t.AudioFileId == null ? null : t.AudioFileId.Value,
+                t.AlbumId == null ? null : t.AlbumId.Value,
+                t.MainArtists.Select(a => a.Value),
+                t.FeaturedArtists.Select(a => a.Value)))
+            .ToPagedListAsync(pagination, cancellationToken);
+    }
+
     public async Task<IEnumerable<TrackSummary>> GetAllByIdsAsync(
         IEnumerable<TrackId> ids,
         CancellationToken cancellationToken = default)
@@ -147,8 +202,9 @@ internal sealed class TrackEfCoreReadService(
             t.FeaturedArtists.Select(a => a.Value)))
         .ToListAsync(cancellationToken);
 
-    public async Task<IEnumerable<TrackSummary>> GetAllByGenreIdAsync(
+    public async Task<PagedList<TrackSummary>> GetAllByGenreIdAsync(
         GenreId genreId,
+        PaginationParams pagination,
         CancellationToken cancellationToken = default)
         => await _context.Tracks
         .AsNoTracking()
@@ -164,10 +220,11 @@ internal sealed class TrackEfCoreReadService(
             t.AlbumId == null ? null : t.AlbumId.Value,
             t.MainArtists.Select(a => a.Value),
             t.FeaturedArtists.Select(a => a.Value)))
-        .ToListAsync(cancellationToken);
+        .ToPagedListAsync(pagination, cancellationToken);
 
-    public async Task<IEnumerable<TrackSummary>> GetAllByMoodIdAsync(
+    public async Task<PagedList<TrackSummary>> GetAllByMoodIdAsync(
         MoodId moodId,
+        PaginationParams pagination,
         CancellationToken cancellationToken = default)
         => await _context.Tracks
         .AsNoTracking()
@@ -183,5 +240,5 @@ internal sealed class TrackEfCoreReadService(
             t.AlbumId == null ? null : t.AlbumId.Value,
             t.MainArtists.Select(a => a.Value),
             t.FeaturedArtists.Select(a => a.Value)))
-        .ToListAsync(cancellationToken);
+        .ToPagedListAsync(pagination, cancellationToken);
 }

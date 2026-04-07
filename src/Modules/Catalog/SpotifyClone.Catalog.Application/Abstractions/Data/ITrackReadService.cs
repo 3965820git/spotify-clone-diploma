@@ -1,6 +1,7 @@
 ﻿using SpotifyClone.Catalog.Application.Features.Tracks.Queries;
 using SpotifyClone.Catalog.Domain.Aggregates.Genres.ValueObjects;
 using SpotifyClone.Catalog.Domain.Aggregates.Moods.ValueObjects;
+using SpotifyClone.Shared.BuildingBlocks.Application.Pagination;
 using SpotifyClone.Shared.Kernel.IDs;
 
 namespace SpotifyClone.Catalog.Application.Abstractions.Data;
@@ -19,15 +20,23 @@ public interface ITrackReadService
         TrackId id,
         CancellationToken cancellationToken = default);
 
+    Task<PagedList<TrackSummary>> GetAllAsync(
+        UserId? ownerId,
+        bool isAdmin,
+        PaginationParams pagination,
+        CancellationToken cancellationToken = default);
+
     Task<IEnumerable<TrackSummary>> GetAllByIdsAsync(
         IEnumerable<TrackId> ids,
         CancellationToken cancellationToken = default);
 
-    Task<IEnumerable<TrackSummary>> GetAllByGenreIdAsync(
+    Task<PagedList<TrackSummary>> GetAllByGenreIdAsync(
         GenreId genreId,
+        PaginationParams pagination,
         CancellationToken cancellationToken = default);
 
-    Task<IEnumerable<TrackSummary>> GetAllByMoodIdAsync(
+    Task<PagedList<TrackSummary>> GetAllByMoodIdAsync(
         MoodId moodId,
+        PaginationParams pagination,
         CancellationToken cancellationToken = default);
 }

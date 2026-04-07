@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using System.Text.Json;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SpotifyClone.Api.Contracts.v1.Catalog.Tracks.CorrectTitle;
@@ -20,7 +21,9 @@ using SpotifyClone.Catalog.Application.Features.Tracks.Commands.UpdateMainArtist
 using SpotifyClone.Catalog.Application.Features.Tracks.Commands.UpdateMoods;
 using SpotifyClone.Catalog.Application.Features.Tracks.Queries;
 using SpotifyClone.Catalog.Application.Features.Tracks.Queries.GetDetails;
+using SpotifyClone.Catalog.Application.Features.Tracks.Queries.List;
 using SpotifyClone.Shared.BuildingBlocks.Application.Auth;
+using SpotifyClone.Shared.BuildingBlocks.Application.Pagination;
 using SpotifyClone.Shared.BuildingBlocks.Application.Results;
 
 namespace SpotifyClone.Api.Controllers.Catalog.Tracks;
@@ -30,6 +33,42 @@ namespace SpotifyClone.Api.Controllers.Catalog.Tracks;
 public sealed class TracksController(IMediator mediator)
     : ApiController(mediator)
 {
+    [EndpointSummary("List Tracks")]
+    [EndpointDescription("Returns a list of Tracks with pagination support.")]
+    [ProducesResponseType(typeof(TrackList), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [AllowAnonymous]
+    [HttpGet]
+    public async Task<ActionResult<TrackList>> GetTrackDetails(
+        [FromQuery] PaginationParams pagination,
+        CancellationToken cancellationToken = default)
+    {
+        Result<TrackList> result = await Mediator.Send(
+            new ListTracksQuery(pagination),
+            cancellationToken);
+        if (result.IsFailure)
+        {
+            ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
+                result,
+                HttpContext);
+
+            return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
+        }
+
+        Response.Headers.Append("X-Pagination", JsonSerializer.Serialize(new
+        {
+            page = result.Value.Tracks.Page,
+            pageSize = result.Value.Tracks.PageSize,
+            hasPreviousPage = result.Value.Tracks.HasPreviousPage,
+            hasNextPage = result.Value.Tracks.HasNextPage,
+            totalCount = result.Value.Tracks.TotalCount,
+        }));
+
+        return Ok(result.Value.Tracks.Items);
+    }
+
     [EndpointSummary("Get Track Details")]
     [EndpointDescription("Returns all the necessary Track details.")]
     [ProducesResponseType(typeof(TrackDetails), StatusCodes.Status200OK)]

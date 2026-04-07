@@ -47,7 +47,7 @@ public sealed class MoodsAdminController(IMediator mediator)
         CreateMoodCommandResult createResultData = createResult.Value;
 
         return CreatedAtAction(
-            actionName: nameof(MoodsController.GetMoodDetails),
+            actionName: nameof(MoodsController.GetDetails),
             controllerName: "Moods",
             routeValues: new { id = createResultData.MoodId },
             value: new CreateMoodResponse(createResultData.MoodId));

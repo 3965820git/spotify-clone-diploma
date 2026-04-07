@@ -4,6 +4,8 @@ using SpotifyClone.Catalog.Application.Features.Moods.Queries;
 using SpotifyClone.Catalog.Application.Models;
 using SpotifyClone.Catalog.Domain.Aggregates.Moods.ValueObjects;
 using SpotifyClone.Catalog.Infrastructure.Persistence.Database;
+using SpotifyClone.Shared.BuildingBlocks.Application.Pagination;
+using SpotifyClone.Shared.BuildingBlocks.Infrastructure.Persistence.Extensions;
 
 namespace SpotifyClone.Catalog.Infrastructure.Persistence.Queries;
 
@@ -34,4 +36,13 @@ internal sealed class MoodEfCoreReadService(
                 m.Cover.Metadata.FileType.Value,
                 m.Cover.Metadata.SizeInBytes)))
         .SingleOrDefaultAsync(cancellationToken);
+
+    public async Task<PagedList<MoodSummary>> GetList(
+        PaginationParams pagination,
+        CancellationToken cancellationToken = default)
+        => await _context.Moods
+        .AsNoTracking()
+        .OrderBy(m => m.CreatedAtUtc)
+        .Select(m => new MoodSummary(m.Id.Value, m.Name))
+        .ToPagedListAsync(pagination, cancellationToken);
 }

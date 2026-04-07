@@ -5,23 +5,24 @@ using SpotifyClone.Catalog.Domain.Aggregates.Artists.ValueObjects;
 using SpotifyClone.Shared.BuildingBlocks.Application.Abstractions.Primitives;
 using SpotifyClone.Shared.BuildingBlocks.Application.Abstractions.Queries;
 using SpotifyClone.Shared.BuildingBlocks.Application.Auth;
+using SpotifyClone.Shared.BuildingBlocks.Application.Pagination;
 using SpotifyClone.Shared.BuildingBlocks.Application.Results;
 using SpotifyClone.Shared.Kernel.IDs;
 
-namespace SpotifyClone.Catalog.Application.Features.Tracks.Queries.GetAllByIds;
+namespace SpotifyClone.Catalog.Application.Features.Tracks.Queries.ListByIds;
 
-internal sealed class GetAllTracksByIdsQueryHandler(
+internal sealed class ListTracksByIdsQueryHandler(
     ITrackReadService trackReadService,
     IArtistReadService artistReadService,
     ICurrentUser currentUser)
-    : IQueryHandler<GetAllTracksByIdsQuery, TrackList>
+    : IQueryHandler<ListTracksByIdsQuery, TrackList>
 {
     private readonly ITrackReadService _trackReadService = trackReadService;
     private readonly IArtistReadService _artistReadService = artistReadService;
     private readonly ICurrentUser _currentUser = currentUser;
 
     public async Task<Result<TrackList>> Handle(
-        GetAllTracksByIdsQuery request,
+        ListTracksByIdsQuery request,
         CancellationToken cancellationToken)
     {
         IEnumerable<TrackSummary> tracks = await _trackReadService.GetAllByIdsAsync(
@@ -37,7 +38,7 @@ internal sealed class GetAllTracksByIdsQueryHandler(
             .Select(id => ArtistId.From(id))
             .ToList();
 
-        IEnumerable<ArtistSummary> artists = await _artistReadService.GetAllAsync(
+        IEnumerable<ArtistSummary> artists = await _artistReadService.GetAllByIdsAsync(
             artistIds, cancellationToken);
 
         if (!_currentUser.IsAuthenticated &&
@@ -47,6 +48,6 @@ internal sealed class GetAllTracksByIdsQueryHandler(
             return Result.Failure<TrackList>(TrackErrors.NotOwned);
         }
 
-        return new TrackList(tracks);
+        return new TrackList(new PagedList<TrackSummary>(tracks));
     }
 }

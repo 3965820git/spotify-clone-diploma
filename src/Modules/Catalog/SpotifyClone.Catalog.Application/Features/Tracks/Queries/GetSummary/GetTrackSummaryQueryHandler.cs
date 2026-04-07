@@ -32,7 +32,7 @@ internal sealed class GetTrackSummaryQueryHandler(
             return Result.Failure<TrackSummary>(TrackErrors.NotFound);
         }
 
-        IEnumerable<ArtistSummary> artists = await _artistReadService.GetAllAsync(
+        IEnumerable<ArtistSummary> artists = await _artistReadService.GetAllByIdsAsync(
             [ ..track.MainArtists.Select(id => ArtistId.From(id)),
               ..track.FeaturedArtists.Select(id => ArtistId.From(id)) ],
             cancellationToken);
