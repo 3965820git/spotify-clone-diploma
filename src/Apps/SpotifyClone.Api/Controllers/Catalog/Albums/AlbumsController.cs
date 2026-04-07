@@ -44,7 +44,7 @@ public sealed class AlbumsController(IMediator mediator)
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     [AllowAnonymous]
     [HttpGet]
-    public async Task<ActionResult<AlbumList>> GetDetails(
+    public async Task<ActionResult<AlbumList>> List(
         [FromQuery] PaginationParams pagination,
         CancellationToken cancellationToken = default)
     {
@@ -107,7 +107,7 @@ public sealed class AlbumsController(IMediator mediator)
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     [Authorize(Roles = UserRoles.Creator)]
     [HttpPost]
-    public async Task<ActionResult<CreateAlbumResponse>> CreateAlbum(
+    public async Task<ActionResult<CreateAlbumResponse>> Create(
         [FromBody] CreateAlbumRequest request,
         CancellationToken cancellationToken = default)
     {
@@ -141,7 +141,7 @@ public sealed class AlbumsController(IMediator mediator)
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     [Authorize(Roles = UserRoles.Creator)]
     [HttpPut("{id:guid}/main-artists")]
-    public async Task<ActionResult<CreateAlbumResponse>> UpdateAlbumMainArtists(
+    public async Task<ActionResult<CreateAlbumResponse>> UpdateMainArtists(
         [FromRoute] Guid id,
         [FromBody] UpdateAlbumMainArtistsRequest request,
         CancellationToken cancellationToken = default)
@@ -172,7 +172,7 @@ public sealed class AlbumsController(IMediator mediator)
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     [Authorize(Roles = UserRoles.Creator)]
     [HttpDelete("{id:guid}")]
-    public async Task<ActionResult> DeleteAlbum(
+    public async Task<ActionResult> Delete(
         [FromRoute] Guid id,
         CancellationToken cancellationToken = default)
     {
@@ -235,7 +235,7 @@ public sealed class AlbumsController(IMediator mediator)
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     [Authorize(Roles = UserRoles.Creator)]
     [HttpPost("{id:guid}/publish")]
-    public async Task<ActionResult> PublishAlbum(
+    public async Task<ActionResult> Publish(
         [FromRoute] Guid id,
         [FromBody] PublishAlbumRequest request,
         CancellationToken cancellationToken = default)
@@ -266,7 +266,7 @@ public sealed class AlbumsController(IMediator mediator)
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     [Authorize(Roles = UserRoles.Creator)]
     [HttpPost("{id:guid}/unpublish")]
-    public async Task<ActionResult> UnpublishAlbum(
+    public async Task<ActionResult> Unpublish(
         [FromRoute] Guid id,
         CancellationToken cancellationToken = default)
     {
@@ -294,7 +294,7 @@ public sealed class AlbumsController(IMediator mediator)
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     [Authorize(Roles = UserRoles.Creator)]
     [HttpPost("{id:guid}/tracks")]
-    public async Task<ActionResult> AddTrackToAlbum(
+    public async Task<ActionResult> AddTrack(
         [FromRoute] Guid id,
         [FromBody] AddTrackToAlbumRequest request,
         CancellationToken cancellationToken = default)
@@ -325,7 +325,7 @@ public sealed class AlbumsController(IMediator mediator)
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     [Authorize(Roles = UserRoles.Creator)]
     [HttpDelete("{id:guid}/tracks/{trackId:guid}")]
-    public async Task<ActionResult> RemoveTrackFromAlbum(
+    public async Task<ActionResult> RemoveFromAlbum(
         [FromRoute] Guid id,
         [FromRoute] Guid trackId,
         CancellationToken cancellationToken = default)
@@ -354,7 +354,7 @@ public sealed class AlbumsController(IMediator mediator)
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     [Authorize(Roles = UserRoles.Creator)]
     [HttpPost("{id:guid}/tracks/{trackId:guid}/move")]
-    public async Task<ActionResult> MoveTrackInAlbum(
+    public async Task<ActionResult> MoveTrack(
         [FromRoute] Guid id,
         [FromRoute] Guid trackId,
         [FromBody] MoveTrackInAlbumRequest request,
@@ -385,7 +385,7 @@ public sealed class AlbumsController(IMediator mediator)
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     [Authorize(Roles = UserRoles.Creator)]
     [HttpPatch("{id:guid}/title")]
-    public async Task<ActionResult> CorrectAlbumTitle(
+    public async Task<ActionResult> CorrectTitle(
         [FromRoute] Guid id,
         [FromBody] CorrectAlbumTitleRequest request,
         CancellationToken cancellationToken = default)
@@ -417,7 +417,7 @@ public sealed class AlbumsController(IMediator mediator)
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     [Authorize(Roles = UserRoles.Creator)]
     [HttpPatch("{id:guid}/release")]
-    public async Task<ActionResult> RescheduleAlbumRelease(
+    public async Task<ActionResult> RescheduleRelease(
         [FromRoute] Guid id,
         [FromBody] RescheduleAlbumReleaseRequest request,
         CancellationToken cancellationToken = default)

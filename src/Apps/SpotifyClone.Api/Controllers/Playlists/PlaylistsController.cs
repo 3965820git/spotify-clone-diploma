@@ -40,7 +40,7 @@ public sealed class PlaylistsController(IMediator mediator)
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     [AllowAnonymous]
     [HttpGet]
-    public async Task<ActionResult<PlaylistList>> GetDetails(
+    public async Task<ActionResult<PlaylistList>> List(
         [FromQuery] PaginationParams pagination,
         CancellationToken cancellationToken = default)
     {

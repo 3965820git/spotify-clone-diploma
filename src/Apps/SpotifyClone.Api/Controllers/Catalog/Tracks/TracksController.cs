@@ -41,7 +41,7 @@ public sealed class TracksController(IMediator mediator)
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     [AllowAnonymous]
     [HttpGet]
-    public async Task<ActionResult<TrackList>> GetTrackDetails(
+    public async Task<ActionResult<TrackList>> List(
         [FromQuery] PaginationParams pagination,
         CancellationToken cancellationToken = default)
     {
@@ -77,7 +77,7 @@ public sealed class TracksController(IMediator mediator)
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     [AllowAnonymous]
     [HttpGet("{id:guid}")]
-    public async Task<ActionResult<TrackDetails>> GetTrackDetails(
+    public async Task<ActionResult<TrackDetails>> GetDetails(
         [FromRoute] Guid id,
         CancellationToken cancellationToken = default)
     {
@@ -104,7 +104,7 @@ public sealed class TracksController(IMediator mediator)
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     [Authorize(Roles = UserRoles.Creator)]
     [HttpPost]
-    public async Task<ActionResult<CreateTrackResponse>> CreateTrack(
+    public async Task<ActionResult<CreateTrackResponse>> Create(
         [FromBody] CreateTrackRequest request,
         CancellationToken cancellationToken = default)
     {
@@ -129,7 +129,7 @@ public sealed class TracksController(IMediator mediator)
 
         CreateTrackCommandResult createResultData = createResult.Value;
 
-        return CreatedAtAction(nameof(TracksController.GetTrackDetails),
+        return CreatedAtAction(nameof(TracksController.GetDetails),
             new { id = createResultData.TrackId },
             new CreateTrackResponse(
                 createResultData.TrackId));
@@ -144,7 +144,7 @@ public sealed class TracksController(IMediator mediator)
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     [Authorize(Roles = UserRoles.Creator)]
     [HttpPut("{id:guid}/main-artists")]
-    public async Task<ActionResult> UpdateTrackMainArtists(
+    public async Task<ActionResult> UpdateMainArtists(
         [FromRoute] Guid id,
         [FromBody] UpdateTrackMainArtistsRequest request,
         CancellationToken cancellationToken = default)
@@ -175,7 +175,7 @@ public sealed class TracksController(IMediator mediator)
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     [Authorize(Roles = UserRoles.Creator)]
     [HttpPut("{id:guid}/feat-artists")]
-    public async Task<ActionResult> UpdateTrackFeaturedArtists(
+    public async Task<ActionResult> UpdateFeaturedArtists(
         [FromRoute] Guid id,
         [FromBody] UpdateTrackFeaturedArtistsRequest request,
         CancellationToken cancellationToken = default)
@@ -206,7 +206,7 @@ public sealed class TracksController(IMediator mediator)
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     [Authorize(Roles = UserRoles.Creator)]
     [HttpPut("{id:guid}/genres")]
-    public async Task<ActionResult> UpdateTrackGenres(
+    public async Task<ActionResult> UpdateGenres(
         [FromRoute] Guid id,
         [FromBody] UpdateTrackGenresRequest request,
         CancellationToken cancellationToken = default)
@@ -237,7 +237,7 @@ public sealed class TracksController(IMediator mediator)
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     [Authorize(Roles = UserRoles.Creator)]
     [HttpPut("{id:guid}/moods")]
-    public async Task<ActionResult> UpdateTrackMoods(
+    public async Task<ActionResult> UpdateMoods(
         [FromRoute] Guid id,
         [FromBody] UpdateTrackMoodsRequest request,
         CancellationToken cancellationToken = default)
@@ -299,7 +299,7 @@ public sealed class TracksController(IMediator mediator)
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     [Authorize(Roles = UserRoles.Creator)]
     [HttpPatch("{id:guid}/title")]
-    public async Task<ActionResult> CorrectTrackTitle(
+    public async Task<ActionResult> CorrectTitle(
         [FromRoute] Guid id,
         [FromBody] CorrectTrackTitleRequest request,
         CancellationToken cancellationToken = default)
@@ -330,7 +330,7 @@ public sealed class TracksController(IMediator mediator)
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     [Authorize(Roles = UserRoles.Creator)]
     [HttpPost("{id:guid}/explicit")]
-    public async Task<ActionResult> MarkTrackAsExplicit(
+    public async Task<ActionResult> MarkAsExplicit(
         [FromRoute] Guid id,
         CancellationToken cancellationToken = default)
     {
@@ -358,7 +358,7 @@ public sealed class TracksController(IMediator mediator)
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     [Authorize(Roles = UserRoles.Creator)]
     [HttpDelete("{id:guid}/explicit")]
-    public async Task<ActionResult> MarkTrackAsNotExplicit(
+    public async Task<ActionResult> MarkAsNotExplicit(
         [FromRoute] Guid id,
         CancellationToken cancellationToken = default)
     {
@@ -387,7 +387,7 @@ public sealed class TracksController(IMediator mediator)
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     [Authorize(Roles = UserRoles.Creator)]
     [HttpDelete("{id:guid}")]
-    public async Task<ActionResult> DeleteTrack(
+    public async Task<ActionResult> Delete(
         [FromRoute] Guid id,
         CancellationToken cancellationToken = default)
     {

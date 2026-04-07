@@ -26,7 +26,7 @@ public sealed class CurrentUserPlaylistsController(IMediator mediator)
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     [Authorize(Roles = UserRoles.Listener)]
     [HttpGet]
-    public async Task<ActionResult<PlaylistList>> GetPlaylists(
+    public async Task<ActionResult<PlaylistList>> List(
         [FromQuery] PaginationParams pagination,
         CancellationToken cancellationToken = default)
     {

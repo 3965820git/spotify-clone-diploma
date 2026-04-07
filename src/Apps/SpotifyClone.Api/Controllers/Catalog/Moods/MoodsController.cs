@@ -24,7 +24,7 @@ public sealed class MoodsController(IMediator mediator)
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     [AllowAnonymous]
     [HttpGet]
-    public async Task<ActionResult<MoodList>> GetList(
+    public async Task<ActionResult<MoodList>> List(
         [FromQuery] PaginationParams pagination,
         CancellationToken cancellationToken = default)
     {

@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using System.Text.Json;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SpotifyClone.Accounts.Application.Features.Accounts.Commands.Delete;
@@ -9,12 +10,13 @@ using SpotifyClone.Accounts.Application.Features.Accounts.Commands.UnlinkAvatar;
 using SpotifyClone.Accounts.Application.Features.Accounts.Queries;
 using SpotifyClone.Accounts.Application.Features.Accounts.Queries.GetCurrentDetails;
 using SpotifyClone.Accounts.Application.Features.Accounts.Queries.GetProfileDetails;
+using SpotifyClone.Accounts.Application.Features.Accounts.Queries.List;
 using SpotifyClone.Api.Contracts.v1.Accounts.Profile.EditPersonalInfo;
 using SpotifyClone.Api.Contracts.v1.Accounts.Profile.EditProfileDetails;
 using SpotifyClone.Api.Contracts.v1.Accounts.Profile.LinkNewAvatar;
 using SpotifyClone.Api.Mappers;
-using SpotifyClone.Playlists.Application.Features.Playlists.Queries;
 using SpotifyClone.Shared.BuildingBlocks.Application.Auth;
+using SpotifyClone.Shared.BuildingBlocks.Application.Pagination;
 using SpotifyClone.Shared.BuildingBlocks.Application.Results;
 
 namespace SpotifyClone.Api.Controllers.Accounts;
@@ -23,9 +25,45 @@ namespace SpotifyClone.Api.Controllers.Accounts;
 public sealed class UsersController(IMediator mediator)
     : ApiController(mediator)
 {
+    [EndpointSummary("List Users")]
+    [EndpointDescription("Returns a list of Users with pagination support.")]
+    [ProducesResponseType(typeof(UserList), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    [AllowAnonymous]
+    [HttpGet]
+    public async Task<ActionResult> List(
+        [FromQuery] PaginationParams pagination,
+        CancellationToken cancellationToken = default)
+    {
+        Result<UserList> result = await Mediator.Send(
+            new ListUsersQuery(pagination),
+            cancellationToken);
+        if (result.IsFailure)
+        {
+            ProblemDetails problemDetails = ResultToProblemDetailsMapper.MapToProblemDetails(
+                result,
+                HttpContext);
+
+            return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
+        }
+
+        Response.Headers.Append("X-Pagination", JsonSerializer.Serialize(new
+        {
+            page = result.Value.Users.Page,
+            pageSize = result.Value.Users.PageSize,
+            hasPreviousPage = result.Value.Users.HasPreviousPage,
+            hasNextPage = result.Value.Users.HasNextPage,
+            totalCount = result.Value.Users.TotalCount,
+        }));
+
+        return Ok(result.Value.Users.Items);
+    }
+
     [EndpointSummary("Get User's public profile")]
     [EndpointDescription("Returns a User's public profile.")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(UserProfileDetails), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
@@ -52,7 +90,7 @@ public sealed class UsersController(IMediator mediator)
 
     [EndpointSummary("Get current User private profile")]
     [EndpointDescription("Returns the current User's private profile.")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(UserProfileDetails), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]

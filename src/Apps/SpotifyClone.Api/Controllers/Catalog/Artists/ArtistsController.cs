@@ -38,7 +38,7 @@ public sealed class ArtistsController(IMediator mediator)
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     [AllowAnonymous]
     [HttpGet]
-    public async Task<ActionResult<ArtistList>> GetList(
+    public async Task<ActionResult<ArtistList>> List(
         [FromQuery] PaginationParams pagination,
         CancellationToken cancellationToken = default)
     {
@@ -102,7 +102,7 @@ public sealed class ArtistsController(IMediator mediator)
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     [Authorize(Roles = UserRoles.Creator)]
     [HttpPost]
-    public async Task<ActionResult<CreateArtistResponse>> CreateAlbum(
+    public async Task<ActionResult<CreateArtistResponse>> Create(
         [FromBody] CreateArtistRequest request,
         CancellationToken cancellationToken = default)
     {
@@ -262,7 +262,7 @@ public sealed class ArtistsController(IMediator mediator)
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     [Authorize(Roles = UserRoles.Creator)]
     [HttpPut("{id:guid}/profile")]
-    public async Task<ActionResult> EditArtistProfile(
+    public async Task<ActionResult> EditProfile(
         [FromRoute] Guid id,
         [FromBody] EditArtistProfileRequest request,
         CancellationToken cancellationToken = default)
@@ -294,7 +294,7 @@ public sealed class ArtistsController(IMediator mediator)
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     [Authorize(Roles = UserRoles.Creator)]
     [HttpPost("{id:guid}/gallery")]
-    public async Task<ActionResult> AddGalleryImageToArtist(
+    public async Task<ActionResult> AddGalleryImage(
         [FromRoute] Guid id,
         [FromBody] AddGalleryImageToArtistRequest request,
         CancellationToken cancellationToken = default)
@@ -329,7 +329,7 @@ public sealed class ArtistsController(IMediator mediator)
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     [Authorize(Roles = UserRoles.Creator)]
     [HttpDelete("{id:guid}/gallery/{imageId:guid}")]
-    public async Task<ActionResult> AddGalleryImageToArtist(
+    public async Task<ActionResult> RemoveGalleryImage(
         [FromRoute] Guid id,
         [FromRoute] Guid imageId,
         CancellationToken cancellationToken = default)

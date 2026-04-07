@@ -28,7 +28,7 @@ public sealed class GenresAdminController(IMediator mediator)
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     [HttpPost]
-    public async Task<ActionResult<CreateGenreResponse>> CreateGenre(
+    public async Task<ActionResult<CreateGenreResponse>> Create(
         [FromBody] CreateGenreRequest request,
         CancellationToken cancellationToken = default)
     {
@@ -119,7 +119,7 @@ public sealed class GenresAdminController(IMediator mediator)
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     [HttpDelete("{id:guid}")]
-    public async Task<ActionResult> DeleteGenre(
+    public async Task<ActionResult> Delete(
         [FromRoute] Guid id,
         CancellationToken cancellationToken = default)
     {
@@ -145,7 +145,7 @@ public sealed class GenresAdminController(IMediator mediator)
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     [HttpPatch("{id:guid}/name")]
-    public async Task<ActionResult> RenameGenre(
+    public async Task<ActionResult> Rename(
         [FromRoute] Guid id,
         [FromBody] RenameGenreRequest request,
         CancellationToken cancellationToken = default)

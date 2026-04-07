@@ -5,6 +5,8 @@ using SpotifyClone.Accounts.Application.Models;
 using SpotifyClone.Accounts.Infrastructure.Persistence.Accounts.Database;
 using SpotifyClone.Accounts.Infrastructure.Persistence.Identity.Database;
 using SpotifyClone.Shared.BuildingBlocks.Application.Auth;
+using SpotifyClone.Shared.BuildingBlocks.Application.Pagination;
+using SpotifyClone.Shared.BuildingBlocks.Infrastructure.Persistence.Extensions;
 using SpotifyClone.Shared.Kernel.IDs;
 
 namespace SpotifyClone.Accounts.Infrastructure.Persistence.Queries;
@@ -130,4 +132,20 @@ internal sealed class UserEfCoreReadService(
             identityUserInfo.Role,
             userProfileInfo.Avatar);
     }
+
+    public async Task<PagedList<UserSummary>> GetAllAsync(
+        PaginationParams pagination,
+        CancellationToken cancellationToken = default)
+        => await _accountsContext.UserProfiles.AsNoTracking()
+        .OrderBy(u => u.CreatedAtUtc)
+        .Select(u => new UserSummary(
+            u.Id.Value,
+            u.DisplayName,
+            u.Avatar == null ? null : new ImageMetadataDetails(
+                u.Avatar.ImageId.Value,
+                u.Avatar.Metadata.Width,
+                u.Avatar.Metadata.Height,
+                u.Avatar.Metadata.FileType.Value,
+                u.Avatar.Metadata.SizeInBytes)))
+        .ToPagedListAsync(pagination, cancellationToken);
 }
