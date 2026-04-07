@@ -7,6 +7,8 @@ using SpotifyClone.Playlists.Domain.Aggregates.Playlists.Entities;
 using SpotifyClone.Playlists.Domain.Aggregates.Playlists.ValueObjects;
 using SpotifyClone.Playlists.Infrastructure.Persistence.Database;
 using SpotifyClone.Playlists.Infrastructure.Persistence.Entities;
+using SpotifyClone.Shared.BuildingBlocks.Application.Pagination;
+using SpotifyClone.Shared.BuildingBlocks.Infrastructure.Persistence.Extensions;
 using SpotifyClone.Shared.Kernel.IDs;
 
 namespace SpotifyClone.Playlists.Infrastructure.Persistence.Queries;
@@ -18,8 +20,8 @@ internal sealed class PlaylistEfCoreReadService(
     private readonly PlaylistsAppDbContext _context = context;
 
     public async Task<PlaylistDetails?> GetDetailsAsync(
-    PlaylistId id,
-    CancellationToken cancellationToken = default)
+        PlaylistId id,
+        CancellationToken cancellationToken = default)
     {
         var header = await _context.Playlists
             .AsNoTracking()
@@ -76,46 +78,40 @@ internal sealed class PlaylistEfCoreReadService(
         );
     }
 
-    public async Task<IEnumerable<PlaylistSummary>> GetAllByOwnerAsync(
-    UserId ownerId,
-    CancellationToken cancellationToken = default)
-    => await GetPlaylistSummaries(
-        _context.Playlists.Where(p => p.OwnerId == ownerId),
-        cancellationToken);
-
-    public async Task<IEnumerable<PlaylistSummary>> GetAllPublicByOwnerAsync(
-        UserId ownerId,
-        CancellationToken cancellationToken = default)
-        => await GetPlaylistSummaries(
-            _context.Playlists.Where(p => p.OwnerId == ownerId && p.IsPublic),
-            cancellationToken);
-
-    private async Task<List<PlaylistSummary>> GetPlaylistSummaries(
-    IQueryable<Playlist> query,
-    CancellationToken ct)
+    public async Task<PagedList<PlaylistSummary>> GetAllAsync(
+        UserId? ownerId,
+        bool isAdmin,
+        PaginationParams pagination,
+        CancellationToken cancellationToken)
     {
-        var playlists = await query
-            .AsNoTracking()
-            .Select(p => new
-            {
-                p.Id,
-                p.Name,
-                p.Description,
-                p.IsPublic,
-                p.Cover
-            })
-            .ToListAsync(ct);
+        IQueryable<Playlist> query = _context.Playlists.AsNoTracking();
+        
+        if (!isAdmin)
+        {
+            query = ownerId is null
+                ? query.Where(p => p.IsPublic)
+                : query.Where(p => p.IsPublic || p.OwnerId == ownerId);
+        }
+
+        var playlists = query.Select(p => new
+        {
+            p.Id,
+            p.Name,
+            p.Description,
+            p.IsPublic,
+            p.Cover
+        });
 
         var playlistIds = playlists.Select(p => p.Id).ToList();
 
         List<PlaylistTrack> playlistTracks = await _context.PlaylistTracks
             .Where(pt => playlistIds.Contains(pt.PlaylistId))
             .AsNoTracking()
-            .ToListAsync(ct);
+            .ToListAsync(cancellationToken);
 
         List<TrackReference> trackRefs = await _context.TrackReferences
             .AsNoTracking()
-            .ToListAsync(ct);
+            .ToListAsync(cancellationToken);
 
         var trackLookup = playlistTracks
             .Join(trackRefs,
@@ -127,7 +123,7 @@ internal sealed class PlaylistEfCoreReadService(
                 g => g.Key,
                 g => g.OrderBy(x => x.Position).Take(4).Select(x => x.Id).ToList());
 
-        return playlists.Select(p => new PlaylistSummary(
+        return await playlists.Select(p => new PlaylistSummary(
             p.Id.Value,
             p.Name,
             p.Description,
@@ -139,6 +135,6 @@ internal sealed class PlaylistEfCoreReadService(
                 p.Cover.Metadata.FileType.Value,
                 p.Cover.Metadata.SizeInBytes),
             trackLookup.GetValueOrDefault(p.Id) ?? new List<Guid>()
-        )).ToList();
+        )).ToPagedListAsync(pagination, cancellationToken);
     }
 }

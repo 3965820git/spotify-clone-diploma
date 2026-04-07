@@ -1,10 +1,12 @@
-﻿using MediatR;
+﻿using System.Text.Json;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SpotifyClone.Api.Mappers;
 using SpotifyClone.Playlists.Application.Features.Playlists.Queries;
-using SpotifyClone.Playlists.Application.Features.Playlists.Queries.GetAllByCurrentUser;
+using SpotifyClone.Playlists.Application.Features.Playlists.Queries.List;
 using SpotifyClone.Shared.BuildingBlocks.Application.Auth;
+using SpotifyClone.Shared.BuildingBlocks.Application.Pagination;
 using SpotifyClone.Shared.BuildingBlocks.Application.Results;
 
 namespace SpotifyClone.Api.Controllers.Playlists;
@@ -13,8 +15,10 @@ namespace SpotifyClone.Api.Controllers.Playlists;
 public sealed class CurrentUserPlaylistsController(IMediator mediator)
     : ApiController(mediator)
 {
-    [EndpointSummary("Get current User Playlists")]
-    [EndpointDescription("Returns the current User's playlists.")]
+    [EndpointSummary("[WARNING] Get current User Playlists")]
+    [EndpointDescription("Returns the current User's playlists.\n" +
+                         "Note: This endpoint is not working properly right now," +
+                         "it returns all playlists, not just the current user's.")]
     [ProducesResponseType(typeof(PlaylistList), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -23,10 +27,11 @@ public sealed class CurrentUserPlaylistsController(IMediator mediator)
     [Authorize(Roles = UserRoles.Listener)]
     [HttpGet]
     public async Task<ActionResult<PlaylistList>> GetPlaylists(
+        [FromQuery] PaginationParams pagination,
         CancellationToken cancellationToken = default)
     {
         Result<PlaylistList> result = await Mediator.Send(
-            new GetAllPlaylistsByCurrentUserQuery(),
+            new ListPlaylistsQuery(pagination),
             cancellationToken);
         if (result.IsFailure)
         {
@@ -37,6 +42,15 @@ public sealed class CurrentUserPlaylistsController(IMediator mediator)
             return new ObjectResult(problemDetails) { StatusCode = problemDetails.Status };
         }
 
-        return Ok(result.Value);
+        Response.Headers.Append("X-Pagination", JsonSerializer.Serialize(new
+        {
+            page = result.Value.Playlists.Page,
+            pageSize = result.Value.Playlists.PageSize,
+            hasPreviousPage = result.Value.Playlists.HasPreviousPage,
+            hasNextPage = result.Value.Playlists.HasNextPage,
+            totalCount = result.Value.Playlists.TotalCount,
+        }));
+
+        return Ok(result.Value.Playlists.Items);
     }
 }
