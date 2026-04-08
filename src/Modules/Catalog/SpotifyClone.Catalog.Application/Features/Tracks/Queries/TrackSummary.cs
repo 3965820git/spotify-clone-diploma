@@ -1,4 +1,6 @@
-﻿namespace SpotifyClone.Catalog.Application.Features.Tracks.Queries;
+﻿using SpotifyClone.Catalog.Application.Features.Artists.Queries;
+
+namespace SpotifyClone.Catalog.Application.Features.Tracks.Queries;
 
 public sealed record TrackSummary(
     Guid Id,
@@ -9,5 +11,5 @@ public sealed record TrackSummary(
     string Status,
     Guid? AudioFileId,
     Guid? AlbumId,
-    IEnumerable<Guid> MainArtists,
-    IEnumerable<Guid> FeaturedArtists);
+    IEnumerable<ArtistSummary> MainArtists,
+    IEnumerable<ArtistSummary> FeaturedArtists);

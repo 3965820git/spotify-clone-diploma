@@ -35,7 +35,7 @@ internal sealed class ListTracksByIdsQueryHandler(
         var artistIds = tracks
             .SelectMany(t => t.MainArtists.Concat(t.FeaturedArtists))
             .Distinct()
-            .Select(id => ArtistId.From(id))
+            .Select(a => ArtistId.From(a.Id))
             .ToList();
 
         IEnumerable<ArtistSummary> artists = await _artistReadService.GetAllByIdsAsync(
