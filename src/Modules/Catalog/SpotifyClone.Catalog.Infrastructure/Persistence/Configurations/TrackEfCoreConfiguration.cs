@@ -59,11 +59,8 @@ internal sealed class TrackEfCoreConfiguration : IEntityTypeConfiguration<Track>
         {
             a.ToTable("track_main_artists");
 
-            a.Property<Guid>("Id")
-                .HasColumnName("id");
-            a.HasKey("Id");
-
-            a.WithOwner().HasForeignKey("TrackId");
+            a.WithOwner()
+                .HasForeignKey("TrackId");
 
             a.Property<TrackId>("TrackId")
                 .HasColumnName("track_id");
@@ -71,6 +68,8 @@ internal sealed class TrackEfCoreConfiguration : IEntityTypeConfiguration<Track>
             a.Property(x => x.Value)
                 .HasColumnName("artist_id")
                 .IsRequired();
+
+            a.HasKey("TrackId", "Value");
 
             a.HasIndex("TrackId", "Value")
                 .IsUnique();
@@ -82,11 +81,8 @@ internal sealed class TrackEfCoreConfiguration : IEntityTypeConfiguration<Track>
         {
             a.ToTable("track_featured_artists");
 
-            a.Property<Guid>("Id")
-                .HasColumnName("id");
-            a.HasKey("Id");
-
-            a.WithOwner().HasForeignKey("TrackId");
+            a.WithOwner()
+                .HasForeignKey("TrackId");
 
             a.Property<TrackId>("TrackId")
                 .HasColumnName("track_id");
@@ -94,6 +90,8 @@ internal sealed class TrackEfCoreConfiguration : IEntityTypeConfiguration<Track>
             a.Property(x => x.Value)
                 .HasColumnName("artist_id")
                 .IsRequired();
+
+            a.HasKey("TrackId", "Value");
 
             a.HasIndex("TrackId", "Value")
                 .IsUnique();

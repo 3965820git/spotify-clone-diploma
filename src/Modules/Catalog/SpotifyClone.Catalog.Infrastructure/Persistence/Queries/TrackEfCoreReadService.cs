@@ -203,19 +203,15 @@ internal sealed class TrackEfCoreReadService(
             }
             else
             {
-                // Отримуємо ID артистів користувача як об'єкти типу ArtistId
-                List<ArtistId> userArtistIds = await _context.Artists
+                List<Guid> userArtistIds = await _context.Artists
                     .Where(art => art.OwnerId == ownerId)
-                    .Select(art => art.Id)
+                    .Select(art => art.Id.Value)
                     .ToListAsync(cancellationToken);
 
-                // 2. Фільтруємо: трек опубліковано АБО 
-                // користувач володіє хоча б одним з основних артистів АБО 
-                // користувач володіє хоча б одним із запрошених артистів
                 query = query.Where(t =>
                     t.Status == TrackStatus.Published ||
-                    t.MainArtists.Any(ma => userArtistIds.Contains(ma)) ||
-                    t.FeaturedArtists.Any(fa => userArtistIds.Contains(fa))
+                    t.MainArtists.Any(ma => userArtistIds.Contains(ma.Value)) ||
+                    t.FeaturedArtists.Any(fa => userArtistIds.Contains(fa.Value))
                 );
             }
         }
@@ -251,41 +247,74 @@ internal sealed class TrackEfCoreReadService(
             var albumId = AlbumId.From(filters.AlbumId.Value);
             query = query.Where(t => t.AlbumId == albumId);
         }
+        if (filters.OwnerId is not null)
+        {
+            var owner = UserId.From(filters.OwnerId.Value);
+
+            List<Guid> ownedArtistIds = await _context.Artists
+                .Where(a => a.OwnerId == owner)
+                .Select(a => a.Id.Value)
+                .ToListAsync(cancellationToken);
+
+            if (ownedArtistIds.Count > 0)
+            {
+                query = query.Where(t => t.MainArtists.Any(ma => ownedArtistIds.Contains(ma.Value)));
+            }
+            else
+            {
+                // Якщо у власника немає артистів, він не може мати треків.
+                // Замість ігнорування фільтра, ми робимо запит, який нічого не поверне.
+                query = query.Where(t => false);
+            }
+        }
         if (filters.MainArtistIds is not null && filters.MainArtistIds.Any())
         {
-            query = query.Where(t => t.MainArtists.Any(a => filters.MainArtistIds.Any(id => id == a.Value)));
+            query = query.Where(t => t.MainArtists.Any(a => filters.MainArtistIds.Contains(a.Value)));
         }
         if (filters.FeaturedArtistIds is not null && filters.FeaturedArtistIds.Any())
         {
-            query = query.Where(t => t.FeaturedArtists.Any(a => filters.FeaturedArtistIds.Any(id => id == a.Value)));
+            query = query.Where(t => t.FeaturedArtists.Any(a => filters.FeaturedArtistIds.Contains(a.Value)));
         }
         if (filters.GenreIds is not null && filters.GenreIds.Any())
         {
-            query = query.Where(t => t.Genres.Any(a => filters.GenreIds.Any(id => id == a.Value)));
+            query = query.Where(t => t.Genres.Any(a => filters.GenreIds.Contains(a.Value)));
         }
         if (filters.MoodIds is not null && filters.MoodIds.Any())
         {
-            query = query.Where(t => t.Moods.Any(a => filters.MoodIds.Any(id => id == a.Value)));
+            query = query.Where(t => t.Moods.Any(a => filters.MoodIds.Contains(a.Value)));
         }
 
-        PagedList<Track> pagedTracks = await query
-            .OrderBy(t => t.CreatedAtUtc)
-            .ToPagedListAsync(pagination, cancellationToken);
-
-        if (!pagedTracks.Items.Any())
+        var pagedData = await query
+        .OrderBy(t => t.CreatedAtUtc)
+        .Select(t => new
         {
-            return new PagedList<TrackSummary>([], pagedTracks.TotalCount, pagination.Page, pagination.PageSize);
+            t.Id,
+            t.Title,
+            t.Duration,
+            t.ReleaseDate,
+            t.ContainsExplicitContent,
+            t.Status,
+            t.AudioFileId,
+            t.AlbumId,
+            MainArtistIds = t.MainArtists,
+            FeaturedArtistIds = t.FeaturedArtists
+        })
+        .ToPagedListAsync(pagination, cancellationToken);
+
+        if (!pagedData.Items.Any())
+        {
+            return new PagedList<TrackSummary>([], pagedData.TotalCount, pagination.Page, pagination.PageSize);
         }
 
-        var allArtistIds = pagedTracks.Items
-            .SelectMany(t => t.MainArtists)
-            .Concat(pagedTracks.Items.SelectMany(t => t.FeaturedArtists))
+        var allArtistIds = pagedData.Items
+            .SelectMany(t => t.MainArtistIds)
+            .Concat(pagedData.Items.SelectMany(t => t.FeaturedArtistIds))
             .Distinct()
             .ToList();
 
         Dictionary<Guid, ArtistSummary> artistMap = await _context.Artists
             .AsNoTracking()
-            .Where(a => allArtistIds.Contains(a.Id))
+            .Where(a => allArtistIds.Any(id => id == a.Id))
             .Select(a => new ArtistSummary(
                 a.Id.Value,
                 a.Name,
@@ -299,7 +328,7 @@ internal sealed class TrackEfCoreReadService(
                     a.Avatar.Metadata.SizeInBytes)))
             .ToDictionaryAsync(a => a.Id, cancellationToken);
 
-        var finalItems = pagedTracks.Items.Select(t => new TrackSummary(
+        var finalItems = pagedData.Items.Select(t => new TrackSummary(
             t.Id.Value,
             t.Title,
             t.Duration,
@@ -308,19 +337,20 @@ internal sealed class TrackEfCoreReadService(
             t.Status.Value,
             t.AudioFileId?.Value,
             t.AlbumId?.Value,
-            t.MainArtists
+            t.MainArtistIds
                 .Where(id => artistMap.ContainsKey(id.Value))
                 .Select(id => artistMap[id.Value])
                 .ToList(),
-            t.FeaturedArtists
-                .Where(id => artistMap.ContainsKey(id.Value))
+            t.FeaturedArtistIds
+                .Where(id => artistMap
+                .ContainsKey(id.Value))
                 .Select(id => artistMap[id.Value])
                 .ToList()
         )).ToList();
 
         return new PagedList<TrackSummary>(
             finalItems,
-            pagedTracks.TotalCount,
+            pagedData.TotalCount,
             pagination.Page,
             pagination.PageSize);
     }
@@ -331,7 +361,7 @@ internal sealed class TrackEfCoreReadService(
     {
         List<Track> tracks = await _context.Tracks
             .AsNoTracking()
-            .Where(t => ids.Contains(t.Id))
+            .Where(t => ids.Any(id => id == t.Id))
             .ToListAsync(cancellationToken);
 
         if (tracks.Count <= 0)
@@ -347,7 +377,7 @@ internal sealed class TrackEfCoreReadService(
 
         Dictionary<Guid, ArtistSummary> artistMap = await _context.Artists
             .AsNoTracking()
-            .Where(a => allArtistIds.Contains(a.Id))
+            .Where(a => allArtistIds.Any(id => id == a.Id))
             .Select(a => new ArtistSummary(
                 a.Id.Value,
                 a.Name,

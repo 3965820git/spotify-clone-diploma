@@ -673,20 +673,16 @@ partial class CatalogAppDbContextModelSnapshot : ModelSnapshot
 
                 b.OwnsMany("SpotifyClone.Catalog.Domain.Aggregates.Artists.ValueObjects.ArtistId", "FeaturedArtists", b1 =>
                     {
-                        b1.Property<Guid>("Id")
-                            .ValueGeneratedOnAdd()
-                            .HasColumnType("uuid")
-                            .HasColumnName("id");
-
                         b1.Property<Guid>("TrackId")
                             .HasColumnType("uuid")
                             .HasColumnName("track_id");
 
                         b1.Property<Guid>("Value")
+                            .ValueGeneratedOnAdd()
                             .HasColumnType("uuid")
                             .HasColumnName("artist_id");
 
-                        b1.HasKey("Id");
+                        b1.HasKey("TrackId", "Value");
 
                         b1.HasIndex("TrackId", "Value")
                             .IsUnique();
@@ -699,20 +695,16 @@ partial class CatalogAppDbContextModelSnapshot : ModelSnapshot
 
                 b.OwnsMany("SpotifyClone.Catalog.Domain.Aggregates.Artists.ValueObjects.ArtistId", "MainArtists", b1 =>
                     {
-                        b1.Property<Guid>("Id")
-                            .ValueGeneratedOnAdd()
-                            .HasColumnType("uuid")
-                            .HasColumnName("id");
-
                         b1.Property<Guid>("TrackId")
                             .HasColumnType("uuid")
                             .HasColumnName("track_id");
 
                         b1.Property<Guid>("Value")
+                            .ValueGeneratedOnAdd()
                             .HasColumnType("uuid")
                             .HasColumnName("artist_id");
 
-                        b1.HasKey("Id");
+                        b1.HasKey("TrackId", "Value");
 
                         b1.HasIndex("TrackId", "Value")
                             .IsUnique();

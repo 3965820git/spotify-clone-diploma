@@ -8,6 +8,7 @@ public sealed record TrackFilterParams(
     string? Status = null,
     Guid? AudioFileId = null,
     Guid? AlbumId = null,
+    Guid? OwnerId = null,
     IEnumerable<Guid>? MainArtistIds = null,
     IEnumerable<Guid>? FeaturedArtistIds = null,
     IEnumerable<Guid>? GenreIds = null,

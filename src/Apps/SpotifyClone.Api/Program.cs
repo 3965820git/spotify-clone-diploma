@@ -2,6 +2,7 @@ using System.Text;
 using System.Threading.RateLimiting;
 using Hangfire;
 using Hangfire.Redis.StackExchange;
+using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.StaticFiles;
@@ -10,6 +11,9 @@ using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using Serilog;
+using SpotifyClone.Accounts.Application.Features.Accounts.Queries;
+using SpotifyClone.Accounts.Application.Features.Accounts.Queries.GetProfileDetails;
+using SpotifyClone.Accounts.Application.Features.Accounts.Queries.List;
 using SpotifyClone.Accounts.Infrastructure.DependencyInjection;
 using SpotifyClone.Accounts.Infrastructure.Persistence.Accounts.Database;
 using SpotifyClone.Accounts.Infrastructure.Persistence.Identity.Database;
@@ -22,6 +26,8 @@ using SpotifyClone.Playlists.Infrastructure.DependencyInjection;
 using SpotifyClone.Playlists.Infrastructure.Persistence.Database;
 using SpotifyClone.Shared.BuildingBlocks.Application.Abstractions.Primitives;
 using SpotifyClone.Shared.BuildingBlocks.Application.Auth;
+using SpotifyClone.Shared.BuildingBlocks.Application.Pagination;
+using SpotifyClone.Shared.BuildingBlocks.Application.Results;
 using SpotifyClone.Shared.BuildingBlocks.Infrastructure.DependencyInjection;
 using SpotifyClone.Streaming.Infrastructure.DependencyInjection;
 using SpotifyClone.Streaming.Infrastructure.Notifications;
@@ -239,8 +245,15 @@ if (app.Environment.IsDevelopment())
 await app.UseAccountsModule();
 using (IServiceScope scope = app.Services.CreateScope())
 {
+    ISender sender = scope.ServiceProvider.GetRequiredService<ISender>();
+    Result<UserList> adminResult = await sender.Send(new ListUsersQuery(new("Stopify"), new()));
+    if (adminResult.IsFailure || adminResult.Value.Users.Items.Count > 1)
+    {
+        return;
+    }
+
     ICurrentUser currentUser = scope.ServiceProvider.GetRequiredService<ICurrentUser>();
-    currentUser.SetUser(Guid.NewGuid(), UserRoles.Admin, true);
+    currentUser.SetUser(adminResult.Value.Users.Items.Single().Id, UserRoles.Admin, true);
 
     await app.UseCatalogModule();
     await app.UseStreamingModule(CatalogSeeder.Tracks);
