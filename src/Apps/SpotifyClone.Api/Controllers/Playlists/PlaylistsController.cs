@@ -41,11 +41,12 @@ public sealed class PlaylistsController(IMediator mediator)
     [AllowAnonymous]
     [HttpGet]
     public async Task<ActionResult<PlaylistList>> List(
+        [FromQuery] PlaylistFilterParams filters,
         [FromQuery] PaginationParams pagination,
         CancellationToken cancellationToken = default)
     {
         Result<PlaylistList> result = await Mediator.Send(
-            new ListPlaylistsQuery(pagination),
+            new ListPlaylistsQuery(filters, pagination),
             cancellationToken);
         if (result.IsFailure)
         {

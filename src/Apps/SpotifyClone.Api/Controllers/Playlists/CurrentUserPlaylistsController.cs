@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using SpotifyClone.Api.Mappers;
 using SpotifyClone.Playlists.Application.Features.Playlists.Queries;
 using SpotifyClone.Playlists.Application.Features.Playlists.Queries.List;
+using SpotifyClone.Shared.BuildingBlocks.Application.Abstractions.Primitives;
 using SpotifyClone.Shared.BuildingBlocks.Application.Auth;
 using SpotifyClone.Shared.BuildingBlocks.Application.Pagination;
 using SpotifyClone.Shared.BuildingBlocks.Application.Results;
@@ -27,11 +28,15 @@ public sealed class CurrentUserPlaylistsController(IMediator mediator)
     [Authorize(Roles = UserRoles.Listener)]
     [HttpGet]
     public async Task<ActionResult<PlaylistList>> List(
+        [FromQuery] PlaylistFilterParams filters,
         [FromQuery] PaginationParams pagination,
+        ICurrentUser currentUser,
         CancellationToken cancellationToken = default)
     {
+        PlaylistFilterParams filtersWithCurrentUser = filters with { OwnerId = currentUser.Id };
+
         Result<PlaylistList> result = await Mediator.Send(
-            new ListPlaylistsQuery(pagination),
+            new ListPlaylistsQuery(filtersWithCurrentUser, pagination),
             cancellationToken);
         if (result.IsFailure)
         {

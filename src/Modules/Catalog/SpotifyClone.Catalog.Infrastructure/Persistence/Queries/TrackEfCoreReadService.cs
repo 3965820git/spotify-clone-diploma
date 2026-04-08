@@ -5,11 +5,11 @@ using SpotifyClone.Catalog.Application.Features.Genres.Queries;
 using SpotifyClone.Catalog.Application.Features.Moods.Queries;
 using SpotifyClone.Catalog.Application.Features.Tracks.Queries;
 using SpotifyClone.Catalog.Application.Models;
+using SpotifyClone.Catalog.Domain.Aggregates.Albums.ValueObjects;
 using SpotifyClone.Catalog.Domain.Aggregates.Artists.ValueObjects;
-using SpotifyClone.Catalog.Domain.Aggregates.Genres.ValueObjects;
-using SpotifyClone.Catalog.Domain.Aggregates.Moods.ValueObjects;
 using SpotifyClone.Catalog.Domain.Aggregates.Tracks;
 using SpotifyClone.Catalog.Domain.Aggregates.Tracks.Enums;
+using SpotifyClone.Catalog.Domain.Aggregates.Tracks.ValueObjects;
 using SpotifyClone.Catalog.Infrastructure.Persistence.Database;
 using SpotifyClone.Shared.BuildingBlocks.Application.Pagination;
 using SpotifyClone.Shared.BuildingBlocks.Infrastructure.Persistence.Extensions;
@@ -136,6 +136,7 @@ internal sealed class TrackEfCoreReadService(
     public async Task<PagedList<TrackSummary>> GetAllAsync(
     UserId? ownerId,
     bool isAdmin,
+    TrackFilterParams filters,
     PaginationParams pagination,
     CancellationToken cancellationToken = default)
     {
@@ -164,6 +165,54 @@ internal sealed class TrackEfCoreReadService(
                     t.FeaturedArtists.Any(fa => userArtistIds.Contains(fa))
                 );
             }
+        }
+
+        if (filters.Title is not null)
+        {
+            query = query.Where(t => EF.Functions.ILike(t.Title, filters.Title));
+        }
+        if (filters.Duration is not null)
+        {
+            query = query.Where(t => t.Duration == filters.Duration);
+        }
+        if (filters.ReleaseDate is not null)
+        {
+            query = query.Where(t => t.ReleaseDate == filters.ReleaseDate);
+        }
+        if (filters.Explicit is not null)
+        {
+            query = query.Where(t => t.ContainsExplicitContent == filters.Explicit);
+        }
+        if (filters.Status is not null)
+        {
+            var status = TrackStatus.From(filters.Status);
+            query = query.Where(t => t.Status == status);
+        }
+        if (filters.AudioFileId is not null)
+        {
+            var audioFileId = AudioFileId.From(filters.AudioFileId.Value);
+            query = query.Where(t => t.AudioFileId == audioFileId);
+        }
+        if (filters.AlbumId is not null)
+        {
+            var albumId = AlbumId.From(filters.AlbumId.Value);
+            query = query.Where(t => t.AlbumId == albumId);
+        }
+        if (filters.MainArtistIds is not null && filters.MainArtistIds.Any())
+        {
+            query = query.Where(t => t.MainArtists.Any(a => filters.MainArtistIds.Any(id => id == a.Value)));
+        }
+        if (filters.FeaturedArtistIds is not null && filters.FeaturedArtistIds.Any())
+        {
+            query = query.Where(t => t.FeaturedArtists.Any(a => filters.FeaturedArtistIds.Any(id => id == a.Value)));
+        }
+        if (filters.GenreIds is not null && filters.GenreIds.Any())
+        {
+            query = query.Where(t => t.Genres.Any(a => filters.GenreIds.Any(id => id == a.Value)));
+        }
+        if (filters.MoodIds is not null && filters.MoodIds.Any())
+        {
+            query = query.Where(t => t.Moods.Any(a => filters.MoodIds.Any(id => id == a.Value)));
         }
 
         return await query
@@ -201,44 +250,4 @@ internal sealed class TrackEfCoreReadService(
             t.MainArtists.Select(a => a.Value),
             t.FeaturedArtists.Select(a => a.Value)))
         .ToListAsync(cancellationToken);
-
-    public async Task<PagedList<TrackSummary>> GetAllByGenreIdAsync(
-        GenreId genreId,
-        PaginationParams pagination,
-        CancellationToken cancellationToken = default)
-        => await _context.Tracks
-        .AsNoTracking()
-        .Where(t => t.Genres.Any(g => g.Value == genreId.Value))
-        .Select(t => new TrackSummary(
-            t.Id.Value,
-            t.Title,
-            t.Duration,
-            t.ReleaseDate,
-            t.ContainsExplicitContent,
-            t.Status.Value,
-            t.AudioFileId == null ? null : t.AudioFileId.Value,
-            t.AlbumId == null ? null : t.AlbumId.Value,
-            t.MainArtists.Select(a => a.Value),
-            t.FeaturedArtists.Select(a => a.Value)))
-        .ToPagedListAsync(pagination, cancellationToken);
-
-    public async Task<PagedList<TrackSummary>> GetAllByMoodIdAsync(
-        MoodId moodId,
-        PaginationParams pagination,
-        CancellationToken cancellationToken = default)
-        => await _context.Tracks
-        .AsNoTracking()
-        .Where(t => t.Moods.Any(m => m.Value == moodId.Value))
-        .Select(t => new TrackSummary(
-            t.Id.Value,
-            t.Title,
-            t.Duration,
-            t.ReleaseDate,
-            t.ContainsExplicitContent,
-            t.Status.Value,
-            t.AudioFileId == null ? null : t.AudioFileId.Value,
-            t.AlbumId == null ? null : t.AlbumId.Value,
-            t.MainArtists.Select(a => a.Value),
-            t.FeaturedArtists.Select(a => a.Value)))
-        .ToPagedListAsync(pagination, cancellationToken);
 }

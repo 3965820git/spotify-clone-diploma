@@ -34,11 +34,12 @@ public sealed class UsersController(IMediator mediator)
     [AllowAnonymous]
     [HttpGet]
     public async Task<ActionResult> List(
+        [FromQuery] UserFilterParams filters,
         [FromQuery] PaginationParams pagination,
         CancellationToken cancellationToken = default)
     {
         Result<UserList> result = await Mediator.Send(
-            new ListUsersQuery(pagination),
+            new ListUsersQuery(filters, pagination),
             cancellationToken);
         if (result.IsFailure)
         {

@@ -4,6 +4,7 @@ using SpotifyClone.Playlists.Application.Features.Playlists.Queries;
 using SpotifyClone.Playlists.Application.Models;
 using SpotifyClone.Playlists.Domain.Aggregates.Playlists;
 using SpotifyClone.Playlists.Domain.Aggregates.Playlists.Entities;
+using SpotifyClone.Playlists.Domain.Aggregates.Playlists.Enums;
 using SpotifyClone.Playlists.Domain.Aggregates.Playlists.ValueObjects;
 using SpotifyClone.Playlists.Infrastructure.Persistence.Database;
 using SpotifyClone.Playlists.Infrastructure.Persistence.Entities;
@@ -81,6 +82,7 @@ internal sealed class PlaylistEfCoreReadService(
     public async Task<PagedList<PlaylistSummary>> GetAllAsync(
         UserId? ownerId,
         bool isAdmin,
+        PlaylistFilterParams filters,
         PaginationParams pagination,
         CancellationToken cancellationToken)
     {
@@ -91,6 +93,39 @@ internal sealed class PlaylistEfCoreReadService(
             query = ownerId is null
                 ? query.Where(p => p.IsPublic)
                 : query.Where(p => p.IsPublic || p.OwnerId == ownerId);
+        }
+
+        if (filters.Name is not null)
+        {
+            query = query.Where(p => EF.Functions.ILike(p.Name, filters.Name));
+        }
+        if (filters.Description is not null)
+        {
+            query = query.Where(p =>
+                p.Description != null &&
+                EF.Functions.ILike(p.Description, filters.Description));
+        }
+        if (filters.OwnerId is not null)
+        {
+            var owner = UserId.From(filters.OwnerId.Value);
+            query = query.Where(p => p.OwnerId == owner);
+        }
+        if (filters.Type is not null)
+        {
+            PlaylistType type = Enum.Parse<PlaylistType>(filters.Type);
+            query = query.Where(p => p.Type == type);
+        }
+        if (filters.IsPublic is not null)
+        {
+            query = query.Where(p => p.IsPublic == filters.IsPublic);
+        }
+        if (filters.CollaboratorIds is not null)
+        {
+            query = query.Where(p => p.Collaborators.Any(c => filters.CollaboratorIds.Any(id => id == c.Value)));
+        }
+        if (filters.TrackIds is not null)
+        {
+            query = query.Where(p => p.Tracks.Any(t => filters.TrackIds.Any(id => id == t.Id.Value)));
         }
 
         var playlists = query.Select(p => new

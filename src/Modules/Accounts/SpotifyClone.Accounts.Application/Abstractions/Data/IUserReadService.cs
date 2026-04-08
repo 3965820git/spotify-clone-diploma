@@ -15,6 +15,7 @@ public interface IUserReadService
         CancellationToken cancellationToken = default);
 
     Task<PagedList<UserSummary>> GetAllAsync(
+        UserFilterParams filters,
         PaginationParams pagination,
         CancellationToken cancellationToken = default);
 }

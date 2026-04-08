@@ -26,6 +26,7 @@ public interface IAlbumReadService
     Task<PagedList<AlbumSummary>> GetAllAsync(
         UserId? ownerId,
         bool isAdmin,
+        AlbumFilterParams filters,
         PaginationParams pagination,
         CancellationToken cancellationToken = default);
 }

@@ -7,6 +7,7 @@ using SpotifyClone.Catalog.Application.Models;
 using SpotifyClone.Catalog.Domain.Aggregates.Albums;
 using SpotifyClone.Catalog.Domain.Aggregates.Albums.Enums;
 using SpotifyClone.Catalog.Domain.Aggregates.Albums.ValueObjects;
+using SpotifyClone.Catalog.Domain.Aggregates.Artists.ValueObjects;
 using SpotifyClone.Catalog.Infrastructure.Persistence.Database;
 using SpotifyClone.Shared.BuildingBlocks.Application.Pagination;
 using SpotifyClone.Shared.BuildingBlocks.Infrastructure.Persistence.Extensions;
@@ -283,6 +284,7 @@ internal sealed class AlbumEfCoreReadService(
     public async Task<PagedList<AlbumSummary>> GetAllAsync(
         UserId? ownerId,
         bool isAdmin,
+        AlbumFilterParams filters,
         PaginationParams pagination,
         CancellationToken cancellationToken = default)
     {
@@ -297,6 +299,33 @@ internal sealed class AlbumEfCoreReadService(
                     .Where(a => a.Status == AlbumStatus.Published || a.MainArtists.Any(ma => _context.Artists
                         .Where(art => art.Id == ma)
                         .Any(art => art.OwnerId == ownerId)));
+        }
+
+        if (filters.Title is not null)
+        {
+            query = query.Where(a => EF.Functions.ILike(a.Title, filters.Title));
+        }
+        if (filters.ReleaseDate is not null)
+        {
+            query = query.Where(a => a.ReleaseDate == filters.ReleaseDate);
+        }
+        if (filters.Status is not null)
+        {
+            var status = AlbumStatus.From(filters.Status);
+            query = query.Where(a => a.Status == status);
+        }
+        if (filters.Type is not null)
+        {
+            var type = AlbumType.From(filters.Type);
+            query = query.Where(a => a.Type == type);
+        }
+        if (filters.MainArtistIds is not null && filters.MainArtistIds.Any())
+        {
+            query = query.Where(a => a.MainArtists.Any(art => filters.MainArtistIds.Any(id => id == art.Value)));
+        }
+        if (filters.TrackIds is not null && filters.TrackIds.Any())
+        {
+            query = query.Where(a => a.Tracks.Any(t => filters.TrackIds.Any(id => id == t.Id.Value)));
         }
 
         PagedList<Album> pagedAlbums = await query

@@ -22,8 +22,9 @@ public interface IArtistReadService
         IEnumerable<ArtistId> artistIds,
         CancellationToken cancellationToken = default);
 
-    Task<PagedList<ArtistSummary>> GetList(
+    Task<PagedList<ArtistSummary>> GetAllAsync(
         bool includeBanned,
+        ArtistFilterParams filters,
         PaginationParams pagination,
         CancellationToken cancellationToken = default);
 }

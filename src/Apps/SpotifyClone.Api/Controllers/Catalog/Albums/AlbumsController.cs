@@ -45,11 +45,12 @@ public sealed class AlbumsController(IMediator mediator)
     [AllowAnonymous]
     [HttpGet]
     public async Task<ActionResult<AlbumList>> List(
+        [FromQuery] AlbumFilterParams filters,
         [FromQuery] PaginationParams pagination,
         CancellationToken cancellationToken = default)
     {
         Result<AlbumList> result = await Mediator.Send(
-            new ListAlbumsQuery(pagination),
+            new ListAlbumsQuery(filters, pagination),
             cancellationToken);
         if (result.IsFailure)
         {

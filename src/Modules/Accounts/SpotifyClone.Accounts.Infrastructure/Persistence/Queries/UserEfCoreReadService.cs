@@ -2,6 +2,8 @@
 using SpotifyClone.Accounts.Application.Abstractions.Data;
 using SpotifyClone.Accounts.Application.Features.Accounts.Queries;
 using SpotifyClone.Accounts.Application.Models;
+using SpotifyClone.Accounts.Domain.Aggregates.Users;
+using SpotifyClone.Accounts.Domain.Aggregates.Users.Enums;
 using SpotifyClone.Accounts.Infrastructure.Persistence.Accounts.Database;
 using SpotifyClone.Accounts.Infrastructure.Persistence.Identity.Database;
 using SpotifyClone.Shared.BuildingBlocks.Application.Auth;
@@ -134,18 +136,33 @@ internal sealed class UserEfCoreReadService(
     }
 
     public async Task<PagedList<UserSummary>> GetAllAsync(
+        UserFilterParams filters,
         PaginationParams pagination,
         CancellationToken cancellationToken = default)
-        => await _accountsContext.UserProfiles.AsNoTracking()
-        .OrderBy(u => u.CreatedAtUtc)
-        .Select(u => new UserSummary(
-            u.Id.Value,
-            u.DisplayName,
-            u.Avatar == null ? null : new ImageMetadataDetails(
-                u.Avatar.ImageId.Value,
-                u.Avatar.Metadata.Width,
-                u.Avatar.Metadata.Height,
-                u.Avatar.Metadata.FileType.Value,
-                u.Avatar.Metadata.SizeInBytes)))
-        .ToPagedListAsync(pagination, cancellationToken);
+    {
+        IQueryable<UserProfile> query = _accountsContext.UserProfiles.AsNoTracking();
+
+        if (filters.DisplayName is not null)
+        {
+            query = query.Where(u => EF.Functions.ILike(u.DisplayName, filters.DisplayName));
+        }
+        if (filters.Gender is not null)
+        {
+            var gender = Gender.From(filters.Gender);
+            query = query.Where(u => u.Gender == gender);
+        }
+
+        return await query
+            .OrderBy(u => u.CreatedAtUtc)
+            .Select(u => new UserSummary(
+                u.Id.Value,
+                u.DisplayName,
+                u.Avatar == null ? null : new ImageMetadataDetails(
+                    u.Avatar.ImageId.Value,
+                    u.Avatar.Metadata.Width,
+                    u.Avatar.Metadata.Height,
+                    u.Avatar.Metadata.FileType.Value,
+                    u.Avatar.Metadata.SizeInBytes)))
+            .ToPagedListAsync(pagination, cancellationToken);
+    }
 }

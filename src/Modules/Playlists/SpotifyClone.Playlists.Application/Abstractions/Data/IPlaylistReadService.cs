@@ -14,6 +14,7 @@ public interface IPlaylistReadService
     Task<PagedList<PlaylistSummary>> GetAllAsync(
         UserId? ownerId,
         bool isAdmin,
+        PlaylistFilterParams filters,
         PaginationParams pagination,
         CancellationToken cancellationToken);
 }

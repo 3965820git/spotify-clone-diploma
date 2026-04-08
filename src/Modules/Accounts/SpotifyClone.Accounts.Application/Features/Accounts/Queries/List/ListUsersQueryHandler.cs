@@ -16,7 +16,7 @@ internal sealed class ListUsersQueryHandler(
         CancellationToken cancellationToken)
     {
         PagedList<UserSummary> users = await _userReadService.GetAllAsync(
-            request.Pagination, cancellationToken);
+            request.Filters, request.Pagination, cancellationToken);
 
         return new UserList(users);
     }

@@ -42,11 +42,12 @@ public sealed class TracksController(IMediator mediator)
     [AllowAnonymous]
     [HttpGet]
     public async Task<ActionResult<TrackList>> List(
+        [FromQuery] TrackFilterParams filters,
         [FromQuery] PaginationParams pagination,
         CancellationToken cancellationToken = default)
     {
         Result<TrackList> result = await Mediator.Send(
-            new ListTracksQuery(pagination),
+            new ListTracksQuery(filters, pagination),
             cancellationToken);
         if (result.IsFailure)
         {

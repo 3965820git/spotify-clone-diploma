@@ -26,11 +26,12 @@ internal sealed class ListTracksQueryHandler(
         {
             bool isAdmin = _currentUser.IsInRole(UserRoles.Admin);
             tracks = await _trackReadService.GetAllAsync(
-                UserId.From(_currentUser.Id), isAdmin, request.Pagination, cancellationToken);
+                UserId.From(_currentUser.Id), isAdmin, request.Filters, request.Pagination, cancellationToken);
         }
         else
         {
-            tracks = await _trackReadService.GetAllAsync(null, false, request.Pagination, cancellationToken);
+            tracks = await _trackReadService.GetAllAsync(
+                null, false, request.Filters, request.Pagination, cancellationToken);
         }
 
         return new TrackList(tracks);

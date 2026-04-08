@@ -21,8 +21,8 @@ internal sealed class ListArtistsQueryHandler(
     {
         bool includeBanned = _currentUser.IsAuthenticated && _currentUser.IsInRole(UserRoles.Admin);
 
-        PagedList<ArtistSummary> artists = await _artistReadService.GetList(
-            includeBanned, request.Pagination, cancellationToken);
+        PagedList<ArtistSummary> artists = await _artistReadService.GetAllAsync(
+            includeBanned, request.Filters, request.Pagination, cancellationToken);
 
         return new ArtistList(artists);
     }

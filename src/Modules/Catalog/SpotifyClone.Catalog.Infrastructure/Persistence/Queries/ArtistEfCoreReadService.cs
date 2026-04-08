@@ -91,17 +91,33 @@ internal sealed class ArtistEfCoreReadService(
                 a.Avatar.Metadata.SizeInBytes)))
         .ToListAsync(cancellationToken);
 
-    public async Task<PagedList<ArtistSummary>> GetList(
+    public async Task<PagedList<ArtistSummary>> GetAllAsync(
         bool includeBanned,
+        ArtistFilterParams filters,
         PaginationParams pagination,
         CancellationToken cancellationToken = default)
     {
         IQueryable<Artist> query = _context.Artists
             .AsNoTracking();
 
-        if (includeBanned)
+        if (!includeBanned)
         {
-            query = query.Where(a => a.Status == ArtistStatus.Banned);
+            query = query.Where(a => a.Status != ArtistStatus.Banned);
+        }
+        if (filters.Name is not null)
+        {
+            string name = filters.Name.Trim();
+            query = query.Where(a => EF.Functions.ILike(a.Name, name));
+        }
+        if (filters.Bio is not null)
+        {
+            string bio = filters.Bio.Trim();
+            query = query.Where(a => a.Bio != null && EF.Functions.ILike(a.Bio, bio));
+        }
+        if (filters.Status is not null)
+        {
+            var status = ArtistStatus.From(filters.Status);
+            query = query.Where(a => a.Status == status);
         }
 
         return await query

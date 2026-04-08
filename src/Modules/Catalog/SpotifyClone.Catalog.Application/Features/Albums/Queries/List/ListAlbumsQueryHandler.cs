@@ -26,11 +26,12 @@ internal sealed class ListAlbumsQueryHandler(
         {
             bool isAdmin = _currentUser.IsInRole(UserRoles.Admin);
             albums = await _albumReadService.GetAllAsync(
-                UserId.From(_currentUser.Id), isAdmin, request.Pagination, cancellationToken);
+                UserId.From(_currentUser.Id), isAdmin, request.Filters, request.Pagination, cancellationToken);
         }
         else
         {
-            albums = await _albumReadService.GetAllAsync(null, false, request.Pagination, cancellationToken);
+            albums = await _albumReadService.GetAllAsync(
+                null, false, request.Filters, request.Pagination, cancellationToken);
         }
 
         return new AlbumList(albums);
