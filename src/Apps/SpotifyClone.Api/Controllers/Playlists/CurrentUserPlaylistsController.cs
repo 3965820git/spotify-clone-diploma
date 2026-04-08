@@ -16,10 +16,8 @@ namespace SpotifyClone.Api.Controllers.Playlists;
 public sealed class CurrentUserPlaylistsController(IMediator mediator)
     : ApiController(mediator)
 {
-    [EndpointSummary("[WARNING] Get current User Playlists")]
-    [EndpointDescription("Returns the current User's playlists.\n" +
-                         "Note: This endpoint is not working properly right now," +
-                         "it returns all playlists, not just the current user's.")]
+    [EndpointSummary("Get current User Playlists")]
+    [EndpointDescription("Returns the current User's playlists.")]
     [ProducesResponseType(typeof(PlaylistList), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
