@@ -1,4 +1,4 @@
-﻿namespace SpotifyClone.Search.Application.Models;
+﻿namespace SpotifyClone.Search.Application.Models.SearchDocuments;
 
 public sealed record AlbumSearchDocument(
     string Id,
