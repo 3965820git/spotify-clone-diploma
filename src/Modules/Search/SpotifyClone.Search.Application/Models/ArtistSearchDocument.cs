@@ -2,4 +2,5 @@
 
 public sealed record ArtistSearchDocument(
     string Id,
-    string Name);
+    string Name,
+    string CoverImageUrl);

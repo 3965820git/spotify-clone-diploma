@@ -2,4 +2,8 @@
 
 public sealed record PlaylistSearchDocument(
     string Id,
-    string Name);
+    string Name,
+    string OwnerDisplayName,
+    int TracksCount,
+    string CoverImageUrl,
+    string[] GeneratedCoverImageIds);

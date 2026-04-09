@@ -3,6 +3,10 @@
 public sealed record TrackSearchDocument(
     string Id,
     string Title,
-    string[] AlbumTitles,
-    string[] MainArtistNames,
-    string[] FeaturedArtistNames);
+    string AlbumTitle,
+    string[] ArtistNames,
+    string[] Genres,
+    string[] Moods,
+    bool ContainsExplicitContent,
+    string ReleaseDate,
+    string CoverImageUrl);

@@ -3,5 +3,7 @@
 public sealed record AlbumSearchDocument(
     string Id,
     string Name,
-    string[] MainArtistNames,
-    string[] FeaturedArtistNames);
+    string[] ArtistNames,
+    string ReleaseYear,
+    string Type,
+    string CoverImageUrl);
