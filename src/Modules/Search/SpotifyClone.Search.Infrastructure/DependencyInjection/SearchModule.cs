@@ -17,6 +17,8 @@ public static class SearchModule
 
         services.AddValidatorsFromAssembly(SearchApplicationAssemblyReference.Assembly);
 
+        services.AddHostedService<MeiliSearchIndexInitializer>();
+
         services.AddSingleton(sp => sp.GetRequiredService<IOptions<MeiliSearchOptions>>().Value);
         services.AddSingleton<ISearchIndexer, MeiliSearchService>();
         services.AddSingleton<ISearchProvider, MeiliSearchService>();
@@ -24,8 +26,6 @@ public static class SearchModule
         //services.AddScoped<IPlaylistReadService, PlaylistEfCoreReadService>();
 
         //services.AddScoped<IDomainExceptionMapper, SearchDomainExceptionMapper>();
-
-        //services.AddTransient<ProcessOutboxMessagesJob>();
 
         return services;
     }

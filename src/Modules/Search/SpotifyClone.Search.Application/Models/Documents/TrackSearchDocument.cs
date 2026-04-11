@@ -6,7 +6,7 @@ public sealed record TrackSearchDocument(
     string Id,
     string Title,
     bool IsExplicit,
-    int ReleaseYearUtc,
+    int ReleaseYear,
     string CoverImageId,
     AlbumCompactDocument Album,
     ArtistCompactDocument[] Artists,

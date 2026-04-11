@@ -30,7 +30,7 @@ internal sealed class TrackReleaseDateChangedIntegrationEventHandler(
 
         TrackSearchDocument updatedTrack = trackResult.Items.Single() with
         {
-            ReleaseYearUtc = notification.ReleaseDateUtc.Year
+            ReleaseYear = notification.ReleaseDateUtc.Year
         };
 
         await _searchIndexer.IndexDocumentAsync(
