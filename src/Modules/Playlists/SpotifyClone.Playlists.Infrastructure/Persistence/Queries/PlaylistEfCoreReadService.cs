@@ -172,4 +172,59 @@ internal sealed class PlaylistEfCoreReadService(
             trackLookup.GetValueOrDefault(p.Id) ?? new List<Guid>()
         )).ToPagedListAsync(pagination, cancellationToken);
     }
+
+    public async Task<IEnumerable<PlaylistSummary>> GetAllByTracksAsync(
+        IEnumerable<TrackId> trackIds,
+        CancellationToken cancellationToken)
+    {
+        IQueryable<PlaylistId> targetPlaylistIdsQuery = _context.PlaylistTracks
+            .Where(pt => trackIds.Any(id => id == pt.Id))
+            .Select(pt => pt.PlaylistId)
+            .Distinct();
+
+        IQueryable<Playlist> query = _context.Playlists
+            .Where(p => targetPlaylistIdsQuery.Contains(p.Id))
+            .AsNoTracking();
+
+        var playlistsInfo = await query.Select(p => new
+        {
+            p.Id,
+            p.Name,
+            p.Description,
+            p.IsPublic,
+            p.Cover
+        }).ToListAsync(cancellationToken);
+
+        var trackLookup = await _context.PlaylistTracks
+            .Where(pt => playlistsInfo.Any(p => p.Id == pt.PlaylistId))
+            .OrderBy(pt => pt.Position)
+            .Join(_context.TrackReferences,
+                pt => pt.Id.Value,
+                tr => tr.Id,
+                (pt, tr) => new { pt.PlaylistId, tr.CoverImageId })
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
+        var groupedCovers = trackLookup
+            .GroupBy(x => x.PlaylistId)
+            .ToDictionary(
+                g => g.Key,
+                g => g
+                    .Where(x => x.CoverImageId is not null)
+                    .Select(x => x.CoverImageId!.Value).Take(4).ToList());
+
+        return playlistsInfo.Select(p => new PlaylistSummary(
+            p.Id.Value,
+            p.Name,
+            p.Description,
+            p.IsPublic,
+            p.Cover == null ? null : new ImageMetadataDetails(
+                p.Cover.ImageId.Value,
+                p.Cover.Metadata.Width,
+                p.Cover.Metadata.Height,
+                p.Cover.Metadata.FileType.Value,
+                p.Cover.Metadata.SizeInBytes),
+            groupedCovers.GetValueOrDefault(p.Id) ?? new List<Guid>()
+        )).ToList();
+    }
 }

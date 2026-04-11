@@ -6,7 +6,8 @@ public interface ISearchProvider
 {
     Task<SearchResult<T>> SearchAsync<T>(
         string indexName,
-        string query,
-        int limit = 50,
+        string? filter = null,
+        string? query = null,
+        int? limit = null,
         CancellationToken cancellationToken = default);
 }

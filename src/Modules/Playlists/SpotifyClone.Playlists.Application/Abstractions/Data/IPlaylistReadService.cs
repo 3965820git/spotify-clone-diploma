@@ -17,4 +17,8 @@ public interface IPlaylistReadService
         PlaylistFilterParams filters,
         PaginationParams pagination,
         CancellationToken cancellationToken);
+
+    Task<IEnumerable<PlaylistSummary>> GetAllByTracksAsync(
+        IEnumerable<TrackId> trackIds,
+        CancellationToken cancellationToken);
 }

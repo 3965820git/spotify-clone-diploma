@@ -1,4 +1,4 @@
-﻿using SpotifyClone.Search.Application.Models.SearchDocuments;
+﻿using SpotifyClone.Search.Application.Models.Documents;
 
 namespace SpotifyClone.Search.Application.Features.GlobalSearch;
 

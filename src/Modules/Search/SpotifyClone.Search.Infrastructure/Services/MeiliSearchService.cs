@@ -22,16 +22,29 @@ public class MeiliSearchService(
             [document], cancellationToken: cancellationToken);
     }
 
+    public async Task IndexDocumentsAsync<T>(
+        string indexName,
+        IEnumerable<T> documents,
+        CancellationToken cancellationToken)
+    {
+        Meilisearch.Index index = _client.Index(indexName);
+        await index.AddDocumentsAsync(documents, cancellationToken: cancellationToken);
+    }
+
     public async Task<Application.Models.SearchResult<T>> SearchAsync<T>(
         string indexName,
-        string query,
-        int limit = 50,
+        string? filter = null,
+        string? query = null,
+        int? limit = null,
         CancellationToken cancellationToken = default)
     {
         Meilisearch.Index index = _client.Index(indexName);
 
-        var searchParams = new SearchQuery { Limit = limit };
-
+        var searchParams = new SearchQuery
+        {
+            Limit = limit,
+            Filter = filter,
+        };
         ISearchable<T> searchResponse = await index.SearchAsync<T>(
             query,
             searchParams,
@@ -49,5 +62,14 @@ public class MeiliSearchService(
     {
         Meilisearch.Index index = _client.Index(indexName);
         await index.DeleteOneDocumentAsync(documentId, cancellationToken);
+    }
+
+    public async Task DeleteDocumentsAsync(
+        string indexName,
+        IEnumerable<string> documentIds,
+        CancellationToken cancellationToken = default)
+    {
+        Meilisearch.Index index = _client.Index(indexName);
+        await index.DeleteDocumentsAsync(documentIds, cancellationToken);
     }
 }
