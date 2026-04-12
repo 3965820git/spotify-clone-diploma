@@ -24,12 +24,12 @@ internal sealed class ListPlaylistsQueryHandler(
         if (_currentUser.IsAuthenticated)
         {
             bool isAdmin = _currentUser.IsInRole(UserRoles.Admin);
-            playlists = await _playlistReadService.GetAllAsync(
+            playlists = await _playlistReadService.ListAsync(
                 UserId.From(_currentUser.Id), isAdmin, request.Filters, request.Pagination, cancellationToken);
         }
         else
         {
-            playlists = await _playlistReadService.GetAllAsync(
+            playlists = await _playlistReadService.ListAsync(
                 null, false, request.Filters, request.Pagination, cancellationToken);
         }
 

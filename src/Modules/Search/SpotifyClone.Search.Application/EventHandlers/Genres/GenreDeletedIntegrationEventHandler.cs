@@ -3,7 +3,6 @@ using SpotifyClone.Search.Application.Abstractions.Services;
 using SpotifyClone.Search.Application.Models;
 using SpotifyClone.Search.Application.Models.Documents;
 using SpotifyClone.Search.Application.Models.Documents.Compacts;
-using SpotifyClone.Shared.IntegrationEvents.Catalog.Artists;
 using SpotifyClone.Shared.IntegrationEvents.Catalog.Genres;
 
 namespace SpotifyClone.Search.Application.EventHandlers.Genres;

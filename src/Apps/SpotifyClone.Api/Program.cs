@@ -41,7 +41,7 @@ builder.Services.AddCatalogModule(builder.Configuration);
 builder.Services.AddStreamingModule(builder.Configuration);
 builder.Services.AddPlaylistsModule(builder.Configuration);
 builder.Services.AddBillingModule(builder.Configuration);
-builder.Services.AddSearchModule();
+builder.Services.AddSearchModule(builder.Configuration);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -258,6 +258,7 @@ using (IServiceScope scope = app.Services.CreateScope())
     await app.UseCatalogModule();
     await app.UseStreamingModule(CatalogSeeder.Tracks);
     await app.UsePlaylistsModule();
+    await app.UseSearchModule();
 }
 app.UseBillingModule();
 

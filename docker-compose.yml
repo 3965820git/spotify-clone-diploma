@@ -16,6 +16,7 @@ services:
       DOTNET_RUNNING_IN_CONTAINER: true
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
+      Application__ApiUrl: http://spotifyclone.api:8080
       Jwt__SecretKey: some-fairly-super-super-long-secret-key-for-validating-JWTs
       Minio__Endpoint: minio
       Minio__LocalScratchPath: /app/wwwroot/temp/conversion

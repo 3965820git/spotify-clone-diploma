@@ -18,11 +18,14 @@ public interface ITrackReadService
         TrackId id,
         CancellationToken cancellationToken = default);
 
-    Task<PagedList<TrackSummary>> GetAllAsync(
+    Task<PagedList<TrackSummary>> ListAsync(
         UserId? ownerId,
         bool isAdmin,
         TrackFilterParams filters,
         PaginationParams pagination,
+        CancellationToken cancellationToken = default);
+
+    Task<IEnumerable<TrackSummary>> GetAllAsync(
         CancellationToken cancellationToken = default);
 
     Task<IEnumerable<TrackSummary>> GetAllByIdsAsync(

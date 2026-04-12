@@ -15,7 +15,7 @@ internal sealed class ListMoodsQueryHandler(
         ListMoodsQuery request,
         CancellationToken cancellationToken)
     {
-        PagedList<MoodSummary> moods = await _moodReadService.GetList(
+        PagedList<MoodSummary> moods = await _moodReadService.ListAsync(
             request.Pagination, cancellationToken);
 
         return new MoodList(moods);

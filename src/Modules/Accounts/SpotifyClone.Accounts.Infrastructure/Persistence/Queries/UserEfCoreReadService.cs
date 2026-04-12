@@ -135,7 +135,7 @@ internal sealed class UserEfCoreReadService(
             userProfileInfo.Avatar);
     }
 
-    public async Task<PagedList<UserSummary>> GetAllAsync(
+    public async Task<PagedList<UserSummary>> ListAsync(
         UserFilterParams filters,
         PaginationParams pagination,
         CancellationToken cancellationToken = default)
@@ -165,4 +165,20 @@ internal sealed class UserEfCoreReadService(
                     u.Avatar.Metadata.SizeInBytes)))
             .ToPagedListAsync(pagination, cancellationToken);
     }
+
+    public async Task<IEnumerable<UserSummary>> GetAllAsync(
+        CancellationToken cancellationToken = default)
+        => await _accountsContext.UserProfiles
+            .AsNoTracking()
+            .OrderBy(u => u.CreatedAtUtc)
+            .Select(u => new UserSummary(
+                u.Id.Value,
+                u.DisplayName,
+                u.Avatar == null ? null : new ImageMetadataDetails(
+                    u.Avatar.ImageId.Value,
+                    u.Avatar.Metadata.Width,
+                    u.Avatar.Metadata.Height,
+                    u.Avatar.Metadata.FileType.Value,
+                    u.Avatar.Metadata.SizeInBytes)))
+            .ToListAsync(cancellationToken);
 }

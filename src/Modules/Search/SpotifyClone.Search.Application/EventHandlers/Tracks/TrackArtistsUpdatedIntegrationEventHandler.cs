@@ -32,7 +32,7 @@ internal sealed class TrackArtistsUpdatedIntegrationEventHandler(
         SearchResult<ArtistSearchDocument> artistsResult
             = await _searchProvider.SearchAsync<ArtistSearchDocument>(
                 SearchIndexNames.Artists,
-                $"id in ({string.Join(", ", notification.MainArtists.Concat(notification.FeaturedArtists))})",
+                $"id IN [ {string.Join(", ", notification.MainArtists.Concat(notification.FeaturedArtists))} ]",
                 cancellationToken: cancellationToken);
 
         TrackSearchDocument updatedTrack = trackResult.Items.Single() with

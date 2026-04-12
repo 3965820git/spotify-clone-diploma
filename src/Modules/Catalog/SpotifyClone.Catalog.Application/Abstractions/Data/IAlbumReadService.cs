@@ -23,10 +23,17 @@ public interface IAlbumReadService
         TrackId trackId,
         CancellationToken cancellationToken = default);
 
-    Task<PagedList<AlbumSummary>> GetAllAsync(
+    Task<PagedList<AlbumSummary>> ListAsync(
         UserId? ownerId,
         bool isAdmin,
         AlbumFilterParams filters,
         PaginationParams pagination,
+        CancellationToken cancellationToken = default);
+
+    Task<IEnumerable<AlbumSummary>> GetAllAsync(
+        CancellationToken cancellationToken = default);
+
+    Task<IEnumerable<AlbumSummary>> GetAllByTracksAsync(
+        IEnumerable<TrackId> trackIds,
         CancellationToken cancellationToken = default);
 }

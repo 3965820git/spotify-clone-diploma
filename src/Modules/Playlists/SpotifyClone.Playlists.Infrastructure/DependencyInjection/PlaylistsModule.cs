@@ -59,8 +59,8 @@ public static class PlaylistsModule
     {
         using IServiceScope scope = app.ApplicationServices.CreateScope();
 
-        IRecurringJobManager recurringJobManager =
-            scope.ServiceProvider.GetRequiredService<IRecurringJobManager>();
+        IRecurringJobManager recurringJobManager
+            = scope.ServiceProvider.GetRequiredService<IRecurringJobManager>();
         recurringJobManager.AddOrUpdate<ProcessOutboxMessagesJob>(
             "playlists-outbox-processor",
             job => job.ProcessAsync(),

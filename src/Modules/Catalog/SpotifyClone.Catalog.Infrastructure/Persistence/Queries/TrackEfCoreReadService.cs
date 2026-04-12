@@ -6,7 +6,6 @@ using SpotifyClone.Catalog.Application.Features.Moods.Queries;
 using SpotifyClone.Catalog.Application.Features.Tracks.Queries;
 using SpotifyClone.Catalog.Application.Models;
 using SpotifyClone.Catalog.Domain.Aggregates.Albums.ValueObjects;
-using SpotifyClone.Catalog.Domain.Aggregates.Artists.ValueObjects;
 using SpotifyClone.Catalog.Domain.Aggregates.Tracks;
 using SpotifyClone.Catalog.Domain.Aggregates.Tracks.Enums;
 using SpotifyClone.Catalog.Domain.Aggregates.Tracks.ValueObjects;
@@ -88,14 +87,20 @@ internal sealed class TrackEfCoreReadService(
 
         List<GenreSummary> genres = await _context.Genres
             .AsNoTracking()
-            .Where(g => trackInfo.GenreIds.Contains(g.Id))
-            .Select(g => new GenreSummary(g.Id.Value, g.Name))
+            .Where(g => trackInfo.GenreIds.Any(id => id == g.Id))
+            .Select(g => new GenreSummary(
+                g.Id.Value,
+                g.Name,
+                g.Cover == null ? null : g.Cover.ImageId.Value))
             .ToListAsync(cancellationToken);
 
         List<MoodSummary> moods = await _context.Moods
             .AsNoTracking()
-            .Where(m => trackInfo.MoodIds.Contains(m.Id))
-            .Select(m => new MoodSummary(m.Id.Value, m.Name))
+            .Where(m => trackInfo.MoodIds.Any(id => id == m.Id))
+            .Select(m => new MoodSummary(
+                m.Id.Value,
+                m.Name,
+                m.Cover == null ? null : m.Cover.ImageId.Value))
             .ToListAsync(cancellationToken);
 
         return new TrackDetails(
@@ -182,11 +187,13 @@ internal sealed class TrackEfCoreReadService(
             trackInfo.AudioFileId?.Value,
             trackInfo.AlbumId?.Value,
             mainArtists,
-            featuredArtists
+            featuredArtists,
+            trackInfo.GenreIds.Select(g => g.Value),
+            trackInfo.MoodIds.Select(m => m.Value)
         );
     }
 
-    public async Task<PagedList<TrackSummary>> GetAllAsync(
+    public async Task<PagedList<TrackSummary>> ListAsync(
         UserId? ownerId,
         bool isAdmin,
         TrackFilterParams filters,
@@ -297,7 +304,9 @@ internal sealed class TrackEfCoreReadService(
             t.AudioFileId,
             t.AlbumId,
             MainArtistIds = t.MainArtists,
-            FeaturedArtistIds = t.FeaturedArtists
+            FeaturedArtistIds = t.FeaturedArtists,
+            GenreIds = t.Genres,
+            MoodIds = t.Moods,
         })
         .ToPagedListAsync(pagination, cancellationToken);
 
@@ -345,8 +354,9 @@ internal sealed class TrackEfCoreReadService(
                 .Where(id => artistMap
                 .ContainsKey(id.Value))
                 .Select(id => artistMap[id.Value])
-                .ToList()
-        )).ToList();
+                .ToList(),
+            t.GenreIds.Select(g => g.Value),
+            t.MoodIds.Select(m => m.Value))).ToList();
 
         return new PagedList<TrackSummary>(
             finalItems,
@@ -355,9 +365,64 @@ internal sealed class TrackEfCoreReadService(
             pagination.PageSize);
     }
 
+    public async Task<IEnumerable<TrackSummary>> GetAllAsync(
+        CancellationToken cancellationToken = default)
+    {
+        List<Track> tracks = await _context.Tracks
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
+        if (tracks.Count <= 0)
+        {
+            return Enumerable.Empty<TrackSummary>();
+        }
+
+        var allArtistIds = tracks
+            .SelectMany(t => t.MainArtists)
+            .Concat(tracks.SelectMany(t => t.FeaturedArtists))
+            .Distinct()
+            .ToList();
+
+        Dictionary<Guid, ArtistSummary> artistMap = await _context.Artists
+            .AsNoTracking()
+            .Where(a => allArtistIds.Any(id => id == a.Id))
+            .Select(a => new ArtistSummary(
+                a.Id.Value,
+                a.Name,
+                a.Status.Value,
+                a.OwnerId == null ? null : a.OwnerId.Value,
+                a.Avatar == null ? null : new ImageMetadataDetails(
+                    a.Avatar.ImageId.Value,
+                    a.Avatar.Metadata.Width,
+                    a.Avatar.Metadata.Height,
+                    a.Avatar.Metadata.FileType.Value,
+                    a.Avatar.Metadata.SizeInBytes)))
+            .ToDictionaryAsync(a => a.Id, cancellationToken);
+
+        return tracks.Select(t => new TrackSummary(
+            t.Id.Value,
+            t.Title,
+            t.Duration,
+            t.ReleaseDate,
+            t.ContainsExplicitContent,
+            t.Status.Value,
+            t.AudioFileId?.Value,
+            t.AlbumId?.Value,
+            t.MainArtists
+                .Where(id => artistMap.ContainsKey(id.Value))
+                .Select(id => artistMap[id.Value])
+                .ToList(),
+            t.FeaturedArtists
+                .Where(id => artistMap.ContainsKey(id.Value))
+                .Select(id => artistMap[id.Value])
+                .ToList(),
+            t.Genres.Select(g => g.Value),
+            t.Moods.Select(m => m.Value)));
+    }
+
     public async Task<IEnumerable<TrackSummary>> GetAllByIdsAsync(
-    IEnumerable<TrackId> ids,
-    CancellationToken cancellationToken = default)
+        IEnumerable<TrackId> ids,
+        CancellationToken cancellationToken = default)
     {
         List<Track> tracks = await _context.Tracks
             .AsNoTracking()
@@ -407,7 +472,8 @@ internal sealed class TrackEfCoreReadService(
             t.FeaturedArtists
                 .Where(id => artistMap.ContainsKey(id.Value))
                 .Select(id => artistMap[id.Value])
-                .ToList()
-        ));
+                .ToList(),
+            t.Genres.Select(g => g.Value),
+            t.Moods.Select(m => m.Value)));
     }
 }

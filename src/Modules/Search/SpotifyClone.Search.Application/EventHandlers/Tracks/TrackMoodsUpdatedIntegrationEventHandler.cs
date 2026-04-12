@@ -32,7 +32,7 @@ internal sealed class TrackMoodsUpdatedIntegrationEventHandler(
         SearchResult<MoodSearchDocument> moodsResult
             = await _searchProvider.SearchAsync<MoodSearchDocument>(
                 SearchIndexNames.Moods,
-                $"id in ({string.Join(", ", notification.Moods)})",
+                $"id IN [ {string.Join(", ", notification.Moods)} ]",
                 cancellationToken: cancellationToken);
 
         TrackSearchDocument updatedTrack = trackResult.Items.Single() with

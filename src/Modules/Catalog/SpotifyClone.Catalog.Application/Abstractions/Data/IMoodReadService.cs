@@ -14,7 +14,10 @@ public interface IMoodReadService
         MoodId id,
         CancellationToken cancellationToken = default);
 
-    Task<PagedList<MoodSummary>> GetList(
+    Task<PagedList<MoodSummary>> ListAsync(
         PaginationParams pagination,
+        CancellationToken cancellationToken = default);
+
+    Task<IEnumerable<MoodSummary>> GetAllAsync(
         CancellationToken cancellationToken = default);
 }

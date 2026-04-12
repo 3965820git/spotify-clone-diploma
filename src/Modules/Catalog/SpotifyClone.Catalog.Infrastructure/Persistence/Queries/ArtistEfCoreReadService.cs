@@ -91,7 +91,7 @@ internal sealed class ArtistEfCoreReadService(
                 a.Avatar.Metadata.SizeInBytes)))
         .ToListAsync(cancellationToken);
 
-    public async Task<PagedList<ArtistSummary>> GetAllAsync(
+    public async Task<PagedList<ArtistSummary>> ListAsync(
         bool includeBanned,
         ArtistFilterParams filters,
         PaginationParams pagination,
@@ -133,4 +133,20 @@ internal sealed class ArtistEfCoreReadService(
                     a.Avatar.Metadata.SizeInBytes)))
         .ToPagedListAsync(pagination, cancellationToken);
     }
+
+    public async Task<IEnumerable<ArtistSummary>> GetAllAsync(
+        CancellationToken cancellationToken = default)
+        => await _context.Artists
+        .Select(a => new ArtistSummary(
+            a.Id.Value,
+            a.Name,
+            a.Status.Value,
+            a.OwnerId == null ? null : a.OwnerId.Value,
+            a.Avatar == null ? null : new ImageMetadataDetails(
+                a.Avatar.ImageId.Value,
+                a.Avatar.Metadata.Width,
+                a.Avatar.Metadata.Height,
+                a.Avatar.Metadata.FileType.Value,
+                a.Avatar.Metadata.SizeInBytes)))
+        .ToListAsync(cancellationToken);
 }

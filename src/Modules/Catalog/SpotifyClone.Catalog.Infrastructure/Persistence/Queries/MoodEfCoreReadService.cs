@@ -37,12 +37,25 @@ internal sealed class MoodEfCoreReadService(
                 m.Cover.Metadata.SizeInBytes)))
         .SingleOrDefaultAsync(cancellationToken);
 
-    public async Task<PagedList<MoodSummary>> GetList(
+    public async Task<PagedList<MoodSummary>> ListAsync(
         PaginationParams pagination,
         CancellationToken cancellationToken = default)
         => await _context.Moods
         .AsNoTracking()
         .OrderBy(m => m.CreatedAtUtc)
-        .Select(m => new MoodSummary(m.Id.Value, m.Name))
+        .Select(m => new MoodSummary(
+            m.Id.Value,
+            m.Name,
+            m.Cover == null ? null : m.Cover.ImageId.Value))
         .ToPagedListAsync(pagination, cancellationToken);
+
+    public async Task<IEnumerable<MoodSummary>> GetAllAsync(
+        CancellationToken cancellationToken = default)
+        => await _context.Moods
+        .AsNoTracking()
+        .Select(m => new MoodSummary(
+            m.Id.Value,
+            m.Name,
+            m.Cover == null ? null : m.Cover.ImageId.Value))
+        .ToListAsync(cancellationToken);
 }

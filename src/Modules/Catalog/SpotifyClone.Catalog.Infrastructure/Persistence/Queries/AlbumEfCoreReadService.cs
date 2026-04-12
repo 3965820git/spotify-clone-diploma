@@ -7,7 +7,6 @@ using SpotifyClone.Catalog.Application.Models;
 using SpotifyClone.Catalog.Domain.Aggregates.Albums;
 using SpotifyClone.Catalog.Domain.Aggregates.Albums.Enums;
 using SpotifyClone.Catalog.Domain.Aggregates.Albums.ValueObjects;
-using SpotifyClone.Catalog.Domain.Aggregates.Artists.ValueObjects;
 using SpotifyClone.Catalog.Infrastructure.Persistence.Database;
 using SpotifyClone.Shared.BuildingBlocks.Application.Pagination;
 using SpotifyClone.Shared.BuildingBlocks.Infrastructure.Persistence.Extensions;
@@ -216,23 +215,30 @@ internal sealed class AlbumEfCoreReadService(
     public async Task<AlbumSummary?> GetSummary(
         AlbumId id,
         CancellationToken cancellationToken = default)
-        => await _context.Albums
-        .AsNoTracking()
-        .Where(a => a.Id == id)
-        .Select(a => new AlbumSummary(
-            a.Id.Value,
-            a.Title,
-            a.ReleaseDate,
-            a.Status.Value,
-            a.Type.Value,
-            a.Cover == null ? null : new ImageMetadataDetails(
-                a.Cover.ImageId.Value,
-                a.Cover.Metadata.Width,
-                a.Cover.Metadata.Height,
-                a.Cover.Metadata.FileType.Value,
-                a.Cover.Metadata.SizeInBytes),
-            _context.Artists
-            .Where(art => a.MainArtists.Select(ma => ma.Value).Contains(art.Id.Value))
+    {
+        var albumData = await _context.Albums
+            .AsNoTracking()
+            .Where(a => a.Id == id)
+            .Select(a => new
+            {
+                a.Id,
+                a.Title,
+                a.ReleaseDate,
+                Status = a.Status.Value,
+                Type = a.Type.Value,
+                a.Cover,
+                MainArtistIds = a.MainArtists.ToList()
+            })
+            .SingleOrDefaultAsync(cancellationToken);
+
+        if (albumData == null)
+        {
+            return null;
+        }
+
+        List<ArtistSummary> artistSummaries = await _context.Artists
+            .AsNoTracking()
+            .Where(art => albumData.MainArtistIds.Contains(art.Id))
             .Select(art => new ArtistSummary(
                 art.Id.Value,
                 art.Name,
@@ -244,29 +250,50 @@ internal sealed class AlbumEfCoreReadService(
                     art.Avatar.Metadata.Height,
                     art.Avatar.Metadata.FileType.Value,
                     art.Avatar.Metadata.SizeInBytes)))
-            .ToList()))
-        .SingleOrDefaultAsync(cancellationToken);
+            .ToListAsync(cancellationToken);
+
+        return new AlbumSummary(
+            albumData.Id.Value,
+            albumData.Title,
+            albumData.ReleaseDate,
+            albumData.Status,
+            albumData.Type,
+            albumData.Cover == null ? null : new ImageMetadataDetails(
+                albumData.Cover.ImageId.Value,
+                albumData.Cover.Metadata.Width,
+                albumData.Cover.Metadata.Height,
+                albumData.Cover.Metadata.FileType.Value,
+                albumData.Cover.Metadata.SizeInBytes),
+            artistSummaries);
+    }
 
     public async Task<AlbumSummary?> GetSummaryByTrackId(
         TrackId trackId,
         CancellationToken cancellationToken = default)
-        => await _context.Albums
-        .AsNoTracking()
-        .Where(a => a.Tracks.Any(t => t.Id.Value == trackId.Value))
-        .Select(a => new AlbumSummary(
-            a.Id.Value,
-            a.Title,
-            a.ReleaseDate,
-            a.Status.Value,
-            a.Type.Value,
-            a.Cover == null ? null : new ImageMetadataDetails(
-                a.Cover.ImageId.Value,
-                a.Cover.Metadata.Width,
-                a.Cover.Metadata.Height,
-                a.Cover.Metadata.FileType.Value,
-                a.Cover.Metadata.SizeInBytes),
-            _context.Artists
-            .Where(art => a.MainArtists.Select(ma => ma.Value).Contains(art.Id.Value))
+    {
+        var albumData = await _context.Albums
+            .AsNoTracking()
+            .Where(a => a.Tracks.Any(t => t.Id == trackId))
+            .Select(a => new
+            {
+                a.Id,
+                a.Title,
+                a.ReleaseDate,
+                Status = a.Status.Value,
+                Type = a.Type.Value,
+                a.Cover,
+                MainArtistIds = a.MainArtists.ToList()
+            })
+            .SingleOrDefaultAsync(cancellationToken);
+
+        if (albumData == null)
+        {
+            return null;
+        }
+
+        List<ArtistSummary> artistSummaries = await _context.Artists
+            .AsNoTracking()
+            .Where(art => albumData.MainArtistIds.Contains(art.Id))
             .Select(art => new ArtistSummary(
                 art.Id.Value,
                 art.Name,
@@ -278,10 +305,24 @@ internal sealed class AlbumEfCoreReadService(
                     art.Avatar.Metadata.Height,
                     art.Avatar.Metadata.FileType.Value,
                     art.Avatar.Metadata.SizeInBytes)))
-            .ToList()))
-        .SingleOrDefaultAsync(cancellationToken);
+            .ToListAsync(cancellationToken);
 
-    public async Task<PagedList<AlbumSummary>> GetAllAsync(
+        return new AlbumSummary(
+            albumData.Id.Value,
+            albumData.Title,
+            albumData.ReleaseDate,
+            albumData.Status,
+            albumData.Type,
+            albumData.Cover == null ? null : new ImageMetadataDetails(
+                albumData.Cover.ImageId.Value,
+                albumData.Cover.Metadata.Width,
+                albumData.Cover.Metadata.Height,
+                albumData.Cover.Metadata.FileType.Value,
+                albumData.Cover.Metadata.SizeInBytes),
+            artistSummaries);
+    }
+
+    public async Task<PagedList<AlbumSummary>> ListAsync(
         UserId? ownerId,
         bool isAdmin,
         AlbumFilterParams filters,
@@ -387,5 +428,113 @@ internal sealed class AlbumEfCoreReadService(
             pagedAlbums.TotalCount,
             pagination.Page,
             pagination.PageSize);
+    }
+
+    public async Task<IEnumerable<AlbumSummary>> GetAllAsync(
+        CancellationToken cancellationToken = default)
+    {
+        List<Album> albums = await _context.Albums
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
+        if (albums.Count == 0)
+        {
+            return [];
+        }
+
+        var allArtistIds = albums
+            .SelectMany(a => a.MainArtists)
+            .Distinct()
+            .ToList();
+
+        Dictionary<Guid, ArtistSummary> artistSummaries = await _context.Artists
+            .AsNoTracking()
+            .Where(art => allArtistIds.Contains(art.Id))
+            .Select(art => new ArtistSummary(
+                art.Id.Value,
+                art.Name,
+                art.Status.Value,
+                art.OwnerId == null ? null : art.OwnerId.Value,
+                art.Avatar == null ? null : new ImageMetadataDetails(
+                    art.Avatar.ImageId.Value,
+                    art.Avatar.Metadata.Width,
+                    art.Avatar.Metadata.Height,
+                    art.Avatar.Metadata.FileType.Value,
+                    art.Avatar.Metadata.SizeInBytes)))
+            .ToDictionaryAsync(a => a.Id, cancellationToken);
+
+        return albums.Select(a => new AlbumSummary(
+            a.Id.Value,
+            a.Title,
+            a.ReleaseDate,
+            a.Status.Value,
+            a.Type.Value,
+            a.Cover == null ? null : new ImageMetadataDetails(
+                a.Cover.ImageId.Value,
+                a.Cover.Metadata.Width,
+                a.Cover.Metadata.Height,
+                a.Cover.Metadata.FileType.Value,
+                a.Cover.Metadata.SizeInBytes),
+
+            a.MainArtists
+                .Where(ma => artistSummaries.ContainsKey(ma.Value))
+                .Select(ma => artistSummaries[ma.Value])
+                .ToList()
+        )).ToList();
+    }
+
+    public async Task<IEnumerable<AlbumSummary>> GetAllByTracksAsync(
+        IEnumerable<TrackId> trackIds,
+        CancellationToken cancellationToken = default)
+    {
+        List<Album> albums = await _context.Albums
+            .AsNoTracking()
+            .Where(a => a.Tracks.Any(t => trackIds.Contains(t.Id)))
+            .ToListAsync(cancellationToken);
+
+        if (albums.Count == 0)
+        {
+            return [];
+        }
+
+        var allArtistIds = albums
+            .SelectMany(a => a.MainArtists)
+            .Distinct()
+            .ToList();
+
+        Dictionary<Guid, ArtistSummary> artistSummaries = await _context.Artists
+            .AsNoTracking()
+            .Where(art => allArtistIds.Contains(art.Id))
+            .Select(art => new ArtistSummary(
+                art.Id.Value,
+                art.Name,
+                art.Status.Value,
+                art.OwnerId == null ? null : art.OwnerId.Value,
+                art.Avatar == null ? null : new ImageMetadataDetails(
+                    art.Avatar.ImageId.Value,
+                    art.Avatar.Metadata.Width,
+                    art.Avatar.Metadata.Height,
+                    art.Avatar.Metadata.FileType.Value,
+                    art.Avatar.Metadata.SizeInBytes)))
+            .ToDictionaryAsync(a => a.Id, cancellationToken);
+
+        return albums.Select(a => new AlbumSummary(
+            a.Id.Value,
+            a.Title,
+            a.ReleaseDate,
+            a.Status.Value,
+            a.Type.Value,
+            a.Cover == null ? null : new ImageMetadataDetails(
+                a.Cover.ImageId.Value,
+                a.Cover.Metadata.Width,
+                a.Cover.Metadata.Height,
+                a.Cover.Metadata.FileType.Value,
+                a.Cover.Metadata.SizeInBytes),
+
+            a.MainArtists
+                .Where(ma => artistSummaries.ContainsKey(ma.Value))
+                .Select(ma => artistSummaries[ma.Value])
+                .ToList()
+        )).ToList();
     }
 }

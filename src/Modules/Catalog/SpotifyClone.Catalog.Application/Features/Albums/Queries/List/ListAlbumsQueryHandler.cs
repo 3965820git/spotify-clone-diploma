@@ -25,12 +25,12 @@ internal sealed class ListAlbumsQueryHandler(
         if (_currentUser.IsAuthenticated)
         {
             bool isAdmin = _currentUser.IsInRole(UserRoles.Admin);
-            albums = await _albumReadService.GetAllAsync(
+            albums = await _albumReadService.ListAsync(
                 UserId.From(_currentUser.Id), isAdmin, request.Filters, request.Pagination, cancellationToken);
         }
         else
         {
-            albums = await _albumReadService.GetAllAsync(
+            albums = await _albumReadService.ListAsync(
                 null, false, request.Filters, request.Pagination, cancellationToken);
         }
 

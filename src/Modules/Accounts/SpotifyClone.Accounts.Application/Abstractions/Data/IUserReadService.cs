@@ -14,8 +14,11 @@ public interface IUserReadService
         UserId id,
         CancellationToken cancellationToken = default);
 
-    Task<PagedList<UserSummary>> GetAllAsync(
+    Task<PagedList<UserSummary>> ListAsync(
         UserFilterParams filters,
         PaginationParams pagination,
+        CancellationToken cancellationToken = default);
+
+    Task<IEnumerable<UserSummary>> GetAllAsync(
         CancellationToken cancellationToken = default);
 }

@@ -15,7 +15,7 @@ internal sealed class ListGenresQueryHandler(
         ListGenresQuery request,
         CancellationToken cancellationToken)
     {
-        PagedList<GenreSummary> genres = await _genreReadService.GetList(
+        PagedList<GenreSummary> genres = await _genreReadService.ListAsync(
             request.Pagination, cancellationToken);
 
         return new GenreList(genres);

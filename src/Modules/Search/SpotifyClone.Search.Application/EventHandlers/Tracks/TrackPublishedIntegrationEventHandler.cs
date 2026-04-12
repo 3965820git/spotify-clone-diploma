@@ -32,19 +32,19 @@ internal sealed class TrackPublishedIntegrationEventHandler(
         SearchResult<ArtistSearchDocument> artistsSearchResult
             = await _searchProvider.SearchAsync<ArtistSearchDocument>(
                 SearchIndexNames.Artists,
-                $"id in ({string.Join(", ", notification.MainArtists.Concat(notification.FeaturedArtists))})",
+                $"id IN [{string.Join(", ", notification.MainArtists.Concat(notification.FeaturedArtists))}]",
                 cancellationToken: cancellationToken);
 
         SearchResult<GenreSearchDocument> genresSearchResult
             = await _searchProvider.SearchAsync<GenreSearchDocument>(
                 SearchIndexNames.Genres,
-                $"id in ({string.Join(", ", notification.Genres)})",
+                $"id IN [{string.Join(", ", notification.Genres)}]",
                 cancellationToken: cancellationToken);
 
         SearchResult<MoodSearchDocument> moodsSearchResult
             = await _searchProvider.SearchAsync<MoodSearchDocument>(
                 SearchIndexNames.Moods,
-                $"id in ({string.Join(", ", notification.Moods)})",
+                $"id IN [{string.Join(", ", notification.Moods)}]",
                 cancellationToken: cancellationToken);
 
         var track = new TrackSearchDocument(
