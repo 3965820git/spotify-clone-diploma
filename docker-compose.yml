@@ -10,8 +10,13 @@ services:
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__MainDb=Host=db;Port=5432;Database=spotify_main_db;Username=spotify_user;Password=spotify_password
       - ConnectionStrings__Redis=redis:6379,abortConnect=false
-      - Jwt__SecretKey=SuperSecretKeyForDiplomaProject2026!123
+      # Вот оно, секретное оружие против localhost:
+      - S3__StorageUrl=http://minio:9000
       - S3__ServiceUrl=http://minio:9000
+      - Minio__StorageUrl=http://minio:9000
+      - Minio__Endpoint=minio:9000
+      - Minio__AccessKey=admin
+      - Minio__SecretKey=SuperSecretPassword123
       - S3__AccessKey=admin
       - S3__SecretKey=SuperSecretPassword123
       - S3__BucketName=music-storage
