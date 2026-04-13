@@ -1,0 +1,53 @@
+﻿using SpotifyClone.Playlists.Application.Abstractions;
+using SpotifyClone.Playlists.Application.Errors;
+using SpotifyClone.Playlists.Domain.Aggregates.Playlists;
+using SpotifyClone.Playlists.Domain.Aggregates.Playlists.ValueObjects;
+using SpotifyClone.Shared.BuildingBlocks.Application.Abstractions.Commands;
+using SpotifyClone.Shared.BuildingBlocks.Application.Abstractions.Primitives;
+using SpotifyClone.Shared.BuildingBlocks.Application.Auth;
+using SpotifyClone.Shared.BuildingBlocks.Application.Results;
+using SpotifyClone.Shared.Kernel.IDs;
+
+namespace SpotifyClone.Playlists.Application.Features.Playlists.Commands.AddTrack;
+
+internal sealed class AddTrackToPlaylistCommandHandler(
+    IPlaylistsUnitOfWork unit,
+    ICurrentUser currentUser)
+    : ICommandHandler<AddTrackToPlaylistCommand, AddTrackToPlaylistCommandResult>
+{
+    private readonly IPlaylistsUnitOfWork _unit = unit;
+    private readonly ICurrentUser _currentUser = currentUser;
+
+    public async Task<Result<AddTrackToPlaylistCommandResult>> Handle(
+        AddTrackToPlaylistCommand request,
+        CancellationToken cancellationToken)
+    {
+        Playlist? playlist = await _unit.Playlists.GetByIdAsync(
+            PlaylistId.From(request.PlaylistId), cancellationToken);
+        if (playlist is null)
+        {
+            return Result.Failure<AddTrackToPlaylistCommandResult>(PlaylistErrors.NotFound);
+        }
+
+        bool trackAvailable = await _unit.TrackReferences.IsPublishedAsync(
+            request.TrackId, cancellationToken);
+        if (!trackAvailable)
+        {
+            return Result.Failure<AddTrackToPlaylistCommandResult>(PlaylistErrors.InvalidTrack);
+        }
+
+        bool isAdmin = _currentUser.IsInRole(UserRoles.Admin);
+        if ((!_currentUser.IsAuthenticated || playlist.Collaborators.Any(c => c.Value != _currentUser.Id)) &&
+            !isAdmin)
+        {
+            return Result.Failure<AddTrackToPlaylistCommandResult>(PlaylistErrors.NotOwned);
+        }
+
+        playlist.AddTrack(
+            TrackId.From(request.TrackId),
+            UserId.From(_currentUser.Id),
+            isAdmin);
+
+        return new AddTrackToPlaylistCommandResult();
+    }
+}

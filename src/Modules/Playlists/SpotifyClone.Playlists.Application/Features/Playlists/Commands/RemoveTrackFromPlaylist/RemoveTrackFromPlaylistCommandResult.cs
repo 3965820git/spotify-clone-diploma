@@ -1,0 +1,3 @@
+﻿namespace SpotifyClone.Playlists.Application.Features.Playlists.Commands.RemoveTrackFromPlaylist;
+
+public sealed record RemoveTrackFromPlaylistCommandResult;

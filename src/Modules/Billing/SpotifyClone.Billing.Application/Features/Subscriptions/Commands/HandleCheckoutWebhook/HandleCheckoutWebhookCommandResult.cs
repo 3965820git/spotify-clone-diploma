@@ -1,0 +1,3 @@
+﻿namespace SpotifyClone.Billing.Application.Features.Subscriptions.Commands.HandleCheckoutWebhook;
+
+public sealed record HandleCheckoutWebhookCommandResult;
