@@ -5,12 +5,14 @@ services:
       context: .
       dockerfile: src/Apps/SpotifyClone.Api/Dockerfile
     restart: unless-stopped
+    # Вот эта магия связывает контейнер с твоим SSH-туннелем:
+    ports:
+      - "5001:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__MainDb=Host=db;Port=5432;Database=spotify_main_db;Username=spotify_user;Password=spotify_password
       - ConnectionStrings__Redis=redis:6379,abortConnect=false
-      # Настройки MinIO без лишних портов
       - S3__StorageUrl=minio
       - S3__ServiceUrl=minio
       - S3__Endpoint=minio
