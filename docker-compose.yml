@@ -68,15 +68,6 @@ services:
       - public_net
       - data_net
 
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: spotify_frontend
-    restart: unless-stopped
-    networks:
-      - public_net
-
 networks:
   public_net:
   data_net:
