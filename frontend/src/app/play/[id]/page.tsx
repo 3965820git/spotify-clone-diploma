@@ -24,16 +24,6 @@ export default async function TrackPlayPage({ params }: Props) {
 
 >
     <TrackPlayerScreen
-      track={{
-        id: track.id,
-        title: track.title,
-        artistName: track.subtitle ?? 'Unknown artist',
-        durationSeconds: 160,
-        containsExplicitContent: false,
-        coverUrl: track.image ?? null,
-        audioUrl: null,
-        albumId: null,
-        audioFileId: null,
       }}
     />
     </AppShell>
