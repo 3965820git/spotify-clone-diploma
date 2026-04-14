@@ -27,7 +27,7 @@ export function LikedTracksList({ title, tracks }: Props) {
 
          <TrackPlayToggle
   trackId="liked-tracks"
-  source="library-liked"
+  source={"library-liked" as any}
   variant="circle"
   size="xs"
 />
