@@ -34,3 +34,4 @@ npm run dev
 - POST `/auth/login` -> `{ accessToken }` + refresh cookie (HttpOnly)
 - POST `/auth/register` -> `{ accessToken }` + refresh cookie (HttpOnly)
 - POST `/auth/refresh` -> `{ accessToken }` (cookie надсилається автоматично через `credentials: include`)
+
