@@ -104,7 +104,7 @@ const registerForm = useForm<RegisterForm>({
             <form
               className="space-y-3"
               onSubmit={registerForm.handleSubmit((values) =>
-                registerMutation.mutate(values)
+                registerMutation.mutate({ ...values, displayName: 'User', birthDate: '2000-01-01', gender: 'Female' })
               )}
             >
               <Field
