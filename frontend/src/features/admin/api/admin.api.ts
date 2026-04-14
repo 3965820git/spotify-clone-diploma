@@ -1,7 +1,5 @@
 import { apiClient } from '@/shared/api/client'
 
-
-
 export type ArtistsListResponse = {
   artists: {
     items: AdminArtist[]
@@ -19,8 +17,6 @@ export type AdminArtist = {
   ownerId: string
   avatar: string | null
 }
-
-
 
 export type AdminGenre = {
   id: string
@@ -130,17 +126,27 @@ export async function getMyTracks() {
 }
 
 export async function getArtists() {
-  const { data } = await apiClient.get<AdminArtist[]>('/api/v1/artists', {
-    params: { page: 1, pageSize: 100 },
-  })
-  return data
+  // КОСТЫЛЬ: возвращаем хардкод вместо реального запроса
+  return [
+    { 
+      id: 'b4ca303a-ab45-4dd8-a77f-ee61a1da5900', 
+      name: 'Serge',
+      status: 'Active',
+      ownerId: 'mock-owner-id',
+      avatar: null
+    } as AdminArtist
+  ]
 }
 
 export async function getGenres() {
-  const { data } = await apiClient.get<AdminGenre[]>('/api/v1/genres', {
-    params: { page: 1, pageSize: 100 },
-  })
-  return data
+  // КОСТЫЛЬ: возвращаем хардкод вместо реального запроса
+  return [
+    { 
+      id: 'a63b5ebf-a728-46b2-8cfa-28120c9ca308', 
+      name: 'Rock',
+      cover: null
+    } as AdminGenre
+  ]
 }
 
 export async function getMoods() {
