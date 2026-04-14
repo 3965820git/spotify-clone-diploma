@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AuthShell } from "@/shared/ui/layout/AuthShell";
 import { AuthFormShell } from "@/features/auth/ui/AuthFormShell";
@@ -35,7 +35,7 @@ function formatTime(totalSeconds: number) {
   return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
-export default function VerifyCodePage() {
+function VerifyCodeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get("email") ?? "";
@@ -110,7 +110,7 @@ export default function VerifyCodePage() {
           </div>
 
           {serverError ? (
-            <div className="mt-4 w-full max-w-[370px] groov-error text-center">
+            <div className="mt-4 w-full max-w-[370px] groov-error text-center text-red-500">
               {serverError}
             </div>
           ) : null}
@@ -138,5 +138,13 @@ export default function VerifyCodePage() {
         </form>
       </AuthFormShell>
     </AuthShell>
+  );
+}
+
+export default function VerifyCodePage() {
+  return (
+    <Suspense fallback={<AuthShell><div className="flex h-screen items-center justify-center text-white">Завантаження...</div></AuthShell>}>
+      <VerifyCodeContent />
+    </Suspense>
   );
 }
