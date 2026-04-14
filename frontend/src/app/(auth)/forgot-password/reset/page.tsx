@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -15,7 +15,7 @@ type FormValues = {
   confirmPassword: string;
 };
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -61,8 +61,9 @@ export default function ResetPasswordPage() {
     setServerError(null);
 
     try {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
       const response = await fetch(
-        "http://localhost:5000/api/v1/auth/password-reset/confirm",
+        `${baseUrl}/api/v1/auth/password-reset/confirm`,
         {
           method: "POST",
           headers: {
@@ -120,7 +121,7 @@ export default function ResetPasswordPage() {
           </div>
 
           {serverError ? (
-            <div className="mt-4 w-full max-w-[370px] groov-error">
+            <div className="mt-4 w-full max-w-[370px] groov-error text-red-500">
               {serverError}
             </div>
           ) : null}
@@ -139,5 +140,13 @@ export default function ResetPasswordPage() {
         </form>
       </AuthFormShell>
     </AuthShell>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<AuthShell><div className="flex h-screen items-center justify-center text-white">Завантаження...</div></AuthShell>}>
+      <ResetPasswordContent />
+    </Suspense>
   );
 }

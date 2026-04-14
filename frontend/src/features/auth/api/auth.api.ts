@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:5000/api/v1/auth"
+const BASE_URL = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/v1/auth`
 
 async function getErrorMessage(response: Response, fallback: string) {
   const text = await response.text()

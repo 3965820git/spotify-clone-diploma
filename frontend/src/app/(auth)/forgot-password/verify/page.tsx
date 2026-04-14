@@ -56,7 +56,7 @@ export default function VerifyCodePage() {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/api/v1/auth/password-reset/verify",
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/v1/auth/password-reset/verify`,
         {
           method: "POST",
           headers: {

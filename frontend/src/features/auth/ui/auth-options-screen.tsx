@@ -104,7 +104,7 @@ export function AuthOptionsScreen({
   className="w-full"
   onClick={() => {
     window.location.href =
-      "http://localhost:5000/api/v1/auth/login-google";
+      `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/v1/auth/login-google`;
   }}
 >
   Продовжити за допомогою Google
