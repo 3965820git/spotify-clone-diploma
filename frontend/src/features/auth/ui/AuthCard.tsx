@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 
 import { useForm } from 'react-hook-form'
 
-import { login, registerUser } from '@/features/auth/api/auth.api'
+import { login, register } from '@/features/auth/api/auth.api'
 
 import { loginSchema, registerSchema, type LoginForm, type RegisterForm } from '@/features/auth/validation'
 
@@ -50,7 +50,7 @@ const registerForm = useForm<RegisterForm>({
   })
 
   const registerMutation = useMutation({
-  mutationFn: registerUser,
+  mutationFn: register,
   onSuccess: () => setError(null),
   onError: (e: Error) => setError(e.message),
 })
