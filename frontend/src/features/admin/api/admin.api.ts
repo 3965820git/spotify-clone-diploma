@@ -150,10 +150,14 @@ export async function getGenres() {
 }
 
 export async function getMoods() {
-  const { data } = await apiClient.get<AdminMood[]>('/api/v1/moods', {
-    params: { page: 1, pageSize: 100 },
-  })
-  return data
+  // КОСТЫЛЬ: возвращаем хардкод вместо реального запроса
+  return [
+    { 
+      id: '90a6addc-28cc-4478-bffe-2e6e33e09cf0', 
+      name: 'Energetic',
+      cover: null
+    } as AdminMood
+  ]
 }
 
 export async function getTracks() {
