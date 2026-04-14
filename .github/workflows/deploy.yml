@@ -1,8 +1,15 @@
-name: Deploy to AWS
+name: Deploy Frontend to AWS
+
 on:
   push:
     branches:
       - main
+    # МАГИЯ ЗДЕСЬ: Экшен запустится только если кто-то изменил файлы внутри папки frontend
+    paths:
+      - 'frontend/**'
+  # Кнопка для ручного запуска деплоя из интерфейса GitHub (очень удобно!)
+  workflow_dispatch:
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -17,4 +24,6 @@ jobs:
             cd ~/spotify-diploma
             git fetch origin
             git reset --hard origin/main
-            docker compose up -d --build
+            
+            # Собираем и перезапускаем ТОЛЬКО сервис frontend
+            docker compose up -d --build frontend
