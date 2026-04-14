@@ -1,0 +1,73 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+  </Folder>
+  <Folder Name="/src/" />
+  <Folder Name="/src/Apps/">
+    <Project Path="src/Apps/SpotifyClone.Api/SpotifyClone.Api.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/" />
+  <Folder Name="/src/Modules/Accounts/">
+    <Project Path="src/Modules/Accounts/SpotifyClone.Accounts.Application/SpotifyClone.Accounts.Application.csproj" Id="0dd2b0d3-597b-4a81-889f-70378dec72ee" />
+    <Project Path="src/Modules/Accounts/SpotifyClone.Accounts.Domain/SpotifyClone.Accounts.Domain.csproj" Id="44b6d0a5-3ac9-4943-9116-4c5242fc68b1" />
+    <Project Path="src/Modules/Accounts/SpotifyClone.Accounts.Infrastructure/SpotifyClone.Accounts.Infrastructure.csproj" Id="546dd04c-4395-4792-bb5b-103c8a27c107" />
+  </Folder>
+  <Folder Name="/src/Modules/Billing/">
+    <Project Path="src/Modules/Billing/SpotifyClone.Billing.Application/SpotifyClone.Billing.Application.csproj" Id="f46ebae2-ab91-4d87-ac8c-3dfb5f537053" />
+    <Project Path="src/Modules/Billing/SpotifyClone.Billing.Domain/SpotifyClone.Billing.Domain.csproj" Id="40ba9c0f-781c-4afe-af95-6cef158477d1" />
+    <Project Path="src/Modules/Billing/SpotifyClone.Billing.Infrastructure/SpotifyClone.Billing.Infrastructure.csproj" Id="9aa35290-8e95-4a9a-afb1-761833a169fa" />
+  </Folder>
+  <Folder Name="/src/Modules/Catalog/">
+    <Project Path="src/Modules/Catalog/SpotifyClone.Catalog.Application/SpotifyClone.Catalog.Application.csproj" Id="9d403607-8e17-4389-8990-6dc7c6260ba4" />
+    <Project Path="src/Modules/Catalog/SpotifyClone.Catalog.Domain/SpotifyClone.Catalog.Domain.csproj" Id="7db7d70b-2b9d-4761-8e17-c28b870f8235" />
+    <Project Path="src/Modules/Catalog/SpotifyClone.Catalog.Infrastructure/SpotifyClone.Catalog.Infrastructure.csproj" Id="040f7ad5-f3ad-4222-ba92-8450c45629fb" />
+  </Folder>
+  <Folder Name="/src/Modules/Playlists/">
+    <Project Path="src/Modules/Playlists/SpotifyClone.Playlists.Application/SpotifyClone.Playlists.Application.csproj" Id="73d19173-323a-4533-bbd2-e2e8556298a9" />
+    <Project Path="src/Modules/Playlists/SpotifyClone.Playlists.Domain/SpotifyClone.Playlists.Domain.csproj" Id="4b57c68a-0aec-4535-b41e-e6d24c61843c" />
+    <Project Path="src/Modules/Playlists/SpotifyClone.Playlists.Infrastructure/SpotifyClone.Playlists.Infrastructure.csproj" Id="7c78fcdb-cd6b-4383-869f-dc5def019846" />
+  </Folder>
+  <Folder Name="/src/Modules/Streaming/">
+    <Project Path="src/Modules/Streaming/SpotifyClone.Streaming.Application/SpotifyClone.Streaming.Application.csproj" Id="ad2a4d82-0d24-4d95-8cc2-780644f0faac" />
+    <Project Path="src/Modules/Streaming/SpotifyClone.Streaming.Domain/SpotifyClone.Streaming.Domain.csproj" Id="6f2658bf-1f5d-4393-a9bd-ee6a6c8b916f" />
+    <Project Path="src/Modules/Streaming/SpotifyClone.Streaming.Infrastructure/SpotifyClone.Streaming.Infrastructure.csproj" Id="46e8e49e-6b3c-4cc2-bd66-2be7ed6fff87" />
+  </Folder>
+  <Folder Name="/src/Shared/" />
+  <Folder Name="/src/Shared/BuildingBlocks/">
+    <Project Path="src/Shared/BuildingBlocks/SpotifyClone.Shared.BuildingBlocks.Application/SpotifyClone.Shared.BuildingBlocks.Application.csproj" />
+    <Project Path="src/Shared/BuildingBlocks/SpotifyClone.Shared.BuildingBlocks.Domain/SpotifyClone.Shared.BuildingBlocks.Domain.csproj" />
+    <Project Path="src/Shared/BuildingBlocks/SpotifyClone.Shared.BuildingBlocks.Infrastructure/SpotifyClone.Shared.BuildingBlocks.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Shared/IntegrationEvents/">
+    <Project Path="src/Shared/IntegrationEvents/SpotifyClone.Shared.IntegrationEvents/SpotifyClone.Shared.IntegrationEvents.csproj" Id="26ff93b3-aab9-4450-a5db-1d8d04cb0686" />
+  </Folder>
+  <Folder Name="/src/Shared/Kernel/">
+    <Project Path="src/Shared/Kernel/SpotifyClone.Shared.Kernel/SpotifyClone.Shared.Kernel.csproj" />
+  </Folder>
+  <Folder Name="/tests/" />
+  <Folder Name="/tests/Apps/" />
+  <Folder Name="/tests/Modules/" />
+  <Folder Name="/tests/Modules/Accounts/">
+    <Project Path="tests/Modules/Accounts/SpotifyClone.Accounts.Application.Tests/SpotifyClone.Accounts.Application.Tests.csproj" Id="224043ee-754d-4971-9779-4ff0eac3ff0d" />
+    <Project Path="tests/Modules/Accounts/SpotifyClone.Accounts.Arch.Tests/SpotifyClone.Accounts.Arch.Tests.csproj" Id="d2777d3c-d2fc-4f6b-a7f2-beaab97fe9c0" />
+    <Project Path="tests/Modules/Accounts/SpotifyClone.Accounts.Domain.Tests/SpotifyClone.Accounts.Domain.Tests.csproj" Id="ef98caff-7514-4e13-8dc0-abf43f9b447b" />
+    <Project Path="tests/Modules/Accounts/SpotifyClone.Accounts.Infrastructure.Tests/SpotifyClone.Accounts.Infrastructure.Tests.csproj" Id="0b74994c-5473-433b-a32b-98cada1bf421" />
+  </Folder>
+  <Folder Name="/tests/Shared/" />
+  <Folder Name="/tests/Shared/BuildingBlocks/">
+    <Project Path="tests/Shared/BuildingBlocks/SpotifyClone.Shared.BuildingBlocks.Application.Tests/SpotifyClone.Shared.BuildingBlocks.Application.Tests.csproj" />
+    <Project Path="tests/Shared/BuildingBlocks/SpotifyClone.Shared.BuildingBlocks.Arch.Tests/SpotifyClone.Shared.BuildingBlocks.Arch.Tests.csproj" />
+    <Project Path="tests/Shared/BuildingBlocks/SpotifyClone.Shared.BuildingBlocks.Domain.Tests/SpotifyClone.Shared.BuildingBlocks.Domain.Tests.csproj" />
+    <Project Path="tests/Shared/BuildingBlocks/SpotifyClone.Shared.BuildingBlocks.Infrastructure.Tests/SpotifyClone.Shared.BuildingBlocks.Infrastructure.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tests/Shared/Kernel/">
+    <Project Path="tests/Shared/Kernel/SpotifyClone.Shared.Kernel.Arch.Tests/SpotifyClone.Shared.Kernel.Arch.Tests.csproj" />
+    <Project Path="tests/Shared/Kernel/SpotifyClone.Shared.Kernel.Tests/SpotifyClone.Shared.Kernel.Tests.csproj" />
+  </Folder>
+  <Project Path="docker-compose.dcproj">
+    <Build />
+  </Project>
+</Solution>

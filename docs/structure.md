@@ -1,0 +1,1225 @@
+# Folder & File Structure
+
+A - Abstract
+S - Static
+C - Class
+R - Record
+I - Interface
+E - Enum / Smart Enum
+D - Delegate
+
+- SpotifyClone.sln
+- src/
+  - Shared/
+    - BuildingBlocks/
+      - SpotifyClone.Shared.BuildingBlocks.Domain.csproj
+        - Primitives/
+          - DomainException.cs (AC)
+          - ValueObject.cs (AR)
+          - StronglyTypedId.cs (AR)
+          - DomainEvent.cs (AR)
+          - Entity.cs (AC)
+          - AggregateRoot.cs (AC)
+      - SpotifyClone.Shared.BuildingBlocks.Application.csproj
+        - Abstractions/
+          - Commands/
+            - ICommand.cs (I)
+            - ICommandHandler.cs (I)
+          - Queries/
+            - IQuery.cs (I)
+            - IQueryHandler.cs (I)
+          - Services/
+          - IUnitOfWork.cs (I)
+        - Email/
+          - EmailMessage.cs (R)
+          - EmailAttachment.cs (R)
+          - EmailPriority.cs (E)
+          - IEmailSender.cs (I)
+        - Exceptions/
+          - ApplicationExceptionBase.cs (AC)
+          - ConcurrencyConflictApplicationException.cs (C)
+          - OperationCanceledApplicationException.cs (C)
+          - EmailSendFailedApplicationException.cs (C)
+        - Behaviors/
+          - ExceptionHandlingPipelineBeavior.cs (C)
+          - RequestLoggingPipelineBehavior.cs (C)
+          - ValidationFailuresExtensions.cs (SC)
+          - ValidationPipelineBehavior.cs (C)
+          - TransactionalPipelineBehavior.cs (C)
+        - Errors/
+          - Error.cs (R)
+          - CommonErrors.cs (SC)
+        - Results/
+          - Result.cs (C)
+        - BuildingBlocksApplicationAssemblyReference.cs (SC)
+      - SpotifyClone.Shared.BuildingBlocks.Infrastructure.csproj
+        - Persistence/
+          - EfCoreUnitOfWorkBase.cs (AC)
+          - Converters/
+            - StronglyTypedIdEfCoreConverter.cs (AC)
+        - Messaging/
+          - SmtpOptions.cs (R)
+          - SmtpEmailSender.cs (C)
+        - DependencyInjection/
+          - BuildingBlocksModule.cs (SC)
+    - Kernel/
+      - SpotifyClone.Shared.Kernel.csproj
+        - ValueObjects/
+          - UserId.cs (R)
+          - TrackId.cs (R)
+          - ImageId.cs (R)
+          - ImageMetadata.cs (R)
+  - Modules/
+    - Accounts/
+      - SpotifyClone.Accounts.Domain.csproj
+        - Aggregates/
+          - User/
+            - User.cs (C)
+            - ValueObjects/
+              - AvatarImage.cs (R)
+            - Events/
+              - UserRegisteredDomainEvent.cs (R)
+              - UserDeletedDomainEvent.cs (R)
+            - Exceptions/
+        - Repositories/
+          - IUserRepository.cs (I)
+      - SpotifyClone.Accounts.Application.csproj
+        - Abstractions/
+          - IAccountsUnitOfWork.cs (I)
+          - Services/
+            - ITokenService.cs (I)
+            - IIdentityService.cs (I)
+          - Repositories/
+            - IRefreshTokenRepository.cs (I)
+        - Features/
+          - Auth/
+            - Commands/
+              - RegisterUser/
+                - RegisterUserCommand.cs (R)
+                - RegisterUserCommandHandler.cs (C)
+                - RegisterUserErrors.cs (SC)
+              - DeleteUser/
+                - DeleteUserCommand.cs (R)
+                - DeleteUserCommandHandler.cs (C)
+                - DeleteUserErrors.cs (SC)
+              - LoginUser/
+                - LoginUserCommand.cs (R)
+                - LoginUserCommandHandler.cs (C)
+                - LoginUserErrors.cs (SC)
+              - LogoutUser/
+                - LogoutUserCommand.cs (R)
+                - LogoutUserCommandHandler.cs (C)
+                - LogoutUserErrors.cs (SC)
+              - AuthenticateUserWithEmail/
+                - AuthenticateUserWithEmailCommand.cs (R)
+                - AuthenticateUserWithEmailCommandHandler.cs (C)
+                - AuthenticateUserWithEmailErrors.cs (SC)
+              - AuthenticateUserWithPhone/
+                - AuthenticateUserWithPhoneCommand.cs (R)
+                - AuthenticateUserWithPhoneCommandHandler.cs (C)
+                - AuthenticateUserWithPhoneErrors.cs (SC)
+              - ChangeUserName/
+                - ChangeUserNameCommand.cs (R)
+                - ChangeUserNameCommandHandler.cs (C)
+                - ChangeUserNameErrors.cs (SC)
+              - ChangeUserPassword/
+                - ChangeUserPasswordCommand.cs (R)
+                - ChangeUserPasswordCommandHandler.cs (C)
+                - ChangeUserPasswordErrors.cs (SC)
+              - SendEmailVerificationCode/
+                - SendEmailVerificationCodeCommand.cs (C)
+                - SendEmailVerificationCodeCommandHandler.cs (C)
+                - SendEmailVerificationCodeErrors.cs (SC)
+              - SendPhoneVerificationCode/
+                - SendPhoneVerificationCodeCommand.cs (C)
+                - SendPhoneVerificationCodeCommandHandler.cs (C)
+                - SendPhoneVerificationCodeErrors.cs (SC)
+              - VerifyUserEmail/
+                - VerifyEmailCommand.cs (R)
+                - VerifyEmailCommandHandler.cs (C)
+                - VerifyEmailErrors.cs (SC)
+              - VerifyUserPhone/
+                - VerifyPhoneCommand.cs (R)
+                - VerifyPhoneCommandHandler.cs (C)
+                - VerifyPhoneErrors.cs (SC)
+              - ChangeUserEmail/
+                - ChangeUserEmailCommand.cs (R)
+                - ChangeUserEmailCommandHandler.cs (C)
+                - ChangeUserEmailErrors.cs (SC)
+              - ChangeUserPhoneNumber/
+                - ChangeUserPhoneNumberCommand.cs (R)
+                - ChangeUserPhoneNumberCommandHandler.cs (C)
+                - ChangeUserPhoneNumberErrors.cs (SC)
+            - Queries/
+              - GetUserVerificationStatus/
+                - GetUserVerificationStatusQuery.cs (R)
+                - GetUserVerificationStatusQueryHandler.cs (C)
+                - UserVerificationStatusReadModel.cs (R)
+                - UserVerificationStatusErrors.cs (SC)
+          - Accounts/
+            - UserMappingProfile.cs (C)
+            - Commands/
+              - ChangeUserDisplayName/
+                - ChangeUserDisplayNameCommand.cs (R)
+                - ChangeUserDisplayNameCommandHandler.cs (C)
+                - ChangeUserDisplayNameErrors.cs (SC)
+              - ChangeUserAvatar/
+                - ChangeUserAvatarCommand.cs (R)
+                - ChangeUserAvatarCommandHandler.cs (C)
+                - ChangeUserAvatarErrors.cs (SC)
+              - RevokeRefreshToken/
+                - RevokeRefreshTokenCommand.cs (R)
+                - RevokeRefreshTokenCommandHandler.cs (C)
+                - RevokeRefreshTokenErrors.cs (SC)
+              - RotateRefreshToken/
+                - RotateRefreshTokenCommand.cs (R)
+                - RotateRefreshTokenCommandHandler.cs (C)
+                - RotateRefreshTokenErrors.cs (SC)
+            - Queries/
+              - GetCurrentUserProfile/
+                - GetCurrentUserProfileQuery.cs (R)
+                - GetCurrentUserProfileQueryHandler.cs (C)
+                - CurrentUserProfileReadModel.cs (R)
+                - CurrentUserProfileErrors.cs (SC)
+              - GetUserPublicProfile/
+                - GetUserPublicProfileQuery.cs (R)
+                - GetUserPublicProfileQueryHandler.cs (C)
+                - UserPublicProfileReadModel.cs (R)
+                - UserPublicProfileErrors.cs (SC)
+              - ListUsers/
+                - ListUsersQuery.cs (R)
+                - ListUsersQueryHandler.cs (C)
+                - UserListReadModel.cs (R)
+                - UserListErrors.cs (SC)
+        - Errors/
+          - UserErrors.cs (SC)
+        - AccountsApplicationAssemblyReference.cs (SC)
+      - SpotifyClone.Accounts.Infrastructure.csproj
+        - Persistence/
+          - Identity/
+            - ApplicationRoles.cs (E)
+            - RoleSeeder.cs (C)
+            - ApplicationPolicies.cs (E)
+            - ApplicationUser.cs (C)
+            - IdentityAppDbContext.cs (C)
+            - IdentityService.cs (C)
+            - Migrations/
+          - Auth/
+            - Sha256TokenHasher.cs (SC)
+            - RefreshToken.cs (C)
+            - RefreshTokenEfCoreConfiguration.cs (C)
+            - Repositories/
+              - RefreshTokenRepository.cs (C)
+            - Converters/
+          - Accounts/
+            - AccountsAppDbContext.cs (C)
+            - Repositories/
+              - UserProfileRepository.cs (C)
+            - Configurations/
+              - Converters/
+                - AccountsEfCoreValueConverters.cs (SC)
+              - AvatarImageEfCoreConfiguration.cs (SC)
+              - ImageMetadataEfCoreConfiguration.cs (SC)
+              - UserProfileEfCoreConfiguration.cs (C)
+            - Migrations/
+          - AccountsUnitOfWork.cs (C)
+        - Auth/
+          - JwtOptions.cs (R)
+          - JwtTokenService.cs (C)
+        - DependencyInjection/
+          - AccountsModule.cs
+    - Catalog/
+      - SpotifyClone.Catalog.Domain.csproj
+        - Aggregates/
+          - Track/
+            - Track.cs (C)
+            - ValueObjects/
+              - AudioFileId.cs (R)
+            - Events/
+              - TrackCreatedDomainEvent.cs (R)
+              - TrackDeletedDomainEvent.cs (R)
+            - Errors/
+              - TrackErrors.cs (SC)
+          - Album/
+            - Album.cs (C)
+            - ValueObjects/
+              - AlbumId.cs (R)
+              - AlbumCoverImage.cs (R)
+            - Events/
+              - AlbumCreatedDomainEvent.cs (R)
+              - AlbumDeletedDomainEvent.cs (R)
+            - Enums/
+              - AlbumType.cs (E)
+            - Errors/
+              - AlbumErrors.cs (SC)
+              - AlbumCoverImageErrors.cs (SC)
+          - Artist/
+            - Artist.cs (C)
+            - ValueObjects/
+              - ArtistId.cs (R)
+              - ArtistAvatarImage (R)
+              - ArtistBannerImage (R)
+              - ArtistGalleryImage (R)
+            - Events/
+              - ArtistCreatedDomainEvent.cs (R)
+              - ArtistDeletedDomainEvent.cs (R)
+            - Errors/
+              - ArtistErrors.cs (SC)
+              - ArtistAvatarImageErrors.cs (SC)
+              - ArtistBannerImageErrors.cs (SC)
+              - ArtistGalleryImageErrors.cs (SC)
+          - Genre/
+            - Genre.cs (C)
+            - ValueObjects/
+              - GenreId.cs (R)
+              - GenreCoverImage.cs (R)
+            - Events/
+              - GenreCreatedDomainEvent.cs (R)
+              - GenreDeletedDomainEvent.cs (R)
+            - Errors/
+              - GenreErrors.cs (SC)
+              - GenreCoverImageErrors.cs (SC)
+        - Repositories/
+          - ITrackRepository.cs (I)
+          - IAlbumRepository.cs (I)
+          - IArtistRepository.cs (I)
+          - IGenreRepository.cs (I)
+      - SpotifyClone.Catalog.Application.csproj
+        - Abstractions/
+          - ICatalogUnitOfWork.cs (I)
+        - Features/
+          - Tracks/
+            - Commands/
+              - PublishTrack/
+                - PublishTrackCommand.cs (R)
+                - PublishTrackCommandHandler.cs (C)
+              - UnpublishTrack/
+                - UnpublishTrackCommand.cs (R)
+                - UnpublishTrackCommandHandler.cs (C)
+              - RenameTrack/
+                - RenameTrackCommand.cs (R)
+                - RenameTrackCommandHandler.cs (C)
+              - ChangeTrackDescription/
+                - ChangeTrackDescriptionCommand.cs (R)
+                - ChangeTrackDescriptioonCommandHandler.cs (C)
+              - ChangeTrackNumber/
+                - ChangeTrackNumberCommand.cs (R)
+                - ChangeTrackNumberCommandHandler.cs (C)
+              - UpdateTrackExplicitContent/
+                - UpdateTrackExplicitContentCommand.cs (R)
+                - UpdateTrackExplicitContentCommandHandler.cs (C)
+              - ReplaceTrackAudioResource/
+                - ReplaceTrackAudioResourceCommand.cs (R)
+                - ReplaceTrackAudioResourceCommandHandler.cs (C)
+            - Queries/
+              - GetTrackDetails/
+                - GetTrackDetailsQuery.cs (R)
+                - GetTrackDetailsQueryHandler.cs (C)
+                - TrackDetailsReadModel.cs (R)
+              - GetTrackSummary/
+                - GetTrackSummaryQuery.cs (R)
+                - GetTrackSummaryQueryHandler.cs (R)
+                - TrackSummaryReadModel.cs (R)
+              - ListArtistTracks/
+                - ListArtistTracksQuery.cs (R)
+                - ListArtistTracksQueryHandler.cs (C)
+                - ArtistTrackListReadModel.cs (R)
+          - Albums/
+            - Commands/
+              - PublishAlbum/
+                - PublishAlbumCommand.cs (R)
+                - PublishAlbumCommandHandler.cs (C)
+              - UnpublishAlbum/
+                - UnpublishAlbumCommand.cs (R)
+                - UnpublishAlbumCommandHandler.cs (C)
+              - RenameAlbum/
+                - RenameAlbumCommand.cs (R)
+                - RenameAlbumCommandHandler.cs (C)
+              - ChangeAlbumDescription/
+                - ChangeAlbumDescriptionCommand.cs (R)
+                - ChangeAlbumDescriptionCommandHandler.cs (C)
+              - ChangeAlbumCover/
+                - ChangeAlbumCoverCommand.cs (R)
+                - ChangeAlbumCoverCommandHandler.cs (C)
+            - Queries/
+              - GetAlbumDetails/
+                - GetAlbumDetailsQuery.cs (R)
+                - GetAlbumDetailsQueryHandler.cs (C)
+                - AlbumDetailsReadModel.cs (R)
+              - GetAlbumDetailsWithTracks/
+                - GetAlbumDetailsWithTracksQuery.cs (R)
+                - GetAlbumDetailsWithTracksQueryHandler.cs (C)
+                - AlbumDetailsWithTracksReadModel.cs (R)
+              - GetAlbumSummary/
+                - GetAlbumSummaryQuery.cs (R)
+                - GetAlbumSummaryQueryHandler.cs (C)
+                - AlbumSummaryReadModel.cs (R)
+              - ListArtistAlbums/
+                - ListArtistAlbumsQuery.cs (R)
+                - ListArtistAlbumsQueryHandler.cs (C)
+                - ArtistAlbumListReadModel.cs (R)
+          - Artists/
+            - Commands/
+              - RegisterArtist/
+                - RegisterArtistCommand.cs (R)
+                - RegisterArtistCommandHandler.cs (C)
+              - DeleteArtist/
+                - DeleteArtistCommand.cs (R)
+                - DeleteArtistCommandHandler.cs (C)
+              - RenameArtist/
+                - RenameArtistCommand.cs (R)
+                - RenameArtistCommandHandler.cs (C)
+              - ChangeArtistBio/
+                - ChangeArtistBioCommand.cs (R)
+                - ChangeArtistBioCommandHandler.cs (C)
+              - UpdateArtistVerification/
+                - UpdateArtistVerificationCommand.cs (R)
+                - UpdateArtistVerificationCommandHandler.cs (C)
+              - ChangeArtistAvatar/
+                - ChangeArtistAvatarCommand.cs (R)
+                - ChangeArtistAvatarCommandHandler.cs (C)
+              - ChangeArtistBanner/
+                - ChangeArtistBannerCommand.cs (R)
+                - ChangeArtistBannerCommandHandler.cs (C)
+              - UpdateArtistGallery/
+                - UpdateArtistGalleryCommand.cs (R)
+                - UpdateArtistGalleryCommandHandler.cs (C)
+            - Queries/
+              - GetArtistDetails/
+                - GetArtistDetailsQuery.cs (R)
+                - GetArtistDetailsQueryHandler.cs (C)
+                - ArtistDetailsReadModel.cs (R)
+              - GetArtistDetailsWithTracks/
+                - GetArtistDetailsWithTracksQuery.cs (R)
+                - GetArtistDetailsWithTracksQueryHandler.cs (C)
+                - ArtistDetailsWithTracksReadModel.cs (R)
+              - GetArtistSummary/
+                - GetArtistSummaryQuery.cs (R)
+                - GetArtistSummaryQueryHandler.cs (C)
+                - ArtistSummaryReadModel.cs (R)
+              - ListArtists/
+                - ListArtistsQuery.cs (R)
+                - ListArtistsQueryHandler.cs (C)
+                - ArtistListReadModel.cs (R)
+          - Genres/
+            - Commands/
+              - CreateGenre/
+                - CreateGenreCommand.cs (R)
+                - CreateGenreCommandHandler.cs (C)
+              - DeleteGenre/
+                - DeleteGenreCommand.cs (R)
+                - DeleteGenreCommandHandler.cs (C)
+              - RenameGenre/
+                - RenameGenreCommand.cs (R)
+                - RenameGenreCommandHandler.cs (C)
+              - ChangeGenreDescription/
+                - ChangeGenreDescriptionCommand.cs (R)
+                - ChangeGenreDescriptionCommandHandler.cs (C)
+              - ChangeGenreCover/
+                - ChangeGenreCoverCommand.cs (R)
+                - ChangeGenreCoverCommandHandler.cs (C)
+            - Queries/
+              - GetGenreDetails/
+                - GetGenreDetailsQuery.cs (R)
+                - GetGenreDetailsQueryHandler.cs (C)
+                - GenreDetailsReadModel.cs (R)
+              - GetGenreTracks/
+                - GetGenreTracksQuery.cs (R)
+                - GetGenreTracksQueryHandler.cs (C)
+                - GenreTracksReadModel.cs (R)
+              - GetGenreAlbums/
+                - GetGenreAlbumsQuery.cs (R)
+                - GetGenreAlbumsQueryHandler.cs (C)
+                - GenreAlbumsReadModel.cs (R)
+              - GetGenreSummary/
+                - GetGenreSummaryQuery.cs (R)
+                - GetGenreSummaryQueryHandler.cs (C)
+                - GenreSummaryReadModel.cs (R)
+              - ListGenres/
+                - ListGenresQuery.cs (R)
+                - ListGenresQueryHandler.cs (C)
+                - GenreListReadModel.cs (R)
+        - CatalogApplicationAssemblyReference.cs (SC)
+        - Errors/
+          - CatalogApplicationErrors.cs (SC)
+      - SpotifyClone.Catalog.Infrastructure.csproj
+        - Persistence/
+          - Database/
+            - CatalogDbContext.cs (C)
+          - Configurations/
+            - TrackConfiguration.cs (C)
+            - AlbumConfiguration.cs (C)
+            - ArtistConfiguration.cs (C)
+            - GenreConfiguration.cs (C)
+          - Converters/
+          - Repositories/
+            - TrackRepository.cs (C)
+            - AlbumRepository.cs (C)
+            - ArtistRepository.cs (C)
+            - GenreRepository.cs (C)
+          - Migrations/
+          - CatalogUnitOfWork.cs (C)
+        - DependencyInjection/
+          - CatalogModule.cs (C)
+    - Playlists/
+      - SpotifyClone.Playlists.Domain.csproj
+        - Aggregates/
+          - Playlist/
+            - Playlist.cs (C)
+            - ValueObjects/
+              - PlaylistId.cs (R)
+              - PlaylistCoverImage.cs (R)
+            - Entities/
+              - PlaylistTrack.cs (C)
+            - Events/
+              - PlaylistCreatedDomainEvent.cs (R)
+              - PlaylistDeletedDomainEvent.cs (R)
+              - TrackAddedToPlaylistDomainEvent.cs (R)
+              - TrackRemovedFromPlaylistDomainEvent.cs (R)
+            - Errors/
+              - PlaylistErrors.cs (SC)
+              - PlaylistTrackErrors.cs (SC)
+              - PlaylistCoverImageErrors.cs (SC)
+        - Repositories/
+          - IPlaylistRepository.cs (I)
+      - SpotifyClone.Playlists.Application.csproj
+        - Abstractions/
+          - IPlaylistsUnitOfWork.cs (I)
+        - Features/
+          - Playlists/
+            - Commands/
+              - CreatePlaylist/
+                - CreatePlaylistCommand.cs (R)
+                - CreatePlaylistCommandHandler.cs (C)
+              - DeletePlaylist/
+                - DeletePlaylistCommand.cs (R)
+                - DeletePlaylistCommandHandler.cs (C)
+              - RenamePlaylist/
+                - RenamePlaylistCommand.cs (R)
+                - RenamePlaylistCommandHandler.cs (C)
+              - ChangePlaylistDescription/
+                - ChangePlaylistDescriptionCommand.cs (R)
+                - ChangePlaylistDescriptionCommandHandler.cs (C)
+              - ChangePlaylistCover/
+                - ChangePlaylistCoverCommand.cs (R)
+                - ChangePlaylistCoverCommandHandler.cs (C)
+              - UpdatePlaylistVisibility/
+                - UpdatePlaylistVisibilityCommand.cs (R)
+                - UpdatePlaylistVisibilityCommandHandler.cs (C)
+              - AddTrackToPlaylist/
+                - AddTrackToPlaylistCommand.cs (R)
+                - AddTrackToPlaylistCommandHandler.cs (C)
+              - RemoveTrackFromPlaylist/
+                - RemoveTrackFromPlaylistCommand.cs (R)
+                - RemoveTrackFromPlaylistCommandHandler.cs (C)
+              - ReorderPlaylistTracks/
+                - ReorderPlaylistTracksCommand.cs (R)
+                - ReorderPlaylistTracksCommandHandler.cs (C)
+            - Queries/
+              - GetPlaylistDetails/
+                - GetPlaylistDetailsQuery.cs (R)
+                - GetPlaylistDetailsQueryHandler.cs (C)
+                - PlaylistDetailsReadModel.cs (R)
+              - GetPlaylistSummary/
+                - GetPlaylistSummaryQuery.cs (R)
+                - GetPlaylistSummaryQueryHandler.cs (C)
+                - PlaylistSummaryReadModel.cs (R)
+              - ListUserPlaylists/
+                - ListUserPlaylistsQuery.cs (R)
+                - ListUserPlaylistsQueryHandler.cs (C)
+                - UserPlaylistListReadModel.cs (R)
+              - ListPublicPlaylists/
+                - ListPublicPlaylistsQuery.cs (R)
+                - ListPublicPlaylistsQueryHandler.cs (C)
+                - PublicPlaylistListReadModel.cs (R)
+        - Errors/
+          - PlaylistsApplicationErrors.cs (SC)
+        - PlaylistsApplicationAssemblyReference.cs (SC)
+      - SpotifyClone.Playlists.Infrastructure.csproj
+        - Persistence/
+          - Database/
+            - PlaylistsDbContext.cs (C)
+          - Configurations/
+            - PlaylistConfiguration.cs (C)
+          - Converters/
+          - Repositories/
+            - PlaylistRepository.cs (C)
+          - Migrations/
+          - PlaylistsUnitOfWork.cs (C)
+        - DependencyInjection/
+          - PlaylistsModule.cs (C)
+    - Streaming/
+      - SpotifyClone.Streaming.Domain.csproj
+        - Aggregates/
+          - AudioAsset/
+            - AudioAsset.cs (C)
+            - ValueObjects/
+              - AudioFileId.cs (R)
+            - Errors/
+              - AudioAssetErrors.cs (SC)
+              - AudioFormatErrors.cs (SC)
+            - Enums/
+              - AudioFormat.cs (E)
+            - Events/
+              - AudioAssetUploadedDomainEvent.cs (R)
+              - AudioAssetDeactivatedDomainEvent.cs (R)
+          - ImageAsset/
+            - ImageAsset.cs (C)
+            - Errors/
+              - ImageAssetErrors.cs (SC)
+            - Events/
+              - ImageAssetUploadedDomainEvent.cs (R)
+              - ImageAssetDeactivatedDomainEvent.cs (R)
+          - PlaybackSession/
+            - PlaybackSession.cs (C)
+            - ValueObjects/
+              - PlaybackSessionId.cs (R)
+            - Errors/
+              - PlaybackSessionErrors.cs (SC)
+              - PlaybackDeviceErrors.cs (SC)
+            - Enums/
+              - PlaybackDevice.cs (E)
+            - Events/
+              - PlaybackStartedDomainEvent.cs (R)
+              - PlaybackEndedDomainEvent.cs (R)
+          - PlaybackHistoryEntry/
+            - PlaybackHistoryEntry.cs
+            - Errors/
+              - PlaybackHistoryEntryErrors.cs (SC)
+          - LikedTrack/
+            - LikedTrack.cs (C)
+            - Errors/
+              - LikedTrackErrors.cs (SC)
+            - Events/
+              - TrackLikedDomainEvent.cs (R)
+              - TrackUnlikedDomainEvent.cs (R)
+        - Repositories/
+          - IAudioAssetRepository.cs (I)
+          - IImageAssetRepository.cs (I)
+          - IPlaybackSessionRepository.cs (I)
+          - IPlaybackHistoryEntryRepository.cs (I)
+          - ILikedTrackRepository.cs (I)
+        - Errors/
+          - StreamingDomainErrors.cs (SC)
+      - SpotifyClone.Streaming.Application.csproj
+        - Abstractions/
+          - IStreamingUnitOfWork.cs (I)
+          - Storage/
+            - IAudioStorage.cs (I)
+            - IImageStorage.cs (I)
+          - Services/
+            - IAudioStreamUrlResolver.cs (I)
+            - IImageUrlResolver.cs (I)
+        - Features/
+          - Media/
+            - Commands/
+              - UploadAudioAsset/
+                - UploadAudioAssetCommand.cs (R)
+                - UploadAudioAssetCommandHandler.cs (C)
+              - UploadImageAsset/
+                - UploadImageAssetCommand.cs (R)
+                - UploadImageAssetCommandHandler.cs (C)
+          - Playback/
+            - Commands/
+              - StartPlayback/
+                - StartPlaybackCommand.cs (R)
+                - StartPlaybackCommandHandler.cs (C)
+                - PlaybackSessionResponse.cs (R)
+              - EndPlayback/
+                - EndPlaybackCommand.cs (R)
+                - EndPlaybackCommandHandler.cs (C)
+              - UpdatePlaybackPosition/
+                - UpdatePlaybackPositionCommand.cs (R)
+                - UpdatePlaybackPositionCommandHandler.cs (R)
+            - Queries/
+              - GetPlaybackSession/
+                - GetPlaybackSessionQuery.cs (R)
+                - GetPlaybackSessionQueryHandler.cs (C)
+                - PlaybackSessionReadModel.cs (R)
+          - History/
+            - Commands/
+              - RecordPlayback/
+                - RecordPlaybackCommand.cs (R)
+                - RecordPlaybackCommandHandler.cs (C)
+            - Queries/
+              - GetRecentlyPlayed/
+                - GetRecentlyPlayedQuery.cs (R)
+                - GetRecentlyPlayedQueryHandler.cs (C)
+                - RecentlyPlayedReadModel.cs (R)
+          - Likes/
+            - Commands/
+              - LikeTrack/
+                - LikeTrackCommand.cs (R)
+                - LikeTrackCommandHandler.cs (C)
+              - UnlikeTrack/
+                - UnlikeTrackCommand.cs (R)
+                - UnlikeTrackCommandHandler.cs (C)
+            - Queries/
+              - ListLikedTracks/
+                - ListLikedTracksQuery.cs (R)
+                - ListLikedTracksQueryHandler.cs (C)
+                - LikedTrackListReadModel.cs (R)
+        - Errors/
+          - StreamingApplicationErrors.cs (SC)
+        - StreamingApplicationAssemblyReference.cs (SC)
+      - SpotifyClone.Streaming.Infrastructure.csproj
+        - Persistence/
+          - Database/
+            - StreamingDbContext.cs (C)
+          - Configurations/
+            - AudioAssetConfiguration.cs (C)
+            - ImageAssetConfiguration.cs (C)
+            - PlaybackSessionConfiguration.cs (C)
+            - PlaybackHistoryEntryConfiguration.cs (C)
+            - LikedTrackConfiguration.cs (C)
+          - Repositories/
+            - AudioAssetRepository.cs (C)
+            - ImageAssetRepository.cs (C)
+            - PlaybackSessionRepository.cs (C)
+            - PlaybackHistoryEntryRepository.cs (C)
+            - LikedTrackRepository.cs (C)
+          - StreamingUnitOfWork.cs (C)
+        - Storage/
+          - Azure/
+            - AzureAudioStorage.cs (C)
+            - AzureImageStorage.cs (C)
+          - Local/
+            - LocalAudioStorage.cs (C)
+            - LocalImageStorage.cs (C)
+        - Services/
+          - AudioStreamUrlResolver.cs (C)
+          - ImageUrlResolver.cs (C)
+        - DependencyInjection/
+          - StreamingModule.cs (SC)
+    - Search/
+      - SpotifyClone.Search.Domain.csproj
+      - SpotifyClone.Search.Application.csproj
+      - SpotifyClone.Search.Infrastructure.csproj
+    - Analytics/
+      - SpotifyClone.Analytics.Domain.csproj
+      - SpotifyClone.Analytics.Application.csproj
+      - SpotifyClone.Analytics.Infrastructure.csproj
+    - Recommendations/
+      - SpotifyClone.Recommendations.Domain.csproj
+      - SpotifyClone.Recommendations.Application.csproj
+      - SpotifyClone.Recommendations.Infrastructure.csproj
+    - Social/
+      - SpotifyClone.Social.Domain.csproj
+      - SpotifyClone.Social.Application.csproj
+      - SpotifyClone.Social.Infrastructure.csproj
+  - Apps/
+    - SpotifyClone.Api.csproj
+      - Program.cs (C)
+      - DependencyInjection/
+        - ServiceCollectionExtensions.cs (SC)
+      - Configuration/
+        - DatabaseOptions.cs (R)
+        - BlobStorageOptions.cs (R)
+      - Middleware/
+        - ExceptionHandlingMiddleware.cs (C)
+      - Authentication/
+        - JwtBearerConfiguration.cs (C)
+        - CurrentUserAccessor.cs (C)
+      - Authorization/
+        - Policies.cs (C)
+      - Endpoints/
+        - HealthEndpoints.cs (C)
+      - Controllers/
+        - ApiController.cs (AC)
+        - Accounts/
+          - AuthController.cs (C)
+          - AccountsController.cs (C)
+        - Catalog/
+          - TracksController.cs (C)
+          - AlbumsController.cs (C)
+          - ArtistsController.cs (C)
+          - GenresController.cs (C)
+        - Playlists/
+          - PlaylistsController.cs (C)
+        - Streaming/
+          - MediaAssetsControllers.cs (C)
+          - PlaybackController.cs (C)
+          - PlaybackHistoryController.cs (C)
+          - LikesController.cs (C)
+      - Contracts/
+        - v1/
+          - Accounts/
+            - Auth/
+              - UserApiMappingProfile.cs (C)
+              - Authentication/
+                - RegisterUser/
+                  - RegisterUserRequest.cs (R)
+                  - RegisterUserResponse.cs (R)
+                - LoginUser/
+                  - LoginUserRequest.cs (R)
+                  - LoginUserResponse.cs (R)
+                - LogoutUser/
+                  - LogoutUserRequest.cs (R)
+                  - LogoutUserResponse.cs (R)
+                - AuthenticateUserWithEmail/
+                  - AuthenticateUserWithEmailRequest.cs (R)
+                  - AuthenticateUserWithEmailResponse.cs (R)
+                - AuthenticateUserWithPhone/
+                  - AuthenticateUserWithPhoneRequest.cs (R)
+                  - AuthenticateUserWithPhoneResponse.cs (R)
+              - Verification/
+                - SendEmailVerificationCode/
+                  - SendEmailVerificationCodeRequest.cs (R)
+                  - SendEmailVerificationCodeResponse.cs (R)
+                - SendPhoneVerificationCode/
+                  - SendPhoneVerificationCodeRequest.cs (R)
+                  - SendPhoneVerificationCodeResponse.cs (R)
+                - VerifyUserEmail/
+                  - VerifyUserEmailRequest.cs (R)
+                  - VerifyUserEmailResponse.cs (R)
+                - VerifyUserPhone/
+                  - VerifyUserPhoneRequest.cs (R)
+                  - VerifyUserPhoneResponse.cs (R)
+                - GetUserVerificationStatus/
+                  - GetUserVerificationStatusRequest.cs (R)
+                  - GetUserVerificationStatusResponse.cs (R)
+              - Administration/
+                - RevokeRefreshToken/
+                  - RevokeRefreshTokenRequest.cs (R)
+                  - RevokeRefreshTokenResponse.cs (R)
+                - RotateRefreshToken/
+                  - RotateRefreshTokenRequest.cs (R)
+                  - RotateRefreshTokenResponse.cs (R)
+            - Accounts/
+              - Profile/
+                - ChangeUserName/
+                  - ChangeUserNameRequest.cs (R)
+                  - ChangeUserNameResponse.cs (R)
+                - ChangeUserPassword/
+                  - ChangeUserPasswordRequest.cs (R)
+                  - ChangeUserPasswordResponse.cs (R)
+                - ChangeUserDisplayName/
+                  - ChangeUserDisplayNameRequest.cs (R)
+                  - ChangeUserDisplayNameResponse.cs (R)
+                - ChangeUserAvatar/
+                  - ChangeUserAvatarRequest.cs (R)
+                  - ChangeUserAvatarResponse.cs (R)
+                - ChangeUserEmail/
+                  - ChangeUserEmailRequest.cs (R)
+                  - ChangeUserEmailResponse.cs (R)
+                - ChangeUserPhoneNumber/
+                  - ChangeUserPhoneNumberRequest.cs (R)
+                  - ChangeUserPhoneNumberResponse.cs (R)
+                - GetCurrentUserProfile/
+                  - GetCurrentUserProfileRequest.cs (R)
+                  - GetCurrentUserProfileResponse.cs (R)
+                - GetUserPublicProfile/
+                  - GetUserPublicProfileRequest.cs (R)
+                  - GetUserPublicProfileResponse.cs (R)
+              - Administration/
+                - ListUsers/
+                  - ListUsersRequest.cs (R)
+                  - ListUsersResponse.cs (R)
+                - DeleteUser/
+                  - DeleteUsersRequest.cs (R)
+                  - DeleteUsersResponse.cs (R)
+          - Catalog/
+            - Tracks/
+              - TrackApiMappingProfile.cs (C)
+              - Lifecycle/
+                - PublishTrack/
+                  - PublishTrackRequest.cs (R)
+                  - PublishTrackResponse.cs (R)
+                - UnpublishTrack/
+                  - UnpublishTrackRequest.cs (R)
+                  - UnpublishTrackResponse.cs (R)
+              - Metadata/
+                - RenameTrack/
+                  - RenameTrackRequest.cs (R)
+                  - RenameTrackResponse.cs (R)
+                - ChangeTrackDescription/
+                  - ChangeTrackDescriptionRequest.cs (R)
+                  - ChangeTrackDescriptionResponse.cs (R)
+                - ChangeTrackNumber/
+                  - ChangeTrackNumberRequest.cs (R)
+                  - ChangeTrackNumberResponse.cs (R)
+                - UpdateTrackExplicitContent/
+                  - UpdateTrackExplicitContentRequest.cs (R)
+                  - UpdateTrackExplicitContentResponse.cs (R)
+              - Media/
+                - ReplaceTrackAudioResource/
+                  - ReplaceTrackAudioResourceRequest.cs (R)
+                  - ReplaceTrackAudioResourceResponse.cs (R)
+              - Queries/
+                - GetTrackDetails/
+                  - GetTrackDetailsRequest.cs (R)
+                  - GetTrackDetailsResponse.cs (R)
+                - GetTrackSummary/
+                  - GetTrackSummaryRequest.cs (R)
+                  - GetTrackSummaryResponse.cs (R)
+                - ListArtistTracks/
+                  - ListArtistTracksRequest.cs (R)
+                  - ListArtistTracksResponse.cs (R)
+            - Albums/
+              - AlbumApiMappingProfile.cs (C)
+              - Lifecycle/
+                - PublishAlbum/
+                  - PublishAlbumRequest.cs (R)
+                  - PublishAlbumResponse.cs (R)
+                - UnpublishAlbum/
+                  - UnpublishAlbumRequest.cs (R)
+                  - UnpublishAlbumResponse.cs (R)
+              - Metadata/
+                - RenameAlbum/
+                  - RenameAlbumRequest.cs (R)
+                  - RenameAlbumResponse.cs (R)
+                - ChangeAlbumDescription/
+                  - ChangeAlbumDescriptionRequest.cs (R)
+                  - ChangeAlbumDescriptionResponse.cs (R)
+              - Media/
+                - ChangeAlbumCover/
+                  - ChangeAlbumCoverRequest.cs (R)
+                  - ChangeAlbumCoverResponse.cs (R)
+              - Queries/
+                - GetAlbumDetails/
+                  - GetAlbumDetailsRequest.cs (R)
+                  - GetAlbumDetailsResponse.cs (R)
+                - GetAlbumDetailsWithTracks/
+                  - GetAlbumDetailsWithTracksRequest.cs (R)
+                  - GetAlbumDetailsWithTracksResponse.cs (R)
+                - GetAlbumSummary/
+                  - GetAlbumSummaryRequest.cs (R)
+                  - GetAlbumSummaryResponse.cs (R)
+                - ListArtistAlbums/
+                  - ListArtistAlbumsRequest.cs (R)
+                  - ListArtistAlbumsResponse.cs (R)
+            - Artists/
+              - ArtistApiMappingProfile.cs (C)
+              - Lifecycle/
+                - RegisterArtist/
+                  - RegisterArtistRequest.cs (R)
+                  - RegisterArtistResponse.cs (R)
+                - DeleteArtist/
+                  - DeleteArtistRequest.cs (R)
+                  - DeleteArtistResponse.cs (R)
+              - Profile/
+                - RenameArtist/
+                  - RenameArtistRequest.cs (R)
+                  - RenameArtistResponse.cs (R)
+                - ChangeArtistBio/
+                  - ChangeArtistBioRequest.cs (R)
+                  - ChangeArtistBioResponse.cs (R)
+                - UpdateArtistVerification/
+                  - UpdateArtistVerificationRequest.cs (R)
+                  - UpdateArtistVerificationResponse.cs (R)
+              - Media/
+                - ChangeArtistAvatar/
+                  - ChangeArtistAvatarRequest.cs (R)
+                  - ChangeArtistAvatarResponse.cs (R)
+                - ChangeArtistBanner/
+                  - ChangeArtistBannerRequest.cs (R)
+                  - ChangeArtistBannerResponse.cs (R)
+                - UpdateArtistGallery/
+                  - UpdateArtistGalleryRequest.cs (R)
+                  - UpdateArtistGalleryResponse.cs (R)
+              - Queries/
+                - GetArtistDetails/
+                  - GetArtistDetailsRequest.cs (R)
+                  - GetArtistDetailsResponse.cs (R)
+                - GetArtistDetailsWithTracks/
+                  - GetArtistDetailsWithTracksRequest.cs (R)
+                  - GetArtistDetailsWithTracksResponse.cs (R)
+                - GetArtistSummary/
+                  - GetArtistSummaryRequest.cs (R)
+                  - GetArtistSummaryResponse.cs (R)
+                - ListArtists/
+                  - ListArtistRequest.cs (R)
+                  - ListArtistResponse.cs (R)
+            - Genres/
+              - GenreApiMappingProfile.cs (C)
+              - Lifecycle/
+                - CreateGenre/
+                  - CreateGenreRequest.cs (R)
+                  - CreateGenreResponse.cs (R)
+                - DeleteGenre/
+                  - DeleteGenreRequest.cs (R)
+                  - DeleteGenreResponse.cs (R)
+              - Profile/
+                - RenameGenre/
+                  - RenameGenreRequest.cs (R)
+                  - RenameGenreResponse.cs (R)
+                - ChangeGenreDescription/
+                  - ChangeGenreDescriptionRequest.cs (R)
+                  - ChangeGenreDescriptionResponse.cs (R)
+              - Media/
+                - ChangeGenreCover/
+                  - ChangeGenreCoverRequest.cs (R)
+                  - ChangeGenreCoverResponse.cs (R)
+              - Queries/
+                - GetGenreDetails/
+                  - GetGenreDetailsRequest.cs (R)
+                  - GetGenreDetailsResponse.cs (R)
+                - GetGenreTracks/
+                  - GetGenreTracksRequest.cs (R)
+                  - GetGenreTracksResponse.cs (R)
+                - GetGenreAlbums/
+                  - GetGenreAlbumsRequest.cs (R)
+                  - GetGenreAlbumsResponse.cs (R)
+                - GetGenreSummary/
+                  - GetGenreSummaryRequest.cs (R)
+                  - GetGenreSummaryResponse.cs (R)
+                - ListGenres/
+                  - ListGenreRequest.cs (R)
+                  - ListGenreResponse.cs (R)
+          - Playlists/
+            - Playlists/
+              - PlaylistApiMappingProfile.cs (C)
+              - Lifecycle/
+                - CreatePlaylist/
+                  - CreatePlaylistRequest.cs (R)
+                  - CreatePlaylistResponse.cs (R)
+                - DeletePlaylist/
+                  - DeletePlaylistRequest.cs (R)
+                  - DeletePlaylistResponse.cs (R)
+              - Profile/
+                - RenamePlaylist/
+                  - RenamePlaylistRequest.cs (R)
+                  - RenamePlaylistResponse.cs (R)
+                - ChangePlaylistDescription/
+                  - ChangePlaylistDescriptionRequest.cs (R)
+                  - ChangePlaylistDescriptionResponse.cs (R)
+                - UpdatePlaylistVisibility/
+                  - UpdatePlaylistVisibilityRequest.cs (R)
+                  - UpdatePlaylistVisibilityResponse.cs (R)
+              - Media/
+                - ChangePlaylistCover/
+                  - ChangePlaylistCoverRequest.cs (R)
+                  - ChangePlaylistCoverResponse.cs (R)
+              - Tracks/
+                - AddTrackToPlaylist/
+                  - AddTrackToPlaylistRequest.cs (R)
+                  - AddTrackToPlaylistResponse.cs (R)
+                - RemoveTrackFromPlaylist/
+                  - RemoveTrackFromPlaylistRequest.cs (R)
+                  - RemoveTrackFromPlaylistResponse.cs (R)
+                - ReorderPlaylistTracks/
+                  - ReorderPlaylistTracksRequest.cs (R)
+                  - ReorderPlaylistTracksResponse.cs (R)
+              - Queries/
+                - GetPlaylistDetails/
+                  - GetPlaylistDetailsRequest.cs (R)
+                  - GetPlaylistDetailsResponse.cs (R)
+                - GetPlaylistSummary/
+                  - GetPlaylistSummaryRequest.cs (R)
+                  - GetPlaylistSummaryResponse.cs (R)
+                - ListUserPlaylists/
+                  - ListUserPlaylistsRequest.cs (R)
+                  - ListUserPlaylistsResponse.cs (R)
+                - ListPublicPlaylists/
+                  - ListPublicPlaylistsRequest.cs (R)
+                  - ListPublicPlaylistsResponse.cs (R)
+          - Streaming/
+            - Media/
+              - AudioAssetApiMappingProfile.cs (C)
+              - ImageAssetApiMappingProfile.cs (C)
+              - UploadAudioAsset/
+                - UploadAudioAssetRequest.cs (R)
+                - UploadAudioAssetResponse.cs (R)
+              - UploadImageAsset/
+                - UploadImageAssetRequest.cs (R)
+                - UploadImageAssetResponse.cs (R)
+            - Playback/
+              - PlaybackSessionApiMappingProfile.cs (C)
+              - StartPlayback/
+                - StartPlaybackRequest.cs (R)
+                - StartPlaybackResponse.cs (R)
+              - EndPlayback/
+                - EndPlaybackRequest.cs (R)
+                - EndPlaybackResponse.cs (R)
+              - UpdatePlaybackPosition/
+                - UpdatePlaybackPositionRequest.cs (R)
+                - UpdatePlaybackPositionResponse.cs (R)
+              - GetPlaybackSession/
+                - GetPlaybackSessionRequest.cs (R)
+                - GetPlaybackSessionResponse.cs (R)
+            - History/
+              - PlaybackHistoryApiMappingProfile.cs (C)
+              - RecordPlayback/
+                - RecordPlaybackRequest.cs (R)
+                - RecordPlaybackResponse.cs (R)
+              - GetRecentlyPlayed/
+                - GetRecentlyPlayedRequest.cs (R)
+                - GetRecentlyPlayedResponse.cs (R)
+            - Likes/
+              - LikedTrackApiMappingProfile.cs (C)
+              - LikeTrack/
+                - LikeTrackRequest.cs (R)
+                - LikeTrackResponse.cs (R)
+              - UnlikeTrack/
+                - UnlikeTrackRequest.cs (R)
+                - UnlikeTrackResponse.cs (R)
+              - ListLikedTracks/
+                - ListLikedTracksRequest.cs (R)
+                - ListLikedTracksResponse.cs (R)
+      - Extensions/
+        - CorsExtension.cs (C)
+        - ScalarExtensions.cs (C)
+        - EndpointExtensions.cs (C)
+      - Properties/
+        - launchSettings.json
+    - SpotifyClone.Desktop.csproj
+    - SpotifyClone.Web
+    - SpotifyClone.Mobile
+- tests/
+  - Shared/
+    - BuildingBlocks/
+      - SpotifyClone.Shared.BuildingBlocks.Arch.Tests.csproj
+        - DependencyTests.cs (C)
+        - Domain/
+          - DomainExceptionArchitectureTests.cs (C)
+          - ValueObjectArchitectureTests.cs (C)
+          - StronglyTypedIdArchitectureTests.cs (C)
+          - DomainEventArchitectureTests.cs (C)
+          - EntityArchitectureTests.cs (C)
+          - AggregateRootArchitectureTests.cs (C)
+          - IRepositoryArchitectureTests.cs (C)
+        - Application/
+          - ErrorArchitectureTests.cs (C)
+          - EmailContractsArchitectureTests.cs (C)
+          - ApplicationExceptionArchitectureTests.cs (C)
+          - PipelineBehaviorArchitectureTests.cs (C)
+      - SpotifyClone.Shared.BuildingBlocks.Domain.Tests.csproj
+        - Primitives/
+          - DomainExceptions/
+            - NullTestDomainException.cs (C)
+            - EmptyTestDomainException.cs (C)
+            - WhitespaceTestDomainException.cs (C)
+            - DomainExceptionTests.cs (C)
+          - ValueObjects/
+            - TestValueObject.cs (R)
+            - OtherTestValueObject.cs (R)
+            - ValueObjectTests.cs (C)
+          - StronglyTypedIds/
+            - TestId.cs (R)
+            - OtherTestId.cs (R)
+            - StronglyTypedIdTests.cs (C)
+          - DomainEvents/
+            - TestDomainEvent.cs (R)
+            - OtherTestDomainEvent.cs (R)
+            - DomainEventTests.cs (C)
+          - Entities/
+            - TestEntity.cs (C)
+            - OtherTestEntity.cs (C)
+            - EntityTests.cs (C)
+          - AggregateRoots/
+            - TestAggregate.cs (C)
+            - OtherTestAggregate.cs (C)
+            - AggregateRootTests.cs (C)
+      - SpotifyClone.Shared.BuildingBlocks.Application.Tests.csproj
+        - Errors/
+          - ErrorTests.cs (C)
+        - Results/
+          - ResultTests.cs (C)
+        - Behaviors/
+          - TestCommand.cs (R)
+          - TestApplicationException.cs (C)
+          - ExceptionHandlingPipelineBehaviorTests.cs (C)
+          - RequestLoggingPipelineBehaviorTests.cs (C)
+          - TransactionalPipelineBehaviorTests.cs (C)
+          - ValidationPipelineBehaviorTests.cs (C)
+      - SpotifyClone.Shared.BuildingBlocks.Infrastructure.Tests.csproj
+        - Messaging/
+          - SmtpEmailSenderTests.cs (C)
+    - Kernel/
+      - SpotifyClone.Shared.Kernel.Tests.csproj
+  - Modules/
+    - Identity/
+      - SpotifyClone.Identity.Domain.Tests.csproj
+      - SpotifyClone.Identity.Application.Tests.csproj
+      - SpotifyClone.Identity.Infrastructure.Tests.csproj
+    - Catalog/
+      - SpotifyClone.Catalog.Domain.Tests.csproj
+      - SpotifyClone.Catalog.Application.Tests.csproj
+      - SpotifyClone.Catalog.Infrastructure.Tests.csproj
+    - Playlists/
+      - SpotifyClone.Playlists.Domain.Tests.csproj
+      - SpotifyClone.Playlists.Application.Tests.csproj
+      - SpotifyClone.Playlists.Infrastructure.Tests.csproj
+    - Search/
+      - SpotifyClone.Search.Domain.Tests.csproj
+      - SpotifyClone.Search.Application.Tests.csproj
+      - SpotifyClone.Search.Infrastructure.Tests.csproj
+    - Streaming/
+      - SpotifyClone.Streaming.Domain.Tests.csproj
+      - SpotifyClone.Streaming.Application.Tests.csproj
+      - SpotifyClone.Streaming.Infrastructure.Tests.csproj
+    - Analytics/
+      - SpotifyClone.Analytics.Domain.Tests.csproj
+      - SpotifyClone.Analytics.Application.Tests.csproj
+      - SpotifyClone.Analytics.Infrastructure.Tests.csproj
+    - Recommendations/
+      - SpotifyClone.Recommendations.Domain.Tests.csproj
+      - SpotifyClone.Recommendations.Application.Tests.csproj
+      - SpotifyClone.Recommendations.Infrastructure.Tests.csproj
+    - Social/
+      - SpotifyClone.Social.Domain.Tests.csproj
+      - SpotifyClone.Social.Application.Tests.csproj
+      - SpotifyClone.Social.Infrastructure.Tests.csproj
+- docker/
+  - docker-compose.yml
+- docs/
+
+# References
+
+## BuildingBlocks
+
+- SpotifyClone.Shared.BuildingBlocks.Domain -> SpotifyClone.Shared.BuildingBlocks.Application
+- SpotifyClone.Shared.BuildingBlocks.Domain -> SpotifyClone.Shared.BuildingBlocks.Infrastructure
+- SpotifyClone.Shared.BuildingBlocks.Domain -> SpotifyClone.Shared.Kernel
+- SpotifyClone.Shared.BuildingBlocks.Domain -> SpotifyClone.Shared.Kernel.Tests
+- SpotifyClone.Shared.BuildingBlocks.Domain -> SpotifyClone.{Module}.Domain
+- SpotifyClone.Shared.BuildingBlocks.Domain -> SpotifyClone.{Module}.Application
+- SpotifyClone.Shared.BuildingBlocks.Domain -> SpotifyClone.{Module}.Infrastructure
+- SpotifyClone.Shared.BuildingBlocks.Domain -> SpotifyClone.Api
+- SpotifyClone.Shared.BuildingBlocks.Domain -> SpotifyClone.Shared.BuildingBlocks.Domain.Tests
+- SpotifyClone.Shared.BuildingBlocks.Domain -> SpotifyClone.Shared.BuildingBlocks.Application.Tests
+- SpotifyClone.Shared.BuildingBlocks.Domain -> SpotifyClone.Shared.BuildingBlocks.Infrastructure.Tests
+- SpotifyClone.Shared.BuildingBlocks.Domain -> SpotifyClone.{Module}.Domain.Tests
+- SpotifyClone.Shared.BuildingBlocks.Domain -> SpotifyClone.{Module}.Application.Tests
+- SpotifyClone.Shared.BuildingBlocks.Domain -> SpotifyClone.{Module}.Infrastructure.Tests
+- SpotifyClone.Shared.BuildingBlocks.Application -> SpotifyClone.Shared.BuildingBlocks.Infrastructure
+- SpotifyClone.Shared.BuildingBlocks.Application -> SpotifyClone.Shared.BuildingBlocks.Application.Tests
+- SpotifyClone.Shared.BuildingBlocks.Application -> SpotifyClone.Shared.BuildingBlocks.Infrastructure.Tests
+- SpotifyClone.Shared.BuildingBlocks.Application -> SpotifyClone.{Module}.Application
+- SpotifyClone.Shared.BuildingBlocks.Application -> SpotifyClone.{Module}.Infrastructure
+- SpotifyClone.Shared.BuildingBlocks.Application -> SpotifyClone.Api
+- SpotifyClone.Shared.BuildingBlocks.Application -> SpotifyClone.{Module}.Application.Tests
+- SpotifyClone.Shared.BuildingBlocks.Application -> SpotifyClone.{Module}.Infrastructure.Tests
+- SpotifyClone.Shared.BuildingBlocks.Infrastructure -> SpotifyClone.Shared.BuildingBlocks.Infrastructure.Tests
+- SpotifyClone.Shared.BuildingBlocks.Infrastructure -> SpotifyClone.{Module}.Infrastructure
+- SpotifyClone.Shared.BuildingBlocks.Infrastructure -> SpotifyClone.Api
+- SpotifyClone.Shared.BuildingBlocks.Infrastructure -> SpotifyClone.{Module}.Infrastructure.Tests
+
+## SharedKernel
+
+- SpotifyClone.Shared.Kernel -> SpotifyClone.{Module}.Domain
+- SpotifyClone.Shared.Kernel -> SpotifyClone.{Module}.Application
+- SpotifyClone.Shared.Kernel -> SpotifyClone.{Module}.Infrastructure
+- SpotifyClone.Shared.Kernel -> SpotifyClone.{Module}.Domain.Tests
+- SpotifyClone.Shared.Kernel -> SpotifyClone.{Module}.Application.Tests
+- SpotifyClone.Shared.Kernel -> SpotifyClone.{Module}.Infrastructure.Tests
+
+## Domain
+
+- SpotifyClone.{Module}.Domain -> SpotifyClone.{Module}.Application
+- SpotifyClone.{Module}.Domain -> SpotifyClone.{Module}.Infrastructure
+- SpotifyClone.{Module}.Domain -> SpotifyClone.{Module}.Domain.Tests
+- SpotifyClone.{Module}.Domain -> SpotifyClone.{Module}.Application.Tests
+- SpotifyClone.{Module}.Domain -> SpotifyClone.{Module}.Infrastructure.Tests
+
+## Application
+
+- SpotifyClone.{Module}.Application -> SpotifyClone.{Module}.Infrastructure
+- SpotifyClone.{Module}.Application -> SpotifyClone.Api
+- SpotifyClone.{Module}.Application -> SpotifyClone.{Module}.Application.Tests
+- SpotifyClone.{Module}.Application -> SpotifyClone.{Module}.Infrastructure.Tests
+
+## Infrastructure
+
+- SpotifyClone.{Module}.Infrastructure -> SpotifyClone.Api
+- SpotifyClone.{Module}.Infrastructure -> SpotifyClone.{Module}.Infrastructure.Tests

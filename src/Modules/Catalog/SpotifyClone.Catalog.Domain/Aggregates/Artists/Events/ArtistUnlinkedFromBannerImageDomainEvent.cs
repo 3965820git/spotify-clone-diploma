@@ -1,0 +1,8 @@
+﻿using SpotifyClone.Shared.BuildingBlocks.Domain.Primitives;
+using SpotifyClone.Shared.Kernel.IDs;
+
+namespace SpotifyClone.Catalog.Domain.Aggregates.Artists.Events;
+
+public sealed record ArtistUnlinkedFromBannerImageDomainEvent(
+    ImageId ImageId)
+    : DomainEvent;

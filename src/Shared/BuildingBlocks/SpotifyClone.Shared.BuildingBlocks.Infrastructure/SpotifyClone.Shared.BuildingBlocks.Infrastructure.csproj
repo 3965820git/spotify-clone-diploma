@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <PackageReference Include="Hangfire" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
+    <PackageReference Include="Newtonsoft.Json" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SpotifyClone.Shared.BuildingBlocks.Application\SpotifyClone.Shared.BuildingBlocks.Application.csproj" />
+    <ProjectReference Include="..\SpotifyClone.Shared.BuildingBlocks.Domain\SpotifyClone.Shared.BuildingBlocks.Domain.csproj" />
+  </ItemGroup>
+</Project>

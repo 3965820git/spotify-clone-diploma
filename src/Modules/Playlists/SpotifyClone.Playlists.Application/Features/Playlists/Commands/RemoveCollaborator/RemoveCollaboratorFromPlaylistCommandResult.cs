@@ -1,0 +1,3 @@
+﻿namespace SpotifyClone.Playlists.Application.Features.Playlists.Commands.RemoveCollaborator;
+
+public sealed record RemoveCollaboratorFromPlaylistCommandResult;

@@ -1,0 +1,29 @@
+name: Deploy Frontend to AWS
+
+on:
+  push:
+    branches:
+      - main
+    # МАГИЯ ЗДЕСЬ: Экшен запустится только если кто-то изменил файлы внутри папки frontend
+    paths:
+      - 'frontend/**'
+  # Кнопка для ручного запуска деплоя из интерфейса GitHub (очень удобно!)
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Execute SSH commands on server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          script: |
+            cd ~/spotify-diploma
+            git fetch origin
+            git reset --hard origin/main
+            
+            # Собираем и перезапускаем ТОЛЬКО сервис frontend
+            docker compose up -d --build frontend
