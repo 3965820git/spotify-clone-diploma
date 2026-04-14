@@ -3,7 +3,6 @@ import { TrackPlayerScreen } from '@/features/player/ui/TrackPlayerScreen'
 import { recently } from '@/features/home/mock'
 import { AppShell } from '@/shared/ui/layout/AppShell'
 
-
 type Props = {
   params: Promise<{ id: string }>
 }
@@ -20,12 +19,9 @@ export default async function TrackPlayPage({ params }: Props) {
   return (
     <AppShell
       pageMode="screen"
-  withDefaultPadding={false}
-
->
-    <TrackPlayerScreen
-      }}
-    />
+      withDefaultPadding={false}
+    >
+      <TrackPlayerScreen />
     </AppShell>
   )
 }
