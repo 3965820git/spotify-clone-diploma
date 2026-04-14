@@ -34,9 +34,6 @@ const registerForm = useForm<RegisterForm>({
   email: '',
   password: '',
   confirmPassword: '',
-  displayName: '',
-  birthDate: '',
-  gender: 'Female',
 },
 })
 
