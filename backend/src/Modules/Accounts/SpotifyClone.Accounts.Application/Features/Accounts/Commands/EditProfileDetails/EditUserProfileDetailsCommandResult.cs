@@ -1,0 +1,3 @@
+﻿namespace SpotifyClone.Accounts.Application.Features.Accounts.Commands.EditProfileDetails;
+
+public sealed record EditUserProfileDetailsCommandResult;

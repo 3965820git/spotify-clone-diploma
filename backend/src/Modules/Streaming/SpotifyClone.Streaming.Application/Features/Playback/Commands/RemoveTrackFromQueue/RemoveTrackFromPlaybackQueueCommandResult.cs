@@ -1,0 +1,3 @@
+﻿namespace SpotifyClone.Streaming.Application.Features.Playback.Commands.RemoveTrackFromQueue;
+
+public sealed record RemoveTrackFromPlaybackQueueCommandResult;

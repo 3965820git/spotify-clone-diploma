@@ -1,0 +1,3 @@
+﻿namespace SpotifyClone.Streaming.Application.Features.Media.Commands.MarkAudioAssetAsOrphaned;
+
+public sealed record MarkAudioAssetAsOrphanedCommandResult;

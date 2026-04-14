@@ -1,0 +1,3 @@
+﻿namespace SpotifyClone.Catalog.Application.Features.Tracks.Commands.UpdateFeaturedArtists;
+
+public sealed record UpdateTrackFeaturedArtistsCommandResult;

@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\src\Modules\Accounts\SpotifyClone.Accounts.Domain\SpotifyClone.Accounts.Domain.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Shared\BuildingBlocks\SpotifyClone.Shared.BuildingBlocks.Domain\SpotifyClone.Shared.BuildingBlocks.Domain.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Shared\Kernel\SpotifyClone.Shared.Kernel\SpotifyClone.Shared.Kernel.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+</Project>

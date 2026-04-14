@@ -1,0 +1,3 @@
+﻿namespace SpotifyClone.Catalog.Application.Features.Artists.Commands.RemoveGalleryImageFromArtist;
+
+public sealed record RemoveGalleryImageFromArtistCommandResult;
