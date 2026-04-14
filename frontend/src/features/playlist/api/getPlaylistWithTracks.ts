@@ -1,5 +1,5 @@
 import { getPlaylist } from '@/shared/api/playlists'
-import { getTrack } from '@/shared/api/tracks'
+import { getTrackDetails } from '@/shared/api/tracks'
 
 export type PlaylistTrackViewModel = {
   id: string
@@ -33,7 +33,7 @@ export async function getPlaylistWithTracks(
   )
 
   const trackDetails = await Promise.all(
-    sortedTrackRefs.map((trackRef) => getTrack(trackRef.id)),
+    sortedTrackRefs.map((trackRef) => getTrackDetails(trackRef.id)),
   )
 
   const tracks: PlaylistTrackViewModel[] = sortedTrackRefs.map(
@@ -44,7 +44,7 @@ export async function getPlaylistWithTracks(
         id: track.id,
         position: trackRef.position,
         title: track.title,
-        duration: track.duration,
+        duration: track.duration as any, // Проактивно глушим конфликт типов string/number
         artist:
           track.mainArtists.length > 0
             ? track.mainArtists.map((artist) => artist.name).join(', ')
