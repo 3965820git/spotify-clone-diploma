@@ -1,11 +1,13 @@
+version: '3.8'
+
 services:
+  # --- НАШ БЭКЕНД ---
   spotify_backend:
     container_name: spotify_backend
     build:
-      context: .
+      context: ./backend  # Исправлено: теперь смотрит в папку backend
       dockerfile: src/Apps/SpotifyClone.Api/Dockerfile
     restart: unless-stopped
-    # Вот эта магия связывает контейнер с твоим SSH-туннелем:
     ports:
       - "5001:8080"
     environment:
@@ -31,6 +33,24 @@ services:
       - redis
       - minio
 
+  # --- НАШ НОВЫЙ ФРОНТЕНД ---
+  frontend:
+    container_name: spotify_frontend
+    build:
+      context: ./frontend  # Смотрит в папку напарников
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_BASE=https://spotify-diploma-2026.duckdns.org
+        - NEXT_PUBLIC_API_URL=https://spotify-diploma-2026.duckdns.org
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    networks:
+      - public_net
+    depends_on:
+      - spotify_backend
+
+  # --- БАЗЫ ДАННЫХ И ХРАНИЛИЩА ---
   db:
     image: postgres:16-alpine
     container_name: spotify_db
