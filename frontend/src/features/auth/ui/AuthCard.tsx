@@ -25,7 +25,7 @@ export default function AuthCard() {
 
  const loginForm = useForm<LoginForm>({
   resolver: zodResolver(loginSchema),
-  defaultValues: { email: '', password: '' },
+  defaultValues: { identifier: '', password: '' },
 })
 
 const registerForm = useForm<RegisterForm>({
@@ -87,8 +87,8 @@ const registerForm = useForm<RegisterForm>({
               <Field
                 label="Email"
                 type="email"
-                error={loginForm.formState.errors.email?.message}
-                {...loginForm.register('email')}
+                error={loginForm.formState.errors.identifier?.message}
+                {...loginForm.register('identifier')}
               />
               <Field
                 label="Password"
