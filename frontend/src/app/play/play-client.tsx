@@ -1,6 +1,6 @@
 'use client'
 
-import { TrackPlayer } from '@/widgets/player/TrackPlayer'
+import { TrackPlayer } from '@/features/player/ui/TrackPlayer'
 import { usePlayerStore } from '@/shared/lib/store/playerStore'
 
 export default function PlayClient() {

@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 
 import { useForm } from 'react-hook-form'
 
-import { login, registerUser } from '@/features/auth/api'
+import { login, registerUser } from '@/features/auth/api/auth.api'
 
 import { loginSchema, registerSchema, type LoginForm, type RegisterForm } from '@/features/auth/validation'
 
