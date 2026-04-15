@@ -53,7 +53,11 @@ export function useAudioPlayer() {
     lastLoadedUrlRef.current = currentStreamUrl
     setIsPlayerReady(false)
 
-    audio.src = currentStreamUrl
+    // 🔥 НАШ КОСТЫЛЬ: Игнорируем currentStreamUrl от бэкенда и подставляем прямой MP3
+    const myTestUrl = "https://minio.spotify-diploma-2026.duckdns.org/audio/472a5729-15d0-4a2b-b87a-b07be353fadb/Requiem_For_A_Dream_-_Requiem_For_A_Dream_-_OST_%28SkySound.cc%29.mp3"
+    audio.src = myTestUrl
+    console.log("🔥 ВНИМАНИЕ: Включен режим 'Заплатка для диплома'. Играет Реквием из MinIO!")
+
     audio.load()
 
     const handleLoadedMetadata = async () => {
